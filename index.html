@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SDIS EPI">
+<title>SDIS EPI — Gestion des équipements</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;background:#f5f5f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+  :root{--red:#C0392B;--red-dark:#922B21;--red-light:#FADBD8;--green:#059669;--green-light:#D1FAE5;--amber:#D97706;--amber-light:#FEF3C7;--blue:#2563EB;--blue-light:#DBEAFE;--purple:#7C3AED;--purple-light:#EDE9FE;--gray:#6B7280;--gray-light:#F3F4F6;--border:#E5E7EB;--text:#111827;--text2:#6B7280;--bg:#fff;--bg2:#F9FAFB;--radius:12px;--radius-sm:8px}
+  .app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(0,0,0,0.08)}
+
+  /* HEADER */
+  .header{background:var(--red);padding:env(safe-area-inset-top,14px) 16px 12px;padding-top:max(env(safe-area-inset-top),14px);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+  .header-logo{width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .header-logo i{color:#fff;font-size:20px}
+  .header-info{flex:1}
+  .header-title{color:#fff;font-size:16px;font-weight:600}
+  .header-sub{color:rgba(255,255,255,0.8);font-size:12px;margin-top:1px}
+  .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
+
+  /* ROLE SWITCHER */
+  .role-bar{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--border)}
+  .role-btn{flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);font-size:11px;color:var(--text2);cursor:pointer;text-align:center;line-height:1.4;transition:all 0.15s;font-family:inherit}
+  .role-btn.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
+
+  /* SCREENS */
+  .screen{flex:1;overflow-y:auto;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
+  .screen.active{display:block}
+
+  /* SECTIONS */
+  .section{padding:16px}
+  .section-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px}
+
+  /* CARDS */
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+
+  /* STAT GRID */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}
+  .stat-card{background:var(--bg2);border-radius:var(--radius-sm);padding:14px;border:1px solid var(--border)}
+  .stat-num{font-size:28px;font-weight:700;color:var(--text);line-height:1}
+  .stat-label{font-size:12px;color:var(--text2);margin-top:4px}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px}
+  .badge-pending{background:var(--amber-light);color:#92400E}
+  .badge-approved{background:var(--green-light);color:#065F46}
+  .badge-rejected{background:#FEE2E2;color:#991B1B}
+  .badge-transit{background:var(--blue-light);color:#1E40AF}
+  .badge-new{background:var(--purple-light);color:#5B21B6}
+
+  /* REQUEST ROWS */
+  .req-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
+  .req-row:last-child{border-bottom:none}
+  .req-row:active{opacity:0.7}
+  .req-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+  .ri-jacket{background:#FEE2E2;color:var(--red)}
+  .ri-pants{background:var(--blue-light);color:var(--blue)}
+  .ri-boots{background:var(--green-light);color:var(--green)}
+  .ri-helmet{background:var(--amber-light);color:var(--amber)}
+  .ri-gloves{background:var(--purple-light);color:var(--purple)}
+  .req-info{flex:1;min-width:0}
+  .req-name{font-size:14px;font-weight:600;color:var(--text)}
+  .req-detail{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .req-meta{text-align:right;flex-shrink:0}
+  .req-date{font-size:11px;color:var(--text2);margin-top:4px}
+
+  /* BUTTONS */
+  .btn-primary{background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;font-family:inherit}
+  .btn-primary:active{opacity:0.8}
+  .btn-secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 20px;font-size:14px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+  .btn-approve{flex:1;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:13px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit}
+  .btn-reject{flex:1;background:#fff;color:#DC2626;border:1px solid #DC2626;border-radius:var(--radius-sm);padding:13px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit}
+
+  /* FORMS */
+  .form-group{margin-bottom:14px}
+  .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block}
+  .form-control{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:#fff;color:var(--text);font-family:inherit;-webkit-appearance:none;appearance:none}
+  .form-control:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.1)}
+  select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+  textarea.form-control{resize:none;line-height:1.5}
+
+  /* TAB BAR */
+  .tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:430px;max-width:100%;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 12px;gap:3px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;font-weight:500;font-family:inherit;transition:color 0.15s}
+  .tab i{font-size:24px}
+  .tab.active{color:var(--red)}
+
+  /* PROFILE HEADER */
+  .profile-header{background:linear-gradient(135deg,var(--red),var(--red-dark));padding:28px 16px 22px;text-align:center}
+  .avatar{width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:2px solid rgba(255,255,255,0.4)}
+  .avatar i{font-size:32px;color:#fff}
+  .profile-name{font-size:20px;font-weight:700;color:#fff}
+  .profile-role{font-size:13px;color:rgba(255,255,255,0.85);margin-top:3px}
+  .profile-grade{font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px}
+
+  /* PROGRESS */
+  .progress-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-top:8px}
+  .progress-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+
+  /* NOTIFICATION */
+  .notif-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+  .notif-row:last-child{border-bottom:none}
+  .notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+  .notif-dot.unread{background:var(--red)}
+  .notif-dot.read{background:var(--border)}
+  .notif-text{font-size:13px;color:var(--text);line-height:1.5}
+  .notif-time{font-size:11px;color:var(--text2);margin-top:3px}
+
+  /* CATALOG */
+  .catalog-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .catalog-item:last-child{border-bottom:none}
+  .catalog-emoji{width:50px;height:50px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+  .catalog-name{font-size:14px;font-weight:600;color:var(--text)}
+  .catalog-ref{font-size:12px;color:var(--text2);margin-top:2px}
+  .catalog-stock{font-size:12px;margin-top:3px;font-weight:500}
+  .stock-ok{color:var(--green)}
+  .stock-low{color:var(--amber)}
+  .stock-out{color:#DC2626}
+
+  /* TIMELINE */
+  .tl-item{display:flex;gap:12px;margin-bottom:14px}
+  .tl-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+  .tl-dot{width:12px;height:12px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:2px}
+  .tl-dot.done{background:var(--green)}
+  .tl-connector{width:2px;flex:1;background:var(--border);margin-top:4px}
+  .tl-title{font-size:13px;font-weight:600;color:var(--text)}
+  .tl-desc{font-size:12px;color:var(--text2);margin-top:2px}
+  .tl-time{font-size:11px;color:var(--text2);margin-top:2px}
+
+  /* CHIPS */
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+  .chip.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:#fff;border-radius:20px 20px 0 0;padding:0 16px env(safe-area-inset-bottom,24px);width:100%;max-width:430px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .modal-inner{padding:20px 0}
+  .modal-handle{width:40px;height:5px;background:var(--border);border-radius:3px;margin:14px auto 0}
+  .modal-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:18px}
+  .action-row{display:flex;gap:10px;margin-top:6px}
+
+  /* INFO ROW */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  .info-item label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:3px}
+  .info-item span{font-size:14px;font-weight:600;color:var(--text)}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:12px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+  .toast.show{opacity:1}
+
+  /* EMPTY STATE */
+  .empty{text-align:center;padding:50px 20px;color:var(--text2)}
+  .empty i{font-size:48px;margin-bottom:12px;display:block;opacity:0.3}
+  .empty p{font-size:14px}
+
+  /* STOCK DETAIL */
+  .stock-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+  .stock-row:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo"><i class="ti ti-shield-chevron"></i></div>
+    <div class="header-info">
+      <div class="header-title">SDIS EPI</div>
+      <div class="header-sub" id="header-sub">Portail équipements</div>
+    </div>
+    <div class="header-badge" id="header-badge">SP</div>
+  </div>
+
+  <!-- ROLE SWITCHER -->
+  <div class="role-bar">
+    <button class="role-btn active" onclick="switchRole('sp',this)">🧑‍🚒 Pompier</button>
+    <button class="role-btn" onclick="switchRole('chef',this)">⭐ Chef caserne</button>
+    <button class="role-btn" onclick="switchRole('sdis',this)">🏢 Gestionnaire</button>
+  </div>
+
+  <!-- ===== SCREEN: ACCUEIL ===== -->
+  <div class="screen active" id="screen-home">
+
+    <!-- VUE POMPIER -->
+    <div id="view-sp-home">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--red)">2</div>
+          <div class="stat-label">Demandes en cours</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--green)">1</div>
+          <div class="stat-label">Prête au retrait</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Mes dernières demandes</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row" onclick="openDetail()">
+            <div class="req-icon ri-jacket"><i class="ti ti-shirt"></i></div>
+            <div class="req-info">
+              <div class="req-name">Veste d'intervention</div>
+              <div class="req-detail">T.46 → Échange taille</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-pending">En attente</span>
+              <div class="req-date">14 mai</div>
+            </div>
+          </div>
+          <div class="req-row" onclick="openDetail('approved')">
+            <div class="req-icon ri-boots"><i class="ti ti-boot"></i></div>
+            <div class="req-info">
+              <div class="req-name">Bottes de sécurité</div>
+              <div class="req-detail">P.43 → Usure</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-approved">Approuvé</span>
+              <div class="req-date">10 mai</div>
+            </div>
+          </div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn-primary" onclick="openNewRequest()">
+          <i class="ti ti-plus"></i>Nouvelle demande d'échange
+        </button>
+      </div>
+      <div class="section" style="padding-top:0">
+        <div class="section-title">Notifications</div>
+        <div class="card" style="padding:0 14px">
+          <div class="notif-row">
+            <div class="notif-dot unread"></div>
+            <div>
+              <div class="notif-text">Votre demande de bottes a été approuvée par l'adjudant Moreau.</div>
+              <div class="notif-time">Aujourd'hui à 09h14</div>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-dot unread"></div>
+            <div>
+              <div class="notif-text">Vos bottes sont disponibles au magasin SDIS 44 à Saint-Herblain.</div>
+              <div class="notif-time">Hier à 16h40</div>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-dot read"></div>
+            <div>
+              <div class="notif-text">Demande de pantalon F1 transmise au gestionnaire SDIS.</div>
+              <div class="notif-time">12 mai à 11h02</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VUE CHEF DE CASERNE -->
+    <div id="view-chef-home" style="display:none">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--amber)">4</div>
+          <div class="stat-label">À valider</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">11</div>
+          <div class="stat-label">Ce mois-ci</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">À traiter en priorité</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row" onclick="openChefValidation('Casque F2','Martin Leclerc','Remplacement après sinistre')">
+            <div class="req-icon ri-helmet"><i class="ti ti-hardhat"></i></div>
+            <div class="req-info">
+              <div class="req-name">Casque F2 — Leclerc M.</div>
+              <div class="req-detail">Remplacement après sinistre</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-new">Nouveau</span>
+              <div class="req-date">Auj.</div>
+            </div>
+          </div>
+          <div class="req-row" onclick="openChefValidation('Pantalon F1','Dupont A.','Échange taille T.44')">
+            <div class="req-icon ri-pants"><i class="ti ti-trouser"></i></div>
+            <div class="req-info">
+              <div class="req-name">Pantalon F1 — Dupont A.</div>
+              <div class="req-detail">Échange taille T.44</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-new">Nouveau</span>
+              <div class="req-date">Auj.</div>
+            </div>
+          </div>
+          <div class="req-row" onclick="openChefValidation('Gants cuir','Lefebvre C.','Usure avancée')">
+            <div class="req-icon ri-gloves"><i class="ti ti-glove"></i></div>
+            <div class="req-info">
+              <div class="req-name">Gants cuir — Lefebvre C.</div>
+              <div class="req-detail">Usure avancée</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-new">Nouveau</span>
+              <div class="req-date">13 mai</div>
+            </div>
+          </div>
+          <div class="req-row" onclick="openChefValidation('Veste intervention','Bernard S.','Échange taille T.48')">
+            <div class="req-icon ri-jacket"><i class="ti ti-shirt"></i></div>
+            <div class="req-info">
+              <div class="req-name">Veste — Bernard S.</div>
+              <div class="req-detail">Échange taille T.48</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-new">Nouveau</span>
+              <div class="req-date">12 mai</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VUE GESTIONNAIRE SDIS -->
+    <div id="view-sdis-home" style="display:none">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--red)">18</div>
+          <div class="stat-label">Demandes totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--green)">6</div>
+          <div class="stat-label">Prêtes à expédier</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">État des stocks critiques</div>
+        <div class="card">
+          <div class="stock-row">
+            <div>
+              <div style="font-size:14px;font-weight:600">Vestes d'intervention</div>
+              <div style="font-size:12px;color:var(--text2)">Réf. VI-F1-2023</div>
+            </div>
+            <div style="text-align:right">
+              <div class="stock-ok" style="font-size:13px;font-weight:600">32 dispo.</div>
+              <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:80%;background:var(--green)"></div></div>
+            </div>
+          </div>
+          <div class="stock-row">
+            <div>
+              <div style="font-size:14px;font-weight:600">Casques F2</div>
+              <div style="font-size:12px;color:var(--text2)">Réf. CF2-2021</div>
+            </div>
+            <div style="text-align:right">
+              <div class="stock-low" style="font-size:13px;font-weight:600">7 dispo.</div>
+              <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:18%;background:var(--amber)"></div></div>
+            </div>
+          </div>
+          <div class="stock-row">
+            <div>
+              <div style="font-size:14px;font-weight:600">Bottes T.42</div>
+              <div style="font-size:12px;color:var(--text2)">Réf. BS-2023</div>
+            </div>
+            <div style="text-align:right">
+              <div class="stock-out" style="font-size:13px;font-weight:600">Rupture</div>
+              <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:2%;background:#DC2626"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:0">
+        <div class="section-title">Validées par les chefs — à expédier</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row">
+            <div class="req-icon ri-boots"><i class="ti ti-boot"></i></div>
+            <div class="req-info">
+              <div class="req-name">Bottes — Dupuis T.</div>
+              <div class="req-detail">CS Savenay · P.44</div>
+            </div>
+            <div class="req-meta">
+              <span class="badge badge-transit">Expédié</span>
+            </div>
+          </div>
+          <div class="req-row">
+            <div class="req-icon ri-jacket"><i class="ti ti-shirt"></i></div>
+            <div class="req-info">
+              <div class="req-name">Veste — Bernard S.</div>
+              <div class="req-detail">CS Nantes-Centre · T.48</div>
+            </div>
+            <div class="req-meta">
+              <button class="btn-primary" style="width:auto;padding:7px 12px;font-size:12px" onclick="showToast('Expédition confirmée ✓')">
+                <i class="ti ti-send" style="font-size:14px"></i>Expédier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screen-home -->
+
+  <!-- ===== SCREEN: HISTORIQUE ===== -->
+  <div class="screen" id="screen-history">
+    <div class="section">
+      <div class="chip-row">
+        <button class="chip active" onclick="filterHistory(this,'all')">Toutes</button>
+        <button class="chip" onclick="filterHistory(this,'pending')">En attente</button>
+        <button class="chip" onclick="filterHistory(this,'approved')">Approuvées</button>
+        <button class="chip" onclick="filterHistory(this,'rejected')">Refusées</button>
+      </div>
+      <div id="history-list">
+        <div class="req-row hist-item" data-status="approved" onclick="openDetail('approved')">
+          <div class="req-icon ri-boots"><i class="ti ti-boot"></i></div>
+          <div class="req-info"><div class="req-name">Bottes de sécurité</div><div class="req-detail">P.43 — Usure</div></div>
+          <div class="req-meta"><span class="badge badge-approved">Approuvé</span><div class="req-date">10 mai</div></div>
+        </div>
+        <div class="req-row hist-item" data-status="pending" onclick="openDetail()">
+          <div class="req-icon ri-jacket"><i class="ti ti-shirt"></i></div>
+          <div class="req-info"><div class="req-name">Veste d'intervention</div><div class="req-detail">T.46 — Échange taille</div></div>
+          <div class="req-meta"><span class="badge badge-pending">En attente</span><div class="req-date">14 mai</div></div>
+        </div>
+        <div class="req-row hist-item" data-status="rejected">
+          <div class="req-icon ri-pants"><i class="ti ti-trouser"></i></div>
+          <div class="req-info"><div class="req-name">Pantalon F1</div><div class="req-detail">T.42 — Échange taille</div></div>
+          <div class="req-meta"><span class="badge badge-rejected">Refusé</span><div class="req-date">2 mai</div></div>
+        </div>
+        <div class="req-row hist-item" data-status="approved">
+          <div class="req-icon ri-helmet"><i class="ti ti-hardhat"></i></div>
+          <div class="req-info"><div class="req-name">Casque F2</div><div class="req-detail">Standard — Remplacement</div></div>
+          <div class="req-meta"><span class="badge badge-transit">En transit</span><div class="req-date">5 mai</div></div>
+        </div>
+        <div class="req-row hist-item" data-status="approved">
+          <div class="req-icon ri-gloves"><i class="ti ti-glove"></i></div>
+          <div class="req-info"><div class="req-name">Gants de manœuvre</div><div class="req-detail">T.9 — Usure</div></div>
+          <div class="req-meta"><span class="badge badge-approved">Approuvé</span><div class="req-date">18 avr.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: CATALOGUE ===== -->
+  <div class="screen" id="screen-catalog">
+    <div class="section">
+      <input type="search" class="form-control" placeholder="🔍 Rechercher un équipement…" oninput="filterCatalog(this.value)" style="margin-bottom:14px">
+      <div id="catalog-list">
+        <div class="catalog-item" data-name="veste intervention">
+          <div class="catalog-emoji">🧥</div>
+          <div style="flex:1">
+            <div class="catalog-name">Veste d'intervention</div>
+            <div class="catalog-ref">Réf. VI-F1-2023 · Tailles 38–58</div>
+            <div class="catalog-stock stock-ok">✓ 32 disponibles</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Veste d\'intervention')">Demander</button>
+        </div>
+        <div class="catalog-item" data-name="pantalon f1">
+          <div class="catalog-emoji">👖</div>
+          <div style="flex:1">
+            <div class="catalog-name">Pantalon F1</div>
+            <div class="catalog-ref">Réf. PF1-2022 · Tailles 38–56</div>
+            <div class="catalog-stock stock-ok">✓ 28 disponibles</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Pantalon F1')">Demander</button>
+        </div>
+        <div class="catalog-item" data-name="casque f2">
+          <div class="catalog-emoji">⛑️</div>
+          <div style="flex:1">
+            <div class="catalog-name">Casque F2</div>
+            <div class="catalog-ref">Réf. CF2-2021 · Taille unique</div>
+            <div class="catalog-stock stock-low">⚠ 7 disponibles (stock bas)</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Casque F2')">Demander</button>
+        </div>
+        <div class="catalog-item" data-name="bottes securite">
+          <div class="catalog-emoji">🥾</div>
+          <div style="flex:1">
+            <div class="catalog-name">Bottes de sécurité</div>
+            <div class="catalog-ref">Réf. BS-2023 · Pointures 38–47</div>
+            <div class="catalog-stock stock-out">✕ Rupture de stock</div>
+          </div>
+          <button class="btn-secondary" style="width:auto;padding:9px 14px;font-size:13px" onclick="showToast('Alerte stock activée 🔔')">M\'alerter</button>
+        </div>
+        <div class="catalog-item" data-name="gants manoeuvre">
+          <div class="catalog-emoji">🧤</div>
+          <div style="flex:1">
+            <div class="catalog-name">Gants de manœuvre</div>
+            <div class="catalog-ref">Réf. GM-2023 · Tailles 7–11</div>
+            <div class="catalog-stock stock-ok">✓ 54 disponibles</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Gants de manœuvre')">Demander</button>
+        </div>
+        <div class="catalog-item" data-name="cagoule feu">
+          <div class="catalog-emoji">🧣</div>
+          <div style="flex:1">
+            <div class="catalog-name">Cagoule feu</div>
+            <div class="catalog-ref">Réf. CF-2022 · Taille unique</div>
+            <div class="catalog-stock stock-ok">✓ 19 disponibles</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Cagoule feu')">Demander</button>
+        </div>
+        <div class="catalog-item" data-name="ceinturon">
+          <div class="catalog-emoji">🪢</div>
+          <div style="flex:1">
+            <div class="catalog-name">Ceinturon</div>
+            <div class="catalog-ref">Réf. CE-2021 · Taille unique</div>
+            <div class="catalog-stock stock-ok">✓ 41 disponibles</div>
+          </div>
+          <button class="btn-primary" style="width:auto;padding:9px 14px;font-size:13px" onclick="openNewRequest('Ceinturon')">Demander</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: PROFIL ===== -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-header">
+      <div class="avatar"><i class="ti ti-user"></i></div>
+      <div class="profile-name" id="profile-name">Martin Leclerc</div>
+      <div class="profile-role" id="profile-role">Sapeur-Pompier Professionnel</div>
+      <div class="profile-grade" id="profile-grade">CS Nantes-Bellevue · Mat. 44-1247</div>
+    </div>
+    <div class="section">
+      <div class="section-title">Ma dotation actuelle</div>
+      <div class="card" style="padding:0 14px">
+        <div class="req-row">
+          <div class="req-icon ri-jacket"><i class="ti ti-shirt"></i></div>
+          <div class="req-info"><div class="req-name">Veste d'intervention</div><div class="req-detail">T.46 · Attribuée mars 2023</div></div>
+        </div>
+        <div class="req-row">
+          <div class="req-icon ri-pants"><i class="ti ti-trouser"></i></div>
+          <div class="req-info"><div class="req-name">Pantalon F1</div><div class="req-detail">T.44 · Attribué mars 2023</div></div>
+        </div>
+        <div class="req-row">
+          <div class="req-icon ri-helmet"><i class="ti ti-hardhat"></i></div>
+          <div class="req-info"><div class="req-name">Casque F2</div><div class="req-detail">Standard · Attribué jan. 2024</div></div>
+        </div>
+        <div class="req-row">
+          <div class="req-icon ri-boots"><i class="ti ti-boot"></i></div>
+          <div class="req-info"><div class="req-name">Bottes de sécurité</div><div class="req-detail">P.43 · Attribuées avr. 2022</div></div>
+        </div>
+        <div class="req-row">
+          <div class="req-icon ri-gloves"><i class="ti ti-glove"></i></div>
+          <div class="req-info"><div class="req-name">Gants de manœuvre</div><div class="req-detail">T.9 · Attribués mars 2023</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0">
+      <button class="btn-primary" onclick="openNewRequest()">
+        <i class="ti ti-plus"></i>Nouvelle demande d'échange
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('home',this)">
+      <i class="ti ti-home"></i>Accueil
+    </button>
+    <button class="tab" onclick="switchTab('history',this)">
+      <i class="ti ti-clipboard-list"></i>Demandes
+    </button>
+    <button class="tab" onclick="switchTab('catalog',this)">
+      <i class="ti ti-package"></i>Catalogue
+    </button>
+    <button class="tab" onclick="switchTab('profile',this)">
+      <i class="ti ti-user-circle"></i>Profil
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ===== MODAL: NOUVELLE DEMANDE ===== -->
+<div class="modal-overlay" id="modal-new" onclick="closeModalOutside(event,'modal-new')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-inner">
+      <div class="modal-title">Nouvelle demande d'échange</div>
+      <div class="form-group">
+        <label class="form-label">Type d'équipement *</label>
+        <select class="form-control" id="eq-type">
+          <option value="">Sélectionner…</option>
+          <option>Veste d'intervention</option>
+          <option>Pantalon F1</option>
+          <option>Casque F2</option>
+          <option>Bottes de sécurité</option>
+          <option>Gants de manœuvre</option>
+          <option>Cagoule feu</option>
+          <option>Ceinturon</option>
+          <option>Autre équipement</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Motif de la demande *</label>
+        <select class="form-control">
+          <option value="">Sélectionner…</option>
+          <option>Échange de taille</option>
+          <option>Usure / Dégradation</option>
+          <option>Perte / Vol</option>
+          <option>Défaut de conformité</option>
+          <option>Sinistre opérationnel</option>
+          <option>Fin de vie réglementaire</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label">Taille actuelle</label>
+          <input class="form-control" placeholder="Ex: T.46">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Taille souhaitée</label>
+          <input class="form-control" placeholder="Ex: T.48">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Précisions (optionnel)</label>
+        <textarea class="form-control" rows="3" placeholder="Décrivez l'état de l'équipement, les circonstances…"></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitRequest()">
+        <i class="ti ti-send"></i>Envoyer la demande
+      </button>
+      <div style="height:8px"></div>
+      <button class="btn-secondary" onclick="closeModal('modal-new')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: DÉTAIL DEMANDE ===== -->
+<div class="modal-overlay" id="modal-detail" onclick="closeModalOutside(event,'modal-detail')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-inner">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div class="req-icon ri-boots" id="detail-icon"><i class="ti ti-boot"></i></div>
+        <div>
+          <div style="font-size:17px;font-weight:700" id="detail-title">Bottes de sécurité</div>
+          <div style="font-size:12px;color:var(--text2)">Demande #2024-0042</div>
+        </div>
+        <span class="badge badge-approved" id="detail-badge" style="margin-left:auto">Approuvé</span>
+      </div>
+      <div class="card">
+        <div class="info-grid">
+          <div class="info-item"><label>Équipement</label><span id="d-eq">Bottes</span></div>
+          <div class="info-item"><label>Motif</label><span id="d-motif">Usure</span></div>
+          <div class="info-item"><label>Taille actuelle</label><span id="d-from">P.43</span></div>
+          <div class="info-item"><label>Taille souhaitée</label><span id="d-to">P.43</span></div>
+        </div>
+      </div>
+      <div class="section-title" style="margin-bottom:14px">Suivi de la demande</div>
+      <div id="detail-timeline">
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot done"></div><div class="tl-connector"></div></div>
+          <div><div class="tl-title">Demande créée</div><div class="tl-time">10 mai · 08h32</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot done"></div><div class="tl-connector"></div></div>
+          <div><div class="tl-title">Validée par le chef de caserne</div><div class="tl-desc">Adj. Moreau — CS Nantes-Bellevue</div><div class="tl-time">10 mai · 14h15</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot done"></div><div class="tl-connector"></div></div>
+          <div><div class="tl-title">Approuvée par le SDIS 44</div><div class="tl-time">11 mai · 10h02</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-line"><div class="tl-dot done" style="background:var(--green)"></div></div>
+          <div><div class="tl-title" style="color:var(--green)">Disponible au retrait</div><div class="tl-desc">Magasin SDIS 44 — Saint-Herblain</div><div class="tl-time">13 mai</div></div>
+        </div>
+      </div>
+      <div style="height:8px"></div>
+      <button class="btn-secondary" onclick="closeModal('modal-detail')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: VALIDATION CHEF ===== -->
+<div class="modal-overlay" id="modal-chef" onclick="closeModalOutside(event,'modal-chef')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-inner">
+      <div class="modal-title">Valider la demande</div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700" id="chef-eq">Casque F2</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px" id="chef-sp">Martin Leclerc · Mat. 44-1247</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px" id="chef-motif">Remplacement après sinistre</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Commentaire (optionnel)</label>
+        <textarea class="form-control" rows="2" placeholder="Ajouter une observation…"></textarea>
+      </div>
+      <div class="action-row">
+        <button class="btn-approve" onclick="chefValidate(true)">
+          <i class="ti ti-check"></i>Valider
+        </button>
+        <button class="btn-reject" onclick="chefValidate(false)">
+          <i class="ti ti-x"></i>Refuser
+        </button>
+      </div>
+      <div style="height:8px"></div>
+      <button class="btn-secondary" onclick="closeModal('modal-chef')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+let currentRole = 'sp';
+
+const roleConfig = {
+  sp:   {badge:'SP',   sub:'Portail équipements',      name:'Martin Leclerc',      role:'Sapeur-Pompier Professionnel', grade:'CS Nantes-Bellevue · Mat. 44-1247'},
+  chef: {badge:'Chef', sub:'Validation des demandes',  name:'Adj. Sophie Moreau',  role:'Chef de Caserne',              grade:'CS Nantes-Bellevue · SDIS 44'},
+  sdis: {badge:'SDIS', sub:'Gestion des stocks',       name:'Gestionnaire Matériel',role:'Service Logistique SDIS 44',  grade:'Direction départementale'}
+};
+
+function switchRole(role, btn) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cfg = roleConfig[role];
+  document.getElementById('header-badge').textContent = cfg.badge;
+  document.getElementById('header-sub').textContent = cfg.sub;
+  document.getElementById('profile-name').textContent = cfg.name;
+  document.getElementById('profile-role').textContent = cfg.role;
+  document.getElementById('profile-grade').textContent = cfg.grade;
+  document.getElementById('view-sp-home').style.display   = role==='sp'   ? 'block' : 'none';
+  document.getElementById('view-chef-home').style.display = role==='chef' ? 'block' : 'none';
+  document.getElementById('view-sdis-home').style.display = role==='sdis' ? 'block' : 'none';
+  switchTab('home', document.querySelector('.tab'));
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  el.classList.add('active');
+}
+
+function openNewRequest(preset) {
+  if (preset) {
+    setTimeout(() => { document.getElementById('eq-type').value = preset; }, 50);
+  }
+  document.getElementById('modal-new').classList.add('open');
+}
+
+function openDetail(type) {
+  document.getElementById('modal-detail').classList.add('open');
+}
+
+function openChefValidation(eq, sp, motif) {
+  document.getElementById('chef-eq').textContent = eq;
+  document.getElementById('chef-sp').textContent = sp;
+  document.getElementById('chef-motif').textContent = motif;
+  document.getElementById('modal-chef').classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function closeModalOutside(e, id) {
+  if (e.target.id === id) closeModal(id);
+}
+
+function submitRequest() {
+  closeModal('modal-new');
+  showToast('Demande envoyée au chef de caserne ✓');
+}
+
+function chefValidate(approve) {
+  closeModal('modal-chef');
+  showToast(approve ? 'Demande validée et transmise au SDIS ✓' : 'Demande refusée — pompier notifié');
+}
+
+function filterHistory(btn, status) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.hist-item').forEach(r => {
+    const show = status === 'all' || r.dataset.status === status;
+    r.style.display = show ? 'flex' : 'none';
+  });
+}
+
+function filterCatalog(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('.catalog-item').forEach(item => {
+    item.style.display = (!q || item.dataset.name.includes(q)) ? 'flex' : 'none';
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
