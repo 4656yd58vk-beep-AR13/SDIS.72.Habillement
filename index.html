@@ -14,8 +14,6 @@
 html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 :root{--red:#C0392B;--red-dark:#922B21;--green:#059669;--green-light:#D1FAE5;--amber:#D97706;--amber-light:#FEF3C7;--blue:#2563EB;--blue-light:#DBEAFE;--purple:#7C3AED;--purple-light:#EDE9FE;--border:#E5E7EB;--text:#111827;--text2:#6B7280;--bg:#fff;--bg2:#F9FAFB;--radius:12px;--radius-sm:8px}
 .app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.08)}
-
-/* LOGIN */
 .login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%)}
 .login-logo{width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3)}
 .login-logo i{font-size:40px;color:#fff}
@@ -26,8 +24,6 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .login-card .form-control{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:16px;background:#fff;color:var(--text);font-family:inherit;-webkit-appearance:none;margin-bottom:14px;letter-spacing:0.05em}
 .login-card .form-control:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.1)}
 .login-error{font-size:13px;color:var(--red);margin-bottom:10px;display:none}
-
-/* HEADER */
 .header{background:var(--red);padding:env(safe-area-inset-top,14px) 16px 12px;padding-top:max(env(safe-area-inset-top),14px);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
 .header-logo{width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .header-logo i{color:#fff;font-size:20px}
@@ -37,8 +33,6 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .header-right{display:flex;align-items:center;gap:8px}
 .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
 .btn-logout{background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-
-/* SCREENS */
 .screen{flex:1;overflow-y:auto;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
 .screen.active{display:block}
 .section{padding:16px}
@@ -93,13 +87,6 @@ textarea.form-control{resize:none;line-height:1.5}
 .profile-grade{font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px}
 .progress-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-top:8px}
 .progress-fill{height:100%;border-radius:3px}
-.notif-row{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
-.notif-row:last-child{border-bottom:none}
-.notif-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
-.notif-dot.unread{background:var(--red)}
-.notif-dot.read{background:var(--border)}
-.notif-text{font-size:13px;color:var(--text);line-height:1.5}
-.notif-time{font-size:11px;color:var(--text2);margin-top:3px}
 .catalog-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
 .catalog-item:last-child{border-bottom:none}
 .catalog-emoji{width:50px;height:50px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
@@ -117,7 +104,6 @@ textarea.form-control{resize:none;line-height:1.5}
 .tl-connector{width:2px;flex:1;background:var(--border);margin-top:4px}
 .tl-title{font-size:13px;font-weight:600;color:var(--text)}
 .tl-desc{font-size:12px;color:var(--text2);margin-top:2px}
-.tl-time{font-size:11px;color:var(--text2);margin-top:2px}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
 .chip.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
@@ -144,7 +130,7 @@ textarea.form-control{resize:none;line-height:1.5}
 </head>
 <body>
 
-<!-- ===== ÉCRAN DE CONNEXION ===== -->
+<!-- LOGIN -->
 <div class="app" id="login-app">
   <div class="login-screen">
     <div class="login-logo"><i class="ti ti-shield-chevron"></i></div>
@@ -159,12 +145,12 @@ textarea.form-control{resize:none;line-height:1.5}
       </button>
     </div>
     <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.5)">
-      Test : 44-1247 (pompier) · 44-0210 (chef) · 44-0001 (gestionnaire)
+      Test : 44-1247 · 44-0210 · 44-0001
     </div>
   </div>
 </div>
 
-<!-- ===== APPLI PRINCIPALE ===== -->
+<!-- APPLI PRINCIPALE -->
 <div class="app" id="main-app" style="display:none">
   <div class="header">
     <div class="header-logo"><i class="ti ti-shield-chevron"></i></div>
@@ -174,13 +160,12 @@ textarea.form-control{resize:none;line-height:1.5}
     </div>
     <div class="header-right">
       <div class="header-badge" id="header-badge">—</div>
-      <button class="btn-logout" onclick="doLogout()" title="Déconnexion"><i class="ti ti-logout" style="font-size:16px"></i></button>
+      <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:16px"></i></button>
     </div>
   </div>
 
   <!-- ACCUEIL -->
   <div class="screen active" id="screen-home">
-    <!-- pompier -->
     <div id="view-pompier">
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total">—</div><div class="stat-label">Mes demandes</div></div>
@@ -193,7 +178,6 @@ textarea.form-control{resize:none;line-height:1.5}
         <button class="btn-primary" onclick="openNewRequest()"><i class="ti ti-plus"></i>Nouvelle demande d'échange</button>
       </div>
     </div>
-    <!-- chef -->
     <div id="view-chef" style="display:none">
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="s-valider">—</div><div class="stat-label">À valider</div></div>
@@ -204,7 +188,6 @@ textarea.form-control{resize:none;line-height:1.5}
         <div class="card" style="padding:0 14px" id="list-home-chef"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
     </div>
-    <!-- gestionnaire -->
     <div id="view-gestionnaire" style="display:none">
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total-sdis">—</div><div class="stat-label">Total demandes</div></div>
@@ -280,30 +263,20 @@ textarea.form-control{resize:none;line-height:1.5}
 <div class="modal-overlay" id="modal-new" onclick="closeOut(event,'modal-new')">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Nouvelle demande</div>
-    <div class="form-group">
-      <label class="form-label">Équipement *</label>
-      <select class="form-control" id="f-eq"><option value="">Sélectionner…</option></select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Motif *</label>
+    <div class="form-group"><label class="form-label">Équipement *</label><select class="form-control" id="f-eq"><option value="">Sélectionner…</option></select></div>
+    <div class="form-group"><label class="form-label">Motif *</label>
       <select class="form-control" id="f-motif">
         <option value="">Sélectionner…</option>
-        <option>Échange de taille</option>
-        <option>Usure / Dégradation</option>
-        <option>Perte / Vol</option>
-        <option>Défaut de conformité</option>
-        <option>Sinistre opérationnel</option>
-        <option>Fin de vie réglementaire</option>
+        <option>Échange de taille</option><option>Usure / Dégradation</option>
+        <option>Perte / Vol</option><option>Défaut de conformité</option>
+        <option>Sinistre opérationnel</option><option>Fin de vie réglementaire</option>
       </select>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="form-group"><label class="form-label">Taille actuelle</label><input class="form-control" id="f-from" placeholder="Ex: T.46"></div>
       <div class="form-group"><label class="form-label">Taille souhaitée</label><input class="form-control" id="f-to" placeholder="Ex: T.48"></div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Précisions</label>
-      <textarea class="form-control" id="f-note" rows="3" placeholder="État de l'équipement, circonstances…"></textarea>
-    </div>
+    <div class="form-group"><label class="form-label">Précisions</label><textarea class="form-control" id="f-note" rows="3" placeholder="État, circonstances…"></textarea></div>
     <button class="btn-primary" id="btn-send" onclick="submitRequest()"><i class="ti ti-send"></i>Envoyer la demande</button>
     <div style="height:8px"></div>
     <button class="btn-secondary" onclick="closeModal('modal-new')">Annuler</button>
@@ -340,10 +313,7 @@ textarea.form-control{resize:none;line-height:1.5}
       <div style="font-size:15px;font-weight:700" id="cv-eq">—</div>
       <div style="font-size:13px;color:var(--text2);margin-top:4px" id="cv-info">—</div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Commentaire (optionnel)</label>
-      <textarea class="form-control" id="cv-comment" rows="2" placeholder="Ajouter une observation…"></textarea>
-    </div>
+    <div class="form-group"><label class="form-label">Commentaire (optionnel)</label><textarea class="form-control" id="cv-comment" rows="2" placeholder="Ajouter une observation…"></textarea></div>
     <div class="action-row">
       <button class="btn-approve" onclick="chefValidate(true)"><i class="ti ti-check"></i>Valider</button>
       <button class="btn-reject" onclick="chefValidate(false)"><i class="ti ti-x"></i>Refuser</button>
@@ -357,47 +327,43 @@ textarea.form-control{resize:none;line-height:1.5}
 
 <script>
 const SUPABASE_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
-const SUPABASE_KEY = 'sb_secret_uBcils71a9YPg_TuLrEp0g_UZVAKXYi';
+const SUPABASE_KEY = 'sb_publishable_CGHt3zrb80U-qgynO4Sg4w_Cc66hsYb';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user = null;
-let allDemandes = [];
-let allEquipements = [];
-let currentDemandeId = null;
+let user = null, allDemandes = [], allEquipements = [], currentDemandeId = null;
 
-const roleLabels = {pompier:'Sapeur-Pompier',chef:'Chef de Caserne',gestionnaire:'Gestionnaire SDIS'};
-const roleBadges = {pompier:'SP',chef:'Chef',gestionnaire:'SDIS'};
-const roleSubs   = {pompier:'Portail équipements',chef:'Validation des demandes',gestionnaire:'Gestion des stocks'};
-
-const statutLabels = {
-  en_attente:    {label:'En attente',   cls:'badge-pending'},
-  valide_chef:   {label:'Validé chef',  cls:'badge-transit'},
-  approuve_sdis: {label:'Approuvé',     cls:'badge-approved'},
-  expedie:       {label:'Expédié',      cls:'badge-transit'},
-  refuse:        {label:'Refusé',       cls:'badge-rejected'}
+const roleLabels  = {pompier:'Sapeur-Pompier',chef:'Chef de Caserne',gestionnaire:'Gestionnaire SDIS'};
+const roleBadges  = {pompier:'SP',chef:'Chef',gestionnaire:'SDIS'};
+const roleSubs    = {pompier:'Portail équipements',chef:'Validation des demandes',gestionnaire:'Gestion des stocks'};
+const statutLabels= {
+  en_attente:    {label:'En attente',  cls:'badge-pending'},
+  valide_chef:   {label:'Validé chef', cls:'badge-transit'},
+  approuve_sdis: {label:'Approuvé',    cls:'badge-approved'},
+  expedie:       {label:'Expédié',     cls:'badge-transit'},
+  refuse:        {label:'Refusé',      cls:'badge-rejected'}
 };
-
-const equipIcons = {'Veste':{cls:'ri-jacket',i:'ti-shirt'},'Pantalon':{cls:'ri-pants',i:'ti-trouser'},'Bottes':{cls:'ri-boots',i:'ti-boot'},'Casque':{cls:'ri-helmet',i:'ti-hardhat'},'Gants':{cls:'ri-gloves',i:'ti-glove'}};
+const equipIcons = {
+  'Veste'   :{cls:'ri-jacket', i:'ti-shirt'},
+  'Pantalon':{cls:'ri-pants',  i:'ti-trouser'},
+  'Bottes'  :{cls:'ri-boots',  i:'ti-boot'},
+  'Casque'  :{cls:'ri-helmet', i:'ti-hardhat'},
+  'Gants'   :{cls:'ri-gloves', i:'ti-glove'}
+};
 function getIcon(nom=''){for(const[k,v]of Object.entries(equipIcons))if(nom.includes(k))return v;return{cls:'ri-default',i:'ti-package'}}
 function fmtDate(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}
 
-// LOGIN
 async function doLogin(){
-  const mat = document.getElementById('login-matricule').value.trim();
+  const mat=document.getElementById('login-matricule').value.trim();
   if(!mat)return;
   const btn=document.getElementById('btn-login');
   btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i>Connexion…';
   const {data,error}=await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
   btn.disabled=false;btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
-  if(error||!data){
-    document.getElementById('login-error').style.display='block';
-    return;
-  }
+  if(error||!data){document.getElementById('login-error').style.display='block';return;}
   document.getElementById('login-error').style.display='none';
   user=data;
   document.getElementById('login-app').style.display='none';
-  document.getElementById('main-app').style.display='flex';
-  document.getElementById('main-app').style.flexDirection='column';
+  document.getElementById('main-app').style.cssText='display:flex;flex-direction:column';
   initApp();
 }
 
@@ -409,18 +375,14 @@ function doLogout(){
 }
 
 async function initApp(){
-  // Header
   document.getElementById('header-badge').textContent=roleBadges[user.role]||'SP';
   document.getElementById('header-sub').textContent=roleSubs[user.role]||'';
-  // Profil
   document.getElementById('p-name').textContent=`${user.prenom} ${user.nom}`;
   document.getElementById('p-role').textContent=roleLabels[user.role]||user.role;
   document.getElementById('p-grade').textContent=`${user.caserne||''} · Mat. ${user.matricule}`;
-  // Vues
-  document.getElementById('view-pompier').style.display    = user.role==='pompier'      ?'block':'none';
-  document.getElementById('view-chef').style.display       = user.role==='chef'         ?'block':'none';
-  document.getElementById('view-gestionnaire').style.display= user.role==='gestionnaire'?'block':'none';
-
+  document.getElementById('view-pompier').style.display    =user.role==='pompier'      ?'block':'none';
+  document.getElementById('view-chef').style.display       =user.role==='chef'         ?'block':'none';
+  document.getElementById('view-gestionnaire').style.display=user.role==='gestionnaire'?'block':'none';
   await loadAll();
   subscribeRealtime();
 }
@@ -430,22 +392,15 @@ async function loadAll(){
     sb.from('demandes').select('*,equipements(nom,reference)').order('created_at',{ascending:false}),
     sb.from('equipements').select('*').order('nom')
   ]);
-  allDemandes   = d.data||[];
-  allEquipements= e.data||[];
-
-  // Sélect équipements
+  allDemandes=d.data||[];allEquipements=e.data||[];
   const sel=document.getElementById('f-eq');
   sel.innerHTML='<option value="">Sélectionner…</option>'+allEquipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
-
-  refreshHome();
-  refreshHistory();
-  refreshCatalog('');
-  refreshProfile();
+  refreshHome();refreshHistory();refreshCatalog('');refreshProfile();
 }
 
-function demandeRow(d, onclick){
+function demandeRow(d,onclick){
   const eq=d.equipements||{};
-  const {cls,i}=getIcon(eq.nom);
+  const{cls,i}=getIcon(eq.nom);
   const st=statutLabels[d.statut]||{label:d.statut,cls:'badge-pending'};
   return `<div class="req-row" onclick="${onclick}">
     <div class="req-icon ${cls}"><i class="ti ${i}"></i></div>
@@ -456,26 +411,22 @@ function demandeRow(d, onclick){
 
 function refreshHome(){
   if(user.role==='pompier'){
-    const mes=allDemandes;
-    document.getElementById('s-total').textContent=mes.length;
-    document.getElementById('s-retrait').textContent=mes.filter(d=>d.statut==='approuve_sdis').length;
+    document.getElementById('s-total').textContent=allDemandes.length;
+    document.getElementById('s-retrait').textContent=allDemandes.filter(d=>d.statut==='approuve_sdis').length;
     const el=document.getElementById('list-home-pompier');
-    el.innerHTML=mes.length?mes.slice(0,5).map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('')
-      :'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+    el.innerHTML=allDemandes.length?allDemandes.slice(0,5).map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
   }
   if(user.role==='chef'){
     const aVal=allDemandes.filter(d=>d.statut==='en_attente');
     document.getElementById('s-valider').textContent=aVal.length;
     document.getElementById('s-total-chef').textContent=allDemandes.length;
     const el=document.getElementById('list-home-chef');
-    el.innerHTML=aVal.length?aVal.map(d=>demandeRow(d,`openChefModal('${d.id}')`)).join('')
-      :'<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
+    el.innerHTML=aVal.length?aVal.map(d=>demandeRow(d,`openChefModal('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
   }
   if(user.role==='gestionnaire'){
     const aExp=allDemandes.filter(d=>d.statut==='valide_chef');
     document.getElementById('s-total-sdis').textContent=allDemandes.length;
     document.getElementById('s-expedier').textContent=aExp.length;
-    // Stocks
     const stockEl=document.getElementById('list-stocks');
     stockEl.innerHTML=allEquipements.length?allEquipements.map(e=>{
       const pct=e.stock>0?Math.min(100,Math.round(e.stock/(e.seuil_alerte*4)*100)):0;
@@ -487,7 +438,6 @@ function refreshHome(){
         <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div></div>
       </div>`;
     }).join(''):'<div class="empty"><i class="ti ti-package"></i><p>Aucun équipement</p></div>';
-    // À expédier
     const sdisEl=document.getElementById('list-home-sdis');
     sdisEl.innerHTML=aExp.length?aExp.map(d=>{
       const eq=d.equipements||{};const{cls,i}=getIcon(eq.nom);
@@ -502,8 +452,7 @@ function refreshHome(){
 
 function refreshHistory(){
   const el=document.getElementById('history-list');
-  el.innerHTML=allDemandes.length?allDemandes.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('')
-    :'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+  el.innerHTML=allDemandes.length?allDemandes.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
 }
 
 function refreshCatalog(q){
@@ -515,7 +464,7 @@ function refreshCatalog(q){
     const cls=e.stock===0?'stock-out':e.stock<=e.seuil_alerte?'stock-low':'stock-ok';
     const lbl=e.stock===0?'✕ Rupture':e.stock<=e.seuil_alerte?`⚠ ${e.stock} dispo. (bas)`:`✓ ${e.stock} disponibles`;
     const btn=e.stock===0
-      ?`<button class="btn-secondary" style="width:auto;padding:9px 12px;font-size:12px" onclick="toast('Alerte activée 🔔')">M\'alerter</button>`
+      ?`<button class="btn-secondary" style="width:auto;padding:9px 12px;font-size:12px" onclick="showToast('Alerte activée 🔔')">M\'alerter</button>`
       :`<button class="btn-primary" style="width:auto;padding:9px 12px;font-size:12px" onclick="openNewRequest('${e.id}')">Demander</button>`;
     return `<div class="catalog-item">
       <div class="catalog-emoji">${emoji}</div>
@@ -531,7 +480,6 @@ function refreshProfile(){
   document.getElementById('ps-attente').textContent=allDemandes.filter(d=>['en_attente','valide_chef'].includes(d.statut)).length;
 }
 
-// NOUVELLE DEMANDE
 function openNewRequest(eqId){
   if(eqId)setTimeout(()=>{document.getElementById('f-eq').value=eqId;},50);
   document.getElementById('modal-new').classList.add('open');
@@ -540,11 +488,11 @@ function openNewRequest(eqId){
 async function submitRequest(){
   const eqId=document.getElementById('f-eq').value;
   const motif=document.getElementById('f-motif').value;
-  if(!eqId||!motif){toast('Remplissez les champs obligatoires *');return;}
+  if(!eqId||!motif){showToast('Remplissez les champs obligatoires *');return;}
   const btn=document.getElementById('btn-send');
   btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i>Envoi…';
   const {error}=await sb.from('demandes').insert({
-    equipement_id:eqId, motif, utilisateur_id:user.id,
+    equipement_id:eqId,motif,utilisateur_id:user.id,
     taille_actuelle:document.getElementById('f-from').value,
     taille_souhaitee:document.getElementById('f-to').value,
     commentaire_chef:document.getElementById('f-note').value,
@@ -552,13 +500,12 @@ async function submitRequest(){
   });
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i>Envoyer la demande';
   closeModal('modal-new');
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Demande envoyée au chef de caserne ✓');
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('Demande envoyée au chef de caserne ✓');
   ['f-eq','f-motif','f-from','f-to','f-note'].forEach(id=>document.getElementById(id).value='');
   await loadAll();
 }
 
-// DÉTAIL
 function openDetail(id){
   const d=allDemandes.find(x=>x.id===id);if(!d)return;
   const eq=d.equipements||{};
@@ -574,30 +521,30 @@ function openDetail(id){
   document.getElementById('det-date').textContent=fmtDate(d.created_at);
   document.getElementById('det-from').textContent=d.taille_actuelle||'—';
   document.getElementById('det-to').textContent=d.taille_souhaitee||'—';
+  const refused=d.statut==='refuse';
   const steps=[
     {title:'Demande créée',done:true},
-    {title:'Validée par le chef',done:['valide_chef','approuve_sdis','expedie'].includes(d.statut),refused:d.statut==='refuse'},
-    {title:'Approuvée par le SDIS',done:['approuve_sdis','expedie'].includes(d.statut)},
-    {title:'Disponible au retrait',done:d.statut==='expedie',color:'var(--green)'}
-  ];
+    {title:refused?'Demande refusée':'Validée par le chef',done:['valide_chef','approuve_sdis','expedie','refuse'].includes(d.statut),color:refused?'#DC2626':null,desc:refused?d.commentaire_chef:''},
+    {title:'Approuvée par le SDIS',done:['approuve_sdis','expedie'].includes(d.statut),hidden:refused},
+    {title:'Disponible au retrait',done:d.statut==='expedie',color:'var(--green)',hidden:refused}
+  ].filter(s=>!s.hidden);
   document.getElementById('det-timeline').innerHTML=steps.map((s,idx)=>{
-    const dotCls=s.refused?'active':s.done?'done':'';
-    const col=s.refused?'#DC2626':s.color&&s.done?s.color:'';
+    const dotCls=s.done?(s.color?'active':'done'):'';
+    const col=s.color&&s.done?s.color:'';
     return `<div class="tl-item">
       <div class="tl-line"><div class="tl-dot ${dotCls}" style="${col?'background:'+col:''}"></div>${idx<steps.length-1?'<div class="tl-connector"></div>':''}</div>
-      <div><div class="tl-title" style="${col&&s.done?'color:'+col:''}">${s.refused&&idx===1?'Demande refusée':s.title}</div>${s.refused&&d.commentaire_chef?`<div class="tl-desc">${d.commentaire_chef}</div>`:''}</div>
+      <div><div class="tl-title" style="${col?'color:'+col:''}">${s.title}</div>${s.desc?`<div class="tl-desc">${s.desc}</div>`:''}</div>
     </div>`;
   }).join('');
   document.getElementById('modal-detail').classList.add('open');
 }
 
-// VALIDATION CHEF
 function openChefModal(id){
   currentDemandeId=id;
   const d=allDemandes.find(x=>x.id===id);if(!d)return;
   const eq=d.equipements||{};
   document.getElementById('cv-eq').textContent=eq.nom||'—';
-  document.getElementById('cv-info').textContent=`${d.motif||''}  ·  ${d.taille_actuelle||'?'} → ${d.taille_souhaitee||'?'}`;
+  document.getElementById('cv-info').textContent=`${d.motif||''} · ${d.taille_actuelle||'?'} → ${d.taille_souhaitee||'?'}`;
   document.getElementById('cv-comment').value='';
   document.getElementById('modal-chef').classList.add('open');
 }
@@ -610,31 +557,26 @@ async function chefValidate(approve){
     updated_at:new Date().toISOString()
   }).eq('id',currentDemandeId);
   closeModal('modal-chef');
-  if(error){toast('Erreur : '+error.message);return;}
-  toast(approve?'Validée et transmise au SDIS ✓':'Demande refusée — pompier notifié');
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast(approve?'Validée et transmise au SDIS ✓':'Demande refusée — pompier notifié');
   await loadAll();
 }
 
-// EXPÉDIER
 async function expedier(id){
   const{error}=await sb.from('demandes').update({statut:'expedie',updated_at:new Date().toISOString()}).eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Expédition confirmée ✓');
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('Expédition confirmée ✓');
   await loadAll();
 }
 
-// FILTRES
 function filterHistory(btn,statut){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
   const el=document.getElementById('history-list');
   const list=statut==='all'?allDemandes:allDemandes.filter(d=>d.statut===statut);
-  el.innerHTML=list.length?list.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('')
-    :'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+  el.innerHTML=list.length?list.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
 }
 function filterCatalog(q){refreshCatalog(q);}
-
-// NAVIGATION
 function switchTab(tab,el){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -643,21 +585,17 @@ function switchTab(tab,el){
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeOut(e,id){if(e.target.id===id)closeModal(id);}
-function toast(msg){
+function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
-
-// TEMPS RÉEL
 function subscribeRealtime(){
   sb.channel('sdis-changes')
     .on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async()=>{await loadAll();})
     .on('postgres_changes',{event:'*',schema:'public',table:'equipements'},async()=>{await loadAll();})
     .subscribe();
 }
-
-// Entrée clavier login
 document.getElementById('login-matricule').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 </script>
 </body>
