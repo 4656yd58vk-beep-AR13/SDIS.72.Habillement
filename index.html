@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SDIS EPI">
-<title>SDIS EPI — Gestion des équipements</title>
+<title>SDIS EPI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -14,16 +14,20 @@
 html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 :root{--red:#C0392B;--red-dark:#922B21;--green:#059669;--green-light:#D1FAE5;--amber:#D97706;--amber-light:#FEF3C7;--blue:#2563EB;--blue-light:#DBEAFE;--purple:#7C3AED;--purple-light:#EDE9FE;--border:#E5E7EB;--text:#111827;--text2:#6B7280;--bg:#fff;--bg2:#F9FAFB;--radius:12px;--radius-sm:8px}
 .app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.08)}
-.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%)}
-.login-logo{width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3)}
-.login-logo i{font-size:40px;color:#fff}
-.login-title{font-size:26px;font-weight:700;color:#fff;margin-bottom:6px}
-.login-sub{font-size:14px;color:rgba(255,255,255,0.75);margin-bottom:36px}
-.login-card{background:#fff;border-radius:var(--radius);padding:24px;width:100%;max-width:360px}
-.login-card .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block}
-.login-card .form-control{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:16px;background:#fff;color:var(--text);font-family:inherit;-webkit-appearance:none;margin-bottom:14px;letter-spacing:0.05em}
-.login-card .form-control:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.1)}
-.login-error{font-size:13px;color:var(--red);margin-bottom:10px;display:none}
+
+/* AUTH SCREENS */
+.auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%)}
+.auth-logo{width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3)}
+.auth-logo i{font-size:40px;color:#fff}
+.auth-title{font-size:26px;font-weight:700;color:#fff;margin-bottom:6px;text-align:center}
+.auth-sub{font-size:14px;color:rgba(255,255,255,0.75);margin-bottom:32px;text-align:center}
+.auth-card{background:#fff;border-radius:var(--radius);padding:24px;width:100%;max-width:360px}
+.auth-card-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px}
+.auth-card-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.error-msg{font-size:13px;color:var(--red);margin-bottom:12px;display:none;background:#FEE2E2;padding:10px 12px;border-radius:var(--radius-sm)}
+.success-msg{font-size:13px;color:var(--green);margin-bottom:12px;display:none;background:var(--green-light);padding:10px 12px;border-radius:var(--radius-sm)}
+
+/* HEADER */
 .header{background:var(--red);padding:env(safe-area-inset-top,14px) 16px 12px;padding-top:max(env(safe-area-inset-top),14px);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
 .header-logo{width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .header-logo i{color:#fff;font-size:20px}
@@ -32,7 +36,9 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .header-sub{color:rgba(255,255,255,0.8);font-size:12px;margin-top:1px}
 .header-right{display:flex;align-items:center;gap:8px}
 .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px}
-.btn-logout{background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn-icon{background:rgba(255,255,255,0.15);border:none;color:#fff;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+
+/* SCREENS */
 .screen{flex:1;overflow-y:auto;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
 .screen.active{display:block}
 .section{padding:16px}
@@ -65,12 +71,14 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .req-date{font-size:11px;color:var(--text2);margin-top:4px}
 .btn-primary{background:var(--red);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.15s;font-family:inherit}
 .btn-primary:active{opacity:0.8}
-.btn-primary:disabled{opacity:0.6}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
 .btn-secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 20px;font-size:14px;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+.btn-green{background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:14px 20px;font-size:14px;font-weight:600;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
 .btn-approve{flex:1;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:13px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit}
 .btn-reject{flex:1;background:#fff;color:#DC2626;border:1px solid #DC2626;border-radius:var(--radius-sm);padding:13px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit}
 .form-group{margin-bottom:14px}
 .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block}
+.form-hint{font-size:11px;color:var(--text2);margin-top:4px}
 .form-control{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:#fff;color:var(--text);font-family:inherit;-webkit-appearance:none;appearance:none}
 .form-control:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,0.1)}
 select.form-control{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
@@ -100,19 +108,21 @@ textarea.form-control{resize:none;line-height:1.5}
 .tl-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
 .tl-dot{width:12px;height:12px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:2px}
 .tl-dot.done{background:var(--green)}
-.tl-dot.active{background:var(--red)}
+.tl-dot.ko{background:#DC2626}
+.tl-dot.current{background:var(--red)}
 .tl-connector{width:2px;flex:1;background:var(--border);margin-top:4px}
 .tl-title{font-size:13px;font-weight:600;color:var(--text)}
 .tl-desc{font-size:12px;color:var(--text2);margin-top:2px}
-.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-.chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap}
 .chip.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:0 16px env(safe-area-inset-bottom,24px);width:100%;max-width:430px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .modal-inner{padding:20px 0}
 .modal-handle{width:40px;height:5px;background:var(--border);border-radius:3px;margin:14px auto 0}
-.modal-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:18px}
+.modal-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
 .action-row{display:flex;gap:10px;margin-top:6px}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .info-item label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:3px}
@@ -124,33 +134,71 @@ textarea.form-control{resize:none;line-height:1.5}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:40px 20px;color:var(--text2)}
 .empty i{font-size:44px;margin-bottom:10px;display:block;opacity:0.3}
-.stock-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.stock-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
 .stock-row:last-child{border-bottom:none}
+.stock-stepper{display:flex;align-items:center;gap:8px}
+.stepper-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:600;color:var(--text)}
+.stepper-val{font-size:16px;font-weight:700;min-width:36px;text-align:center;color:var(--text)}
+.members-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.members-row:last-child{border-bottom:none}
+.role-pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.role-pill.sp{background:#FEE2E2;color:var(--red)}
+.role-pill.responsable_caserne{background:var(--amber-light);color:#92400E}
+.role-pill.habillement{background:var(--blue-light);color:var(--blue)}
+.pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all 0.3s}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="app" id="login-app">
-  <div class="login-screen">
-    <div class="login-logo"><i class="ti ti-shield-chevron"></i></div>
-    <div class="login-title">SDIS EPI</div>
-    <div class="login-sub">Gestion des échanges d'équipements</div>
-    <div class="login-card">
-      <label class="form-label">Matricule</label>
-      <input class="form-control" id="login-matricule" placeholder="Ex: 44-1247" autocomplete="off" autocorrect="off" spellcheck="false">
-      <div class="login-error" id="login-error">Matricule introuvable. Vérifiez et réessayez.</div>
-      <button class="btn-primary" id="btn-login" onclick="doLogin()">
-        <i class="ti ti-login"></i>Se connecter
-      </button>
-    </div>
-    <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.5)">
-      Test : 44-1247 · 44-0210 · 44-0001
+<!-- ===== LOGIN ===== -->
+<div class="app" id="screen-login">
+  <div class="auth-screen">
+    <div class="auth-logo"><i class="ti ti-shield-chevron"></i></div>
+    <div class="auth-title">SDIS EPI</div>
+    <div class="auth-sub">Gestion des échanges d'équipements</div>
+    <div class="auth-card">
+      <div class="auth-card-title">Connexion</div>
+      <div class="auth-card-sub">Entrez votre matricule</div>
+      <div class="error-msg" id="login-error">Matricule ou mot de passe incorrect.</div>
+      <div class="form-group">
+        <label class="form-label">Matricule</label>
+        <input class="form-control" id="l-mat" placeholder="Ex: 44-1247" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px">
+      </div>
+      <div class="form-group" id="pw-group" style="display:none">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-control" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px">
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i>Continuer</button>
     </div>
   </div>
 </div>
 
-<!-- APPLI PRINCIPALE -->
+<!-- ===== PREMIÈRE CONNEXION : CRÉER MOT DE PASSE ===== -->
+<div class="app" id="screen-newpw" style="display:none">
+  <div class="auth-screen">
+    <div class="auth-logo"><i class="ti ti-lock"></i></div>
+    <div class="auth-title">Bienvenue !</div>
+    <div class="auth-sub">Créez votre mot de passe personnel</div>
+    <div class="auth-card">
+      <div class="auth-card-title">Nouveau mot de passe</div>
+      <div class="auth-card-sub">Choisissez un mot de passe sécurisé (min. 6 caractères)</div>
+      <div class="error-msg" id="newpw-error">Les mots de passe ne correspondent pas.</div>
+      <div class="form-group">
+        <label class="form-label">Nouveau mot de passe</label>
+        <input class="form-control" id="np-pw1" type="password" placeholder="Minimum 6 caractères" oninput="checkPwStrength(this.value)" style="font-size:16px">
+        <div class="pw-strength" id="pw-strength" style="background:var(--border);width:0%"></div>
+        <div class="form-hint" id="pw-hint">Entrez votre mot de passe</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <input class="form-control" id="np-pw2" type="password" placeholder="Répétez le mot de passe" style="font-size:16px">
+      </div>
+      <button class="btn-primary" id="btn-newpw" onclick="saveNewPassword()"><i class="ti ti-check"></i>Enregistrer mon mot de passe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APPLI PRINCIPALE ===== -->
 <div class="app" id="main-app" style="display:none">
   <div class="header">
     <div class="header-logo"><i class="ti ti-shield-chevron"></i></div>
@@ -160,37 +208,40 @@ textarea.form-control{resize:none;line-height:1.5}
     </div>
     <div class="header-right">
       <div class="header-badge" id="header-badge">—</div>
-      <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:16px"></i></button>
+      <button class="btn-icon" onclick="doLogout()" title="Déconnexion"><i class="ti ti-logout" style="font-size:16px"></i></button>
     </div>
   </div>
 
   <!-- ACCUEIL -->
   <div class="screen active" id="screen-home">
-    <div id="view-pompier">
+    <!-- SP -->
+    <div id="view-sp">
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total">—</div><div class="stat-label">Mes demandes</div></div>
         <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-retrait">—</div><div class="stat-label">À retirer</div></div>
       </div>
       <div class="section">
         <div class="section-title">Dernières demandes</div>
-        <div class="card" style="padding:0 14px" id="list-home-pompier"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+        <div class="card" style="padding:0 14px" id="list-home-sp"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
         <div style="height:12px"></div>
         <button class="btn-primary" onclick="openNewRequest()"><i class="ti ti-plus"></i>Nouvelle demande d'échange</button>
       </div>
     </div>
-    <div id="view-chef" style="display:none">
+    <!-- RESPONSABLE CASERNE -->
+    <div id="view-responsable" style="display:none">
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="s-valider">—</div><div class="stat-label">À valider</div></div>
-        <div class="stat-card"><div class="stat-num" id="s-total-chef">—</div><div class="stat-label">Ce mois-ci</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-total-resp">—</div><div class="stat-label">Ce mois-ci</div></div>
       </div>
       <div class="section">
-        <div class="section-title">À traiter</div>
-        <div class="card" style="padding:0 14px" id="list-home-chef"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+        <div class="section-title">Demandes à traiter</div>
+        <div class="card" style="padding:0 14px" id="list-home-resp"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
     </div>
-    <div id="view-gestionnaire" style="display:none">
+    <!-- HABILLEMENT -->
+    <div id="view-habillement" style="display:none">
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total-sdis">—</div><div class="stat-label">Total demandes</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total-hab">—</div><div class="stat-label">Total demandes</div></div>
         <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-expedier">—</div><div class="stat-label">À expédier</div></div>
       </div>
       <div class="section">
@@ -198,56 +249,63 @@ textarea.form-control{resize:none;line-height:1.5}
         <div class="card" id="list-stocks"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
       <div class="section" style="padding-top:0">
-        <div class="section-title">À expédier</div>
-        <div class="card" style="padding:0 14px" id="list-home-sdis"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+        <div class="section-title">Validées — à expédier</div>
+        <div class="card" style="padding:0 14px" id="list-home-hab"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
     </div>
   </div>
 
-  <!-- HISTORIQUE -->
+  <!-- DEMANDES / HISTORIQUE -->
   <div class="screen" id="screen-history">
     <div class="section">
       <div class="chip-row">
         <button class="chip active" onclick="filterHistory(this,'all')">Toutes</button>
         <button class="chip" onclick="filterHistory(this,'en_attente')">En attente</button>
-        <button class="chip" onclick="filterHistory(this,'valide_chef')">Validées chef</button>
-        <button class="chip" onclick="filterHistory(this,'approuve_sdis')">Approuvées</button>
+        <button class="chip" onclick="filterHistory(this,'valide_responsable')">Validées</button>
+        <button class="chip" onclick="filterHistory(this,'approuve_habillement')">Approuvées</button>
         <button class="chip" onclick="filterHistory(this,'refuse')">Refusées</button>
       </div>
       <div id="history-list"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
     </div>
   </div>
 
-  <!-- CATALOGUE -->
+  <!-- CATALOGUE / STOCK -->
   <div class="screen" id="screen-catalog">
     <div class="section">
-      <input type="search" class="form-control" placeholder="🔍 Rechercher…" oninput="filterCatalog(this.value)" style="margin-bottom:14px">
+      <input type="search" class="form-control" placeholder="🔍 Rechercher un équipement…" oninput="filterCatalog(this.value)" style="margin-bottom:14px">
       <div id="catalog-list"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
     </div>
   </div>
 
-  <!-- PROFIL -->
+  <!-- PROFIL / PARAMÈTRES -->
   <div class="screen" id="screen-profile">
     <div class="profile-header">
       <div class="avatar"><i class="ti ti-user"></i></div>
-      <div class="profile-name" id="p-name">—</div>
+      <div class="profile-name" id="p-mat">—</div>
       <div class="profile-role" id="p-role">—</div>
-      <div class="profile-grade" id="p-grade">—</div>
+      <div class="profile-grade" id="p-caserne">—</div>
     </div>
     <div class="section">
-      <div class="section-title">Mes statistiques</div>
+      <div class="section-title">Statistiques</div>
       <div class="card">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
           <div><div style="font-size:22px;font-weight:700" id="ps-total">—</div><div style="font-size:11px;color:var(--text2)">Total</div></div>
           <div><div style="font-size:22px;font-weight:700;color:var(--green)" id="ps-ok">—</div><div style="font-size:11px;color:var(--text2)">Approuvées</div></div>
-          <div><div style="font-size:22px;font-weight:700;color:var(--amber)" id="ps-attente">—</div><div style="font-size:11px;color:var(--text2)">En cours</div></div>
+          <div><div style="font-size:22px;font-weight:700;color:var(--amber)" id="ps-encours">—</div><div style="font-size:11px;color:var(--text2)">En cours</div></div>
         </div>
       </div>
     </div>
-    <div class="section" style="padding-top:0">
-      <button class="btn-primary" onclick="openNewRequest()"><i class="ti ti-plus"></i>Nouvelle demande</button>
+    <!-- Gestion membres — visible habillement uniquement -->
+    <div class="section" style="padding-top:0" id="section-membres" style="display:none">
+      <div class="section-title">Membres enregistrés</div>
+      <div class="card" style="padding:0 14px" id="list-membres"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       <div style="height:10px"></div>
-      <button class="btn-secondary" onclick="doLogout()"><i class="ti ti-logout"></i>Se déconnecter</button>
+      <button class="btn-green" onclick="openAddMembre()"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
+    </div>
+    <div class="section" style="padding-top:0">
+      <button class="btn-secondary" onclick="openChangePw()"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
+      <div style="height:10px"></div>
+      <button class="btn-secondary" style="color:#DC2626;border-color:#DC2626" onclick="doLogout()"><i class="ti ti-logout"></i>Se déconnecter</button>
     </div>
   </div>
 
@@ -263,6 +321,7 @@ textarea.form-control{resize:none;line-height:1.5}
 <div class="modal-overlay" id="modal-new" onclick="closeOut(event,'modal-new')">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Nouvelle demande</div>
+    <div class="modal-sub">Remplissez les champs obligatoires *</div>
     <div class="form-group"><label class="form-label">Équipement *</label><select class="form-control" id="f-eq"><option value="">Sélectionner…</option></select></div>
     <div class="form-group"><label class="form-label">Motif *</label>
       <select class="form-control" id="f-motif">
@@ -305,21 +364,83 @@ textarea.form-control{resize:none;line-height:1.5}
   </div></div>
 </div>
 
-<!-- MODAL VALIDATION CHEF -->
-<div class="modal-overlay" id="modal-chef" onclick="closeOut(event,'modal-chef')">
+<!-- MODAL VALIDATION RESPONSABLE -->
+<div class="modal-overlay" id="modal-resp" onclick="closeOut(event,'modal-resp')">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Valider la demande</div>
     <div class="card" style="margin-bottom:16px">
-      <div style="font-size:15px;font-weight:700" id="cv-eq">—</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px" id="cv-info">—</div>
+      <div style="font-size:15px;font-weight:700" id="rv-eq">—</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px" id="rv-info">—</div>
     </div>
-    <div class="form-group"><label class="form-label">Commentaire (optionnel)</label><textarea class="form-control" id="cv-comment" rows="2" placeholder="Ajouter une observation…"></textarea></div>
+    <div class="form-group"><label class="form-label">Commentaire (optionnel)</label><textarea class="form-control" id="rv-comment" rows="2" placeholder="Ajouter une observation…"></textarea></div>
     <div class="action-row">
-      <button class="btn-approve" onclick="chefValidate(true)"><i class="ti ti-check"></i>Valider</button>
-      <button class="btn-reject" onclick="chefValidate(false)"><i class="ti ti-x"></i>Refuser</button>
+      <button class="btn-approve" onclick="respValidate(true)"><i class="ti ti-check"></i>Valider</button>
+      <button class="btn-reject" onclick="respValidate(false)"><i class="ti ti-x"></i>Refuser</button>
     </div>
     <div style="height:8px"></div>
-    <button class="btn-secondary" onclick="closeModal('modal-chef')">Annuler</button>
+    <button class="btn-secondary" onclick="closeModal('modal-resp')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL AJUSTER STOCK -->
+<div class="modal-overlay" id="modal-stock" onclick="closeOut(event,'modal-stock')">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Ajuster le stock</div>
+    <div class="modal-sub" id="stock-eq-name">—</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0">
+      <div style="font-size:13px;color:var(--text2)">Quantité en stock</div>
+      <div class="stock-stepper">
+        <button class="stepper-btn" onclick="adjustStock(-10)">−10</button>
+        <button class="stepper-btn" onclick="adjustStock(-1)">−</button>
+        <div class="stepper-val" id="stock-val">0</div>
+        <button class="stepper-btn" onclick="adjustStock(1)">+</button>
+        <button class="stepper-btn" onclick="adjustStock(10)">+10</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2)" id="stock-seuil">Seuil d'alerte : —</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Seuil d'alerte stock bas</label>
+      <input class="form-control" type="number" id="stock-seuil-input" placeholder="Ex: 10" min="0">
+    </div>
+    <button class="btn-primary" onclick="saveStock()"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+    <div style="height:8px"></div>
+    <button class="btn-secondary" onclick="closeModal('modal-stock')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL AJOUTER MEMBRE -->
+<div class="modal-overlay" id="modal-membre" onclick="closeOut(event,'modal-membre')">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Ajouter un membre</div>
+    <div class="modal-sub">Le membre recevra le mot de passe provisoire matricule×2026</div>
+    <div class="error-msg" id="membre-error">Ce matricule existe déjà.</div>
+    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-control" id="m-mat" placeholder="Ex: 44-1248" autocorrect="off"></div>
+    <div class="form-group"><label class="form-label">Rôle *</label>
+      <select class="form-control" id="m-role">
+        <option value="">Sélectionner…</option>
+        <option value="sp">Sapeur-Pompier (SP)</option>
+        <option value="responsable_caserne">Responsable habillement caserne</option>
+        <option value="habillement">Agent habillement SDIS</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Caserne</label><input class="form-control" id="m-caserne" placeholder="Ex: CS Nantes-Bellevue"></div>
+    <button class="btn-primary" id="btn-add-membre" onclick="saveMembre()"><i class="ti ti-user-plus"></i>Ajouter</button>
+    <div style="height:8px"></div>
+    <button class="btn-secondary" onclick="closeModal('modal-membre')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL CHANGER MOT DE PASSE -->
+<div class="modal-overlay" id="modal-changepw" onclick="closeOut(event,'modal-changepw')">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Changer mon mot de passe</div>
+    <div class="error-msg" id="cpw-error">Mot de passe actuel incorrect.</div>
+    <div class="form-group"><label class="form-label">Mot de passe actuel</label><input class="form-control" id="cpw-old" type="password" placeholder="Votre mot de passe actuel"></div>
+    <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input class="form-control" id="cpw-new1" type="password" placeholder="Minimum 6 caractères"></div>
+    <div class="form-group"><label class="form-label">Confirmer</label><input class="form-control" id="cpw-new2" type="password" placeholder="Répétez le nouveau mot de passe"></div>
+    <button class="btn-primary" onclick="saveChangePw()"><i class="ti ti-lock"></i>Mettre à jour</button>
+    <div style="height:8px"></div>
+    <button class="btn-secondary" onclick="closeModal('modal-changepw')">Annuler</button>
   </div></div>
 </div>
 
@@ -330,75 +451,159 @@ const SUPABASE_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_CGHt3zrb80U-qgynO4Sg4w_Cc66hsYb';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let user = null, allDemandes = [], allEquipements = [], currentDemandeId = null;
+let user = null, allDemandes = [], allEquipements = [], allMembres = [];
+let currentDemandeId = null, currentEqId = null, currentEqStock = 0;
 
-const roleLabels  = {pompier:'Sapeur-Pompier',chef:'Chef de Caserne',gestionnaire:'Gestionnaire SDIS'};
-const roleBadges  = {pompier:'SP',chef:'Chef',gestionnaire:'SDIS'};
-const roleSubs    = {pompier:'Portail équipements',chef:'Validation des demandes',gestionnaire:'Gestion des stocks'};
-const statutLabels= {
-  en_attente:    {label:'En attente',  cls:'badge-pending'},
-  valide_chef:   {label:'Validé chef', cls:'badge-transit'},
-  approuve_sdis: {label:'Approuvé',    cls:'badge-approved'},
-  expedie:       {label:'Expédié',     cls:'badge-transit'},
-  refuse:        {label:'Refusé',      cls:'badge-rejected'}
+const roleLabels = {sp:'Sapeur-Pompier',responsable_caserne:'Responsable habillement caserne',habillement:'Agent habillement SDIS'};
+const roleBadges = {sp:'SP',responsable_caserne:'Resp.',habillement:'Hab.'};
+const roleSubs   = {sp:'Portail équipements',responsable_caserne:'Validation des demandes',habillement:'Gestion des stocks'};
+const statutLabels = {
+  en_attente:           {label:'En attente',    cls:'badge-pending'},
+  valide_responsable:   {label:'Validé',        cls:'badge-transit'},
+  approuve_habillement: {label:'Approuvé',      cls:'badge-approved'},
+  expedie:              {label:'Expédié',        cls:'badge-transit'},
+  refuse:               {label:'Refusé',         cls:'badge-rejected'}
 };
-const equipIcons = {
-  'Veste'   :{cls:'ri-jacket', i:'ti-shirt'},
-  'Pantalon':{cls:'ri-pants',  i:'ti-trouser'},
-  'Bottes'  :{cls:'ri-boots',  i:'ti-boot'},
-  'Casque'  :{cls:'ri-helmet', i:'ti-hardhat'},
-  'Gants'   :{cls:'ri-gloves', i:'ti-glove'}
-};
+const equipIcons = {'Veste':{cls:'ri-jacket',i:'ti-shirt'},'Pantalon':{cls:'ri-pants',i:'ti-trouser'},'Bottes':{cls:'ri-boots',i:'ti-boot'},'Casque':{cls:'ri-helmet',i:'ti-hardhat'},'Gants':{cls:'ri-gloves',i:'ti-glove'}};
 function getIcon(nom=''){for(const[k,v]of Object.entries(equipIcons))if(nom.includes(k))return v;return{cls:'ri-default',i:'ti-package'}}
 function fmtDate(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}
+function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0;}return h.toString(36)}
+function defaultPw(mat){return mat+'2026'}
 
+/* ===== AUTH ===== */
 async function doLogin(){
-  const mat=document.getElementById('login-matricule').value.trim();
-  if(!mat)return;
-  const btn=document.getElementById('btn-login');
-  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i>Connexion…';
-  const {data,error}=await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
+  const mat = document.getElementById('l-mat').value.trim();
+  if(!mat) return;
+  const pwGroup = document.getElementById('pw-group');
+  const btn = document.getElementById('btn-login');
+
+  // Étape 1 : vérifier si le matricule existe
+  if(pwGroup.style.display === 'none'){
+    btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Vérification…';
+    const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Continuer';
+    if(error||!data){
+      document.getElementById('login-error').style.display='block';
+      document.getElementById('login-error').textContent='Matricule introuvable.';
+      return;
+    }
+    document.getElementById('login-error').style.display='none';
+    pwGroup.style.display='block';
+    document.getElementById('l-pw').focus();
+    btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
+    return;
+  }
+
+  // Étape 2 : vérifier le mot de passe
+  const pw = document.getElementById('l-pw').value;
+  if(!pw){document.getElementById('l-pw').focus();return;}
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Connexion…';
+  const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
   if(error||!data){document.getElementById('login-error').style.display='block';return;}
+
+  // Première connexion : vérifier mot de passe provisoire
+  if(data.premiere_connexion){
+    if(pw !== defaultPw(mat)){
+      document.getElementById('login-error').style.display='block';
+      document.getElementById('login-error').textContent='Mot de passe provisoire incorrect. Utilisez : matricule + 2026';
+      return;
+    }
+    user = data;
+    showScreen('screen-newpw');
+    return;
+  }
+
+  // Connexion normale
+  if(hashPw(pw) !== data.mot_de_passe){
+    document.getElementById('login-error').style.display='block';
+    document.getElementById('login-error').textContent='Mot de passe incorrect.';
+    return;
+  }
+  user = data;
   document.getElementById('login-error').style.display='none';
-  user=data;
-  document.getElementById('login-app').style.display='none';
-  document.getElementById('main-app').style.cssText='display:flex;flex-direction:column';
+  showScreen('main-app');
   initApp();
 }
 
-function doLogout(){
-  user=null;allDemandes=[];allEquipements=[];
-  document.getElementById('main-app').style.display='none';
-  document.getElementById('login-app').style.display='flex';
-  document.getElementById('login-matricule').value='';
+async function saveNewPassword(){
+  const pw1 = document.getElementById('np-pw1').value;
+  const pw2 = document.getElementById('np-pw2').value;
+  if(pw1.length < 6){document.getElementById('newpw-error').style.display='block';document.getElementById('newpw-error').textContent='Le mot de passe doit faire au moins 6 caractères.';return;}
+  if(pw1 !== pw2){document.getElementById('newpw-error').style.display='block';document.getElementById('newpw-error').textContent='Les mots de passe ne correspondent pas.';return;}
+  const btn = document.getElementById('btn-newpw');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Enregistrement…';
+  const {error} = await sb.from('utilisateurs').update({mot_de_passe:hashPw(pw1),premiere_connexion:false}).eq('id',user.id);
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i>Enregistrer mon mot de passe';
+  if(error){showToast('Erreur : '+error.message);return;}
+  user.premiere_connexion=false; user.mot_de_passe=hashPw(pw1);
+  showToast('Mot de passe créé avec succès ✓');
+  showScreen('main-app');
+  initApp();
 }
 
+function checkPwStrength(pw){
+  const bar = document.getElementById('pw-strength');
+  const hint = document.getElementById('pw-hint');
+  if(pw.length===0){bar.style.width='0%';bar.style.background='var(--border)';hint.textContent='Entrez votre mot de passe';return;}
+  let score=0;
+  if(pw.length>=6)score++;if(pw.length>=10)score++;
+  if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;if(/[^a-zA-Z0-9]/.test(pw))score++;
+  const levels=[{w:'20%',c:'#DC2626',t:'Trop court'},{w:'40%',c:'#DC2626',t:'Faible'},{w:'60%',c:var_amber,t:'Moyen'},{w:'80%',c:var_amber,t:'Bon'},{w:'100%',c:'var(--green)',t:'Excellent'}];
+  const l=levels[Math.min(score,4)];
+  bar.style.width=l.w;bar.style.background=l.c;hint.textContent=l.t;
+}
+const var_amber='var(--amber)';
+
+function doLogout(){
+  user=null;allDemandes=[];allEquipements=[];allMembres=[];
+  document.getElementById('l-mat').value='';
+  document.getElementById('l-pw').value='';
+  document.getElementById('pw-group').style.display='none';
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('btn-login').innerHTML='<i class="ti ti-login"></i>Continuer';
+  showScreen('screen-login');
+}
+
+function showScreen(id){
+  ['screen-login','screen-newpw','main-app'].forEach(s=>{
+    document.getElementById(s).style.display = s===id ? (s==='main-app'?'flex':'flex') : 'none';
+    if(s==='main-app') document.getElementById(s).style.flexDirection='column';
+  });
+}
+
+/* ===== INIT ===== */
 async function initApp(){
-  document.getElementById('header-badge').textContent=roleBadges[user.role]||'SP';
-  document.getElementById('header-sub').textContent=roleSubs[user.role]||'';
-  document.getElementById('p-name').textContent=`${user.prenom} ${user.nom}`;
-  document.getElementById('p-role').textContent=roleLabels[user.role]||user.role;
-  document.getElementById('p-grade').textContent=`${user.caserne||''} · Mat. ${user.matricule}`;
-  document.getElementById('view-pompier').style.display    =user.role==='pompier'      ?'block':'none';
-  document.getElementById('view-chef').style.display       =user.role==='chef'         ?'block':'none';
-  document.getElementById('view-gestionnaire').style.display=user.role==='gestionnaire'?'block':'none';
+  document.getElementById('header-badge').textContent = roleBadges[user.role]||'SP';
+  document.getElementById('header-sub').textContent   = roleSubs[user.role]||'';
+  document.getElementById('p-mat').textContent        = `Mat. ${user.matricule}`;
+  document.getElementById('p-role').textContent       = roleLabels[user.role]||user.role;
+  document.getElementById('p-caserne').textContent    = user.caserne||'';
+  document.getElementById('view-sp').style.display          = user.role==='sp'                  ?'block':'none';
+  document.getElementById('view-responsable').style.display = user.role==='responsable_caserne' ?'block':'none';
+  document.getElementById('view-habillement').style.display = user.role==='habillement'         ?'block':'none';
+  const secMembres = document.getElementById('section-membres');
+  secMembres.style.display = user.role==='habillement'?'block':'none';
   await loadAll();
   subscribeRealtime();
 }
 
 async function loadAll(){
-  const [d,e]=await Promise.all([
+  const [d,e,m] = await Promise.all([
     sb.from('demandes').select('*,equipements(nom,reference)').order('created_at',{ascending:false}),
-    sb.from('equipements').select('*').order('nom')
+    sb.from('equipements').select('*').order('nom'),
+    sb.from('utilisateurs').select('*').order('matricule')
   ]);
-  allDemandes=d.data||[];allEquipements=e.data||[];
-  const sel=document.getElementById('f-eq');
-  sel.innerHTML='<option value="">Sélectionner…</option>'+allEquipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
-  refreshHome();refreshHistory();refreshCatalog('');refreshProfile();
+  allDemandes    = d.data||[];
+  allEquipements = e.data||[];
+  allMembres     = m.data||[];
+  const sel = document.getElementById('f-eq');
+  sel.innerHTML = '<option value="">Sélectionner…</option>'+allEquipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
+  refreshHome(); refreshHistory(); refreshCatalog(''); refreshProfile();
 }
 
-function demandeRow(d,onclick){
+/* ===== RENDER ===== */
+function demandeRow(d, onclick){
   const eq=d.equipements||{};
   const{cls,i}=getIcon(eq.nom);
   const st=statutLabels[d.statut]||{label:d.statut,cls:'badge-pending'};
@@ -410,127 +615,145 @@ function demandeRow(d,onclick){
 }
 
 function refreshHome(){
-  if(user.role==='pompier'){
-    document.getElementById('s-total').textContent=allDemandes.length;
-    document.getElementById('s-retrait').textContent=allDemandes.filter(d=>d.statut==='approuve_sdis').length;
-    const el=document.getElementById('list-home-pompier');
-    el.innerHTML=allDemandes.length?allDemandes.slice(0,5).map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+  if(user.role==='sp'){
+    document.getElementById('s-total').textContent   = allDemandes.length;
+    document.getElementById('s-retrait').textContent = allDemandes.filter(d=>d.statut==='approuve_habillement').length;
+    const el = document.getElementById('list-home-sp');
+    el.innerHTML = allDemandes.length ? allDemandes.slice(0,5).map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
   }
-  if(user.role==='chef'){
-    const aVal=allDemandes.filter(d=>d.statut==='en_attente');
-    document.getElementById('s-valider').textContent=aVal.length;
-    document.getElementById('s-total-chef').textContent=allDemandes.length;
-    const el=document.getElementById('list-home-chef');
-    el.innerHTML=aVal.length?aVal.map(d=>demandeRow(d,`openChefModal('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
+  if(user.role==='responsable_caserne'){
+    const aVal = allDemandes.filter(d=>d.statut==='en_attente');
+    document.getElementById('s-valider').textContent    = aVal.length;
+    document.getElementById('s-total-resp').textContent = allDemandes.length;
+    const el = document.getElementById('list-home-resp');
+    el.innerHTML = aVal.length ? aVal.map(d=>demandeRow(d,`openRespModal('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
   }
-  if(user.role==='gestionnaire'){
-    const aExp=allDemandes.filter(d=>d.statut==='valide_chef');
-    document.getElementById('s-total-sdis').textContent=allDemandes.length;
-    document.getElementById('s-expedier').textContent=aExp.length;
-    const stockEl=document.getElementById('list-stocks');
-    stockEl.innerHTML=allEquipements.length?allEquipements.map(e=>{
-      const pct=e.stock>0?Math.min(100,Math.round(e.stock/(e.seuil_alerte*4)*100)):0;
-      const cls=e.stock===0?'stock-out':e.stock<=e.seuil_alerte?'stock-low':'stock-ok';
-      const col=e.stock===0?'#DC2626':e.stock<=e.seuil_alerte?'var(--amber)':'var(--green)';
+  if(user.role==='habillement'){
+    const aExp = allDemandes.filter(d=>d.statut==='valide_responsable');
+    document.getElementById('s-total-hab').textContent = allDemandes.length;
+    document.getElementById('s-expedier').textContent  = aExp.length;
+    // Stocks
+    const stockEl = document.getElementById('list-stocks');
+    stockEl.innerHTML = allEquipements.length ? allEquipements.map(e=>{
+      const pct = e.stock>0 ? Math.min(100,Math.round(e.stock/(e.seuil_alerte*4)*100)) : 0;
+      const cls = e.stock===0?'stock-out':e.stock<=e.seuil_alerte?'stock-low':'stock-ok';
+      const col = e.stock===0?'#DC2626':e.stock<=e.seuil_alerte?'var(--amber)':'var(--green)';
       return `<div class="stock-row">
         <div><div style="font-size:14px;font-weight:600">${e.nom}</div><div style="font-size:12px;color:var(--text2)">${e.reference||''}</div></div>
-        <div style="text-align:right"><div class="${cls}" style="font-size:13px;font-weight:600">${e.stock===0?'Rupture':e.stock+' dispo.'}</div>
-        <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div></div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="${cls}" style="font-size:13px;font-weight:600">${e.stock===0?'Rupture':e.stock+' dispo.'}</div>
+          <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div>
+          <button onclick="openStockModal('${e.id}')" style="font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-family:inherit">Ajuster</button>
+        </div>
       </div>`;
-    }).join(''):'<div class="empty"><i class="ti ti-package"></i><p>Aucun équipement</p></div>';
-    const sdisEl=document.getElementById('list-home-sdis');
-    sdisEl.innerHTML=aExp.length?aExp.map(d=>{
+    }).join('') : '<div class="empty"><i class="ti ti-package"></i><p>Aucun équipement</p></div>';
+    // À expédier
+    const habEl = document.getElementById('list-home-hab');
+    habEl.innerHTML = aExp.length ? aExp.map(d=>{
       const eq=d.equipements||{};const{cls,i}=getIcon(eq.nom);
       return `<div class="req-row">
         <div class="req-icon ${cls}"><i class="ti ${i}"></i></div>
         <div class="req-info"><div class="req-name">${eq.nom||'—'}</div><div class="req-detail">${fmtDate(d.created_at)}</div></div>
         <div class="req-meta"><button class="btn-primary" style="width:auto;padding:7px 12px;font-size:12px" onclick="expedier('${d.id}')"><i class="ti ti-send" style="font-size:14px"></i>Expédier</button></div>
       </div>`;
-    }).join(''):'<div class="empty"><i class="ti ti-truck"></i><p>Rien à expédier</p></div>';
+    }).join('') : '<div class="empty"><i class="ti ti-truck"></i><p>Rien à expédier</p></div>';
   }
 }
 
 function refreshHistory(){
-  const el=document.getElementById('history-list');
-  el.innerHTML=allDemandes.length?allDemandes.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+  const el = document.getElementById('history-list');
+  el.innerHTML = allDemandes.length ? allDemandes.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
 }
 
 function refreshCatalog(q){
-  const eqs=q?allEquipements.filter(e=>e.nom.toLowerCase().includes(q.toLowerCase())):allEquipements;
-  const emojis={'Veste':'🧥','Pantalon':'👖','Casque':'⛑️','Bottes':'🥾','Gants':'🧤','Cagoule':'🧣','Ceinturon':'🪢'};
-  const el=document.getElementById('catalog-list');
-  el.innerHTML=eqs.length?eqs.map(e=>{
-    let emoji='📦';for(const[k,v]of Object.entries(emojis))if(e.nom.includes(k))emoji=v;
-    const cls=e.stock===0?'stock-out':e.stock<=e.seuil_alerte?'stock-low':'stock-ok';
-    const lbl=e.stock===0?'✕ Rupture':e.stock<=e.seuil_alerte?`⚠ ${e.stock} dispo. (bas)`:`✓ ${e.stock} disponibles`;
-    const btn=e.stock===0
-      ?`<button class="btn-secondary" style="width:auto;padding:9px 12px;font-size:12px" onclick="showToast('Alerte activée 🔔')">M\'alerter</button>`
-      :`<button class="btn-primary" style="width:auto;padding:9px 12px;font-size:12px" onclick="openNewRequest('${e.id}')">Demander</button>`;
+  const eqs = q ? allEquipements.filter(e=>e.nom.toLowerCase().includes(q.toLowerCase())) : allEquipements;
+  const emojis = {'Veste':'🧥','Pantalon':'👖','Casque':'⛑️','Bottes':'🥾','Gants':'🧤','Cagoule':'🧣','Ceinturon':'🪢'};
+  const el = document.getElementById('catalog-list');
+  el.innerHTML = eqs.length ? eqs.map(e=>{
+    let emoji='📦'; for(const[k,v]of Object.entries(emojis))if(e.nom.includes(k))emoji=v;
+    const cls = e.stock===0?'stock-out':e.stock<=e.seuil_alerte?'stock-low':'stock-ok';
+    const lbl = e.stock===0?'✕ Rupture':e.stock<=e.seuil_alerte?`⚠ ${e.stock} dispo. (bas)`:`✓ ${e.stock} disponibles`;
+    const btn = e.stock===0
+      ? `<button class="btn-secondary" style="width:auto;padding:9px 12px;font-size:12px" onclick="showToast('Alerte activée 🔔')">M\'alerter</button>`
+      : `<button class="btn-primary" style="width:auto;padding:9px 12px;font-size:12px" onclick="openNewRequest('${e.id}')">Demander</button>`;
     return `<div class="catalog-item">
       <div class="catalog-emoji">${emoji}</div>
       <div style="flex:1"><div class="catalog-name">${e.nom}</div><div class="catalog-ref">${e.reference||''} · ${e.tailles_disponibles||''}</div><div class="catalog-stock ${cls}">${lbl}</div></div>
       ${btn}
     </div>`;
-  }).join(''):'<div class="empty"><i class="ti ti-search"></i><p>Aucun résultat</p></div>';
+  }).join('') : '<div class="empty"><i class="ti ti-search"></i><p>Aucun résultat</p></div>';
 }
 
 function refreshProfile(){
-  document.getElementById('ps-total').textContent=allDemandes.length;
-  document.getElementById('ps-ok').textContent=allDemandes.filter(d=>['approuve_sdis','expedie'].includes(d.statut)).length;
-  document.getElementById('ps-attente').textContent=allDemandes.filter(d=>['en_attente','valide_chef'].includes(d.statut)).length;
+  document.getElementById('ps-total').textContent   = allDemandes.length;
+  document.getElementById('ps-ok').textContent      = allDemandes.filter(d=>['approuve_habillement','expedie'].includes(d.statut)).length;
+  document.getElementById('ps-encours').textContent = allDemandes.filter(d=>['en_attente','valide_responsable'].includes(d.statut)).length;
+  // Membres (habillement uniquement)
+  if(user.role==='habillement'){
+    const el = document.getElementById('list-membres');
+    el.innerHTML = allMembres.length ? allMembres.map(m=>`
+      <div class="members-row">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600">Mat. ${m.matricule}</div>
+          <div style="font-size:12px;color:var(--text2)">${m.caserne||'—'}</div>
+        </div>
+        <span class="role-pill ${m.role}">${roleLabels[m.role]||m.role}</span>
+      </div>`).join('') : '<div class="empty"><i class="ti ti-users"></i><p>Aucun membre</p></div>';
+  }
 }
 
+/* ===== ACTIONS ===== */
 function openNewRequest(eqId){
-  if(eqId)setTimeout(()=>{document.getElementById('f-eq').value=eqId;},50);
+  if(eqId) setTimeout(()=>{document.getElementById('f-eq').value=eqId;},50);
   document.getElementById('modal-new').classList.add('open');
 }
 
 async function submitRequest(){
-  const eqId=document.getElementById('f-eq').value;
-  const motif=document.getElementById('f-motif').value;
+  const eqId  = document.getElementById('f-eq').value;
+  const motif = document.getElementById('f-motif').value;
   if(!eqId||!motif){showToast('Remplissez les champs obligatoires *');return;}
-  const btn=document.getElementById('btn-send');
-  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i>Envoi…';
-  const {error}=await sb.from('demandes').insert({
-    equipement_id:eqId,motif,utilisateur_id:user.id,
+  const btn = document.getElementById('btn-send');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Envoi…';
+  const {error} = await sb.from('demandes').insert({
+    equipement_id:eqId, motif, utilisateur_id:user.id,
     taille_actuelle:document.getElementById('f-from').value,
     taille_souhaitee:document.getElementById('f-to').value,
-    commentaire_chef:document.getElementById('f-note').value,
+    commentaire:document.getElementById('f-note').value,
     statut:'en_attente'
   });
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i>Envoyer la demande';
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-send"></i>Envoyer la demande';
   closeModal('modal-new');
   if(error){showToast('Erreur : '+error.message);return;}
-  showToast('Demande envoyée au chef de caserne ✓');
+  showToast('Demande envoyée au responsable caserne ✓');
   ['f-eq','f-motif','f-from','f-to','f-note'].forEach(id=>document.getElementById(id).value='');
   await loadAll();
 }
 
 function openDetail(id){
-  const d=allDemandes.find(x=>x.id===id);if(!d)return;
-  const eq=d.equipements||{};
-  const{cls,i}=getIcon(eq.nom);
-  const st=statutLabels[d.statut]||{label:d.statut,cls:'badge-pending'};
-  document.getElementById('det-icon').className=`req-icon ${cls}`;
-  document.getElementById('det-icon').innerHTML=`<i class="ti ${i}"></i>`;
-  document.getElementById('det-title').textContent=eq.nom||'—';
-  document.getElementById('det-sub').textContent=`Demande du ${fmtDate(d.created_at)}`;
-  document.getElementById('det-badge').className=`badge ${st.cls}`;
-  document.getElementById('det-badge').textContent=st.label;
-  document.getElementById('det-motif').textContent=d.motif||'—';
-  document.getElementById('det-date').textContent=fmtDate(d.created_at);
-  document.getElementById('det-from').textContent=d.taille_actuelle||'—';
-  document.getElementById('det-to').textContent=d.taille_souhaitee||'—';
-  const refused=d.statut==='refuse';
-  const steps=[
-    {title:'Demande créée',done:true},
-    {title:refused?'Demande refusée':'Validée par le chef',done:['valide_chef','approuve_sdis','expedie','refuse'].includes(d.statut),color:refused?'#DC2626':null,desc:refused?d.commentaire_chef:''},
-    {title:'Approuvée par le SDIS',done:['approuve_sdis','expedie'].includes(d.statut),hidden:refused},
-    {title:'Disponible au retrait',done:d.statut==='expedie',color:'var(--green)',hidden:refused}
+  const d = allDemandes.find(x=>x.id===id); if(!d)return;
+  const eq = d.equipements||{};
+  const{cls,i} = getIcon(eq.nom);
+  const st = statutLabels[d.statut]||{label:d.statut,cls:'badge-pending'};
+  document.getElementById('det-icon').className = `req-icon ${cls}`;
+  document.getElementById('det-icon').innerHTML = `<i class="ti ${i}"></i>`;
+  document.getElementById('det-title').textContent = eq.nom||'—';
+  document.getElementById('det-sub').textContent   = `Demande du ${fmtDate(d.created_at)}`;
+  document.getElementById('det-badge').className   = `badge ${st.cls}`;
+  document.getElementById('det-badge').textContent = st.label;
+  document.getElementById('det-motif').textContent = d.motif||'—';
+  document.getElementById('det-date').textContent  = fmtDate(d.created_at);
+  document.getElementById('det-from').textContent  = d.taille_actuelle||'—';
+  document.getElementById('det-to').textContent    = d.taille_souhaitee||'—';
+  const refused = d.statut==='refuse';
+  const steps = [
+    {title:'Demande créée', done:true},
+    {title:refused?'Demande refusée':'Validée par le responsable caserne', done:['valide_responsable','approuve_habillement','expedie','refuse'].includes(d.statut), color:refused?'#DC2626':null, desc:refused?d.commentaire:''},
+    {title:'Approuvée par l\'habillement', done:['approuve_habillement','expedie'].includes(d.statut), hidden:refused},
+    {title:'Disponible au retrait', done:d.statut==='expedie', color:'var(--green)', hidden:refused}
   ].filter(s=>!s.hidden);
-  document.getElementById('det-timeline').innerHTML=steps.map((s,idx)=>{
-    const dotCls=s.done?(s.color?'active':'done'):'';
-    const col=s.color&&s.done?s.color:'';
+  document.getElementById('det-timeline').innerHTML = steps.map((s,idx)=>{
+    const dotCls = s.done?(s.color?'ko':'done'):'';
+    const col = s.color&&s.done?s.color:'';
     return `<div class="tl-item">
       <div class="tl-line"><div class="tl-dot ${dotCls}" style="${col?'background:'+col:''}"></div>${idx<steps.length-1?'<div class="tl-connector"></div>':''}</div>
       <div><div class="tl-title" style="${col?'color:'+col:''}">${s.title}</div>${s.desc?`<div class="tl-desc">${s.desc}</div>`:''}</div>
@@ -539,42 +762,127 @@ function openDetail(id){
   document.getElementById('modal-detail').classList.add('open');
 }
 
-function openChefModal(id){
-  currentDemandeId=id;
-  const d=allDemandes.find(x=>x.id===id);if(!d)return;
-  const eq=d.equipements||{};
-  document.getElementById('cv-eq').textContent=eq.nom||'—';
-  document.getElementById('cv-info').textContent=`${d.motif||''} · ${d.taille_actuelle||'?'} → ${d.taille_souhaitee||'?'}`;
-  document.getElementById('cv-comment').value='';
-  document.getElementById('modal-chef').classList.add('open');
+function openRespModal(id){
+  currentDemandeId = id;
+  const d = allDemandes.find(x=>x.id===id); if(!d)return;
+  const eq = d.equipements||{};
+  document.getElementById('rv-eq').textContent   = eq.nom||'—';
+  document.getElementById('rv-info').textContent = `${d.motif||''} · ${d.taille_actuelle||'?'} → ${d.taille_souhaitee||'?'}`;
+  document.getElementById('rv-comment').value    = '';
+  document.getElementById('modal-resp').classList.add('open');
 }
 
-async function chefValidate(approve){
+async function respValidate(approve){
   if(!currentDemandeId)return;
-  const{error}=await sb.from('demandes').update({
-    statut:approve?'valide_chef':'refuse',
-    commentaire_chef:document.getElementById('cv-comment').value,
-    updated_at:new Date().toISOString()
+  const {error} = await sb.from('demandes').update({
+    statut: approve?'valide_responsable':'refuse',
+    commentaire: document.getElementById('rv-comment').value,
+    updated_at: new Date().toISOString()
   }).eq('id',currentDemandeId);
-  closeModal('modal-chef');
+  closeModal('modal-resp');
   if(error){showToast('Erreur : '+error.message);return;}
-  showToast(approve?'Validée et transmise au SDIS ✓':'Demande refusée — pompier notifié');
+  showToast(approve?'Validée et transmise à l\'habillement ✓':'Demande refusée');
   await loadAll();
 }
 
 async function expedier(id){
-  const{error}=await sb.from('demandes').update({statut:'expedie',updated_at:new Date().toISOString()}).eq('id',id);
+  const {error} = await sb.from('demandes').update({statut:'expedie',updated_at:new Date().toISOString()}).eq('id',id);
   if(error){showToast('Erreur : '+error.message);return;}
   showToast('Expédition confirmée ✓');
   await loadAll();
 }
 
+/* ===== STOCK ===== */
+function openStockModal(eqId){
+  const eq = allEquipements.find(e=>e.id===eqId); if(!eq)return;
+  currentEqId    = eqId;
+  currentEqStock = eq.stock||0;
+  document.getElementById('stock-eq-name').textContent       = eq.nom;
+  document.getElementById('stock-val').textContent           = currentEqStock;
+  document.getElementById('stock-seuil').textContent         = `Seuil d'alerte actuel : ${eq.seuil_alerte||10}`;
+  document.getElementById('stock-seuil-input').value         = eq.seuil_alerte||10;
+  document.getElementById('modal-stock').classList.add('open');
+}
+
+function adjustStock(delta){
+  currentEqStock = Math.max(0, currentEqStock+delta);
+  document.getElementById('stock-val').textContent = currentEqStock;
+}
+
+async function saveStock(){
+  const seuil = parseInt(document.getElementById('stock-seuil-input').value)||10;
+  const {error} = await sb.from('equipements').update({stock:currentEqStock,seuil_alerte:seuil}).eq('id',currentEqId);
+  closeModal('modal-stock');
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast('Stock mis à jour ✓');
+  await loadAll();
+}
+
+/* ===== MEMBRES ===== */
+function openAddMembre(){
+  document.getElementById('m-mat').value='';
+  document.getElementById('m-role').value='';
+  document.getElementById('m-caserne').value='';
+  document.getElementById('membre-error').style.display='none';
+  document.getElementById('modal-membre').classList.add('open');
+}
+
+async function saveMembre(){
+  const mat     = document.getElementById('m-mat').value.trim();
+  const role    = document.getElementById('m-role').value;
+  const caserne = document.getElementById('m-caserne').value.trim();
+  if(!mat||!role){showToast('Matricule et rôle obligatoires');return;}
+  const btn = document.getElementById('btn-add-membre');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Ajout…';
+  // Vérifier unicité
+  const {data:exist} = await sb.from('utilisateurs').select('id').eq('matricule',mat).single();
+  if(exist){
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-user-plus"></i>Ajouter';
+    document.getElementById('membre-error').style.display='block';
+    return;
+  }
+  const {error} = await sb.from('utilisateurs').insert({matricule:mat,role,caserne,premiere_connexion:true});
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-user-plus"></i>Ajouter';
+  closeModal('modal-membre');
+  if(error){showToast('Erreur : '+error.message);return;}
+  showToast(`Membre ${mat} ajouté — mdp provisoire : ${defaultPw(mat)}`);
+  await loadAll();
+}
+
+/* ===== CHANGER MOT DE PASSE ===== */
+function openChangePw(){
+  document.getElementById('cpw-old').value='';
+  document.getElementById('cpw-new1').value='';
+  document.getElementById('cpw-new2').value='';
+  document.getElementById('cpw-error').style.display='none';
+  document.getElementById('modal-changepw').classList.add('open');
+}
+
+async function saveChangePw(){
+  const old  = document.getElementById('cpw-old').value;
+  const new1 = document.getElementById('cpw-new1').value;
+  const new2 = document.getElementById('cpw-new2').value;
+  if(hashPw(old) !== user.mot_de_passe){
+    document.getElementById('cpw-error').style.display='block';
+    document.getElementById('cpw-error').textContent='Mot de passe actuel incorrect.';
+    return;
+  }
+  if(new1.length<6){document.getElementById('cpw-error').style.display='block';document.getElementById('cpw-error').textContent='Le nouveau mot de passe doit faire au moins 6 caractères.';return;}
+  if(new1!==new2){document.getElementById('cpw-error').style.display='block';document.getElementById('cpw-error').textContent='Les mots de passe ne correspondent pas.';return;}
+  const {error} = await sb.from('utilisateurs').update({mot_de_passe:hashPw(new1)}).eq('id',user.id);
+  closeModal('modal-changepw');
+  if(error){showToast('Erreur : '+error.message);return;}
+  user.mot_de_passe = hashPw(new1);
+  showToast('Mot de passe mis à jour ✓');
+}
+
+/* ===== NAV ===== */
 function filterHistory(btn,statut){
   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
-  const el=document.getElementById('history-list');
-  const list=statut==='all'?allDemandes:allDemandes.filter(d=>d.statut===statut);
-  el.innerHTML=list.length?list.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
+  const el = document.getElementById('history-list');
+  const list = statut==='all' ? allDemandes : allDemandes.filter(d=>d.statut===statut);
+  el.innerHTML = list.length ? list.map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
 }
 function filterCatalog(q){refreshCatalog(q);}
 function switchTab(tab,el){
@@ -587,16 +895,17 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeOut(e,id){if(e.target.id===id)closeModal(id);}
 function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
 function subscribeRealtime(){
-  sb.channel('sdis-changes')
+  sb.channel('sdis-rt')
     .on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async()=>{await loadAll();})
     .on('postgres_changes',{event:'*',schema:'public',table:'equipements'},async()=>{await loadAll();})
     .subscribe();
 }
-document.getElementById('login-matricule').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('l-mat').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 </script>
 </body>
 </html>
