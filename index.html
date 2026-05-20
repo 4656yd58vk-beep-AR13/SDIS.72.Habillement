@@ -590,11 +590,14 @@ async function initApp(){
 
 async function loadAll(){
   const [d,e,m] = await Promise.all([
-    sb.from('demandes').select('*,equipements(nom,reference)').order('created_at',{ascending:false}),
+    (user.role==='sp' ? sb.from('demandes').select('*,equipements(nom,reference)').eq('utilisateur_id',user.id).order('created_at',{ascending:false}) : sb.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false})),
     sb.from('equipements').select('*').order('nom'),
     sb.from('utilisateurs').select('*').order('matricule')
   ]);
-  allDemandes    = d.data||[];
+  const raw = d.data||[];
+  allDemandes = user.role==='responsable_caserne'
+    ? raw.filter(d => d.utilisateurs && d.utilisateurs.caserne === user.caserne)
+    : raw;
   allEquipements = e.data||[];
   allMembres     = m.data||[];
   const sel = document.getElementById('f-eq');
