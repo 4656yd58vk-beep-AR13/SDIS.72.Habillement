@@ -162,7 +162,7 @@ textarea.form-control{resize:none;line-height:1.5}
       <div class="error-msg" id="login-error">Matricule ou mot de passe incorrect.</div>
       <div class="form-group">
         <label class="form-label">Matricule</label>
-        <input class="form-control" id="l-mat" placeholder="Ex: 44-1247" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px">
+        <input class="form-control" id="l-mat" placeholder="Ex: 400 557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px">
       </div>
       <div class="form-group" id="pw-group" style="display:none">
         <label class="form-label">Mot de passe</label>
@@ -414,7 +414,7 @@ textarea.form-control{resize:none;line-height:1.5}
     <div class="modal-title">Ajouter un membre</div>
     <div class="modal-sub">Le membre recevra le mot de passe provisoire matricule×2026</div>
     <div class="error-msg" id="membre-error">Ce matricule existe déjà.</div>
-    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-control" id="m-mat" placeholder="Ex: 44-1248" autocorrect="off"></div>
+    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-control" id="m-mat" placeholder="Ex: 400 558" autocorrect="off"></div>
     <div class="form-group"><label class="form-label">Rôle *</label>
       <select class="form-control" id="m-role">
         <option value="">Sélectionner…</option>
@@ -468,7 +468,7 @@ const equipIcons = {'Veste':{cls:'ri-jacket',i:'ti-shirt'},'Pantalon':{cls:'ri-p
 function getIcon(nom=''){for(const[k,v]of Object.entries(equipIcons))if(nom.includes(k))return v;return{cls:'ri-default',i:'ti-package'}}
 function fmtDate(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}
 function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCodeAt(i);h|=0;}return h.toString(36)}
-function defaultPw(mat){return mat+'2026'}
+function defaultPw(mat){return mat+' 2026'}
 
 /* ===== AUTH ===== */
 async function doLogin(){
