@@ -506,6 +506,8 @@ function hashPw(pw){let h=0;for(let i=0;i<pw.length;i++){h=((h<<5)-h)+pw.charCod
 function defaultPw(mat){return mat+' 2026'}
 
 /* ===== AUTH ===== */
+let loginStep = 1;
+
 async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
   if(!mat) return;
@@ -513,7 +515,7 @@ async function doLogin(){
   const btn = document.getElementById('btn-login');
 
   // Étape 1 : vérifier si le matricule existe
-  if(pwGroup.style.display === 'none'){
+  if(loginStep === 1){
     btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Vérification…';
     const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
     btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Continuer';
@@ -524,6 +526,7 @@ async function doLogin(){
     }
     document.getElementById('login-error').style.display='none';
     pwGroup.style.display='block';
+    loginStep = 2;
     document.getElementById('l-pw').focus();
     btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
     return;
@@ -602,7 +605,7 @@ function checkPwStrength(pw){
 const var_amber='var(--amber)';
 
 function doLogout(){
-  user=null;allDemandes=[];allEquipements=[];allMembres=[];simulatedRole=null;
+  user=null;allDemandes=[];allEquipements=[];allMembres=[];simulatedRole=null;loginStep=1;
   document.getElementById('l-mat').value='';
   document.getElementById('l-pw').value='';
   document.getElementById('pw-group').style.display='none';
