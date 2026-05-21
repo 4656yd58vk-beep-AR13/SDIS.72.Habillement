@@ -229,6 +229,12 @@ textarea.form-control{resize:none;line-height:1.5}
     </div>
     <!-- RESPONSABLE CASERNE -->
     <div id="view-responsable" style="display:none">
+      <div id="admin-back-responsable" style="display:none;padding:10px 16px 0">
+        <button onclick="backToAdmin()" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600"><i class="ti ti-arrow-left" style="font-size:16px"></i>Retour vue admin</button>
+      </div>
+      <div id="admin-back-view-responsable" style="display:none;padding:10px 16px 0">
+        <button onclick="backToAdmin()" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600"><i class="ti ti-arrow-left" style="font-size:16px"></i>Retour vue admin</button>
+      </div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="s-valider">—</div><div class="stat-label">À valider</div></div>
         <div class="stat-card"><div class="stat-num" id="s-total-resp">—</div><div class="stat-label">Ce mois-ci</div></div>
@@ -240,6 +246,12 @@ textarea.form-control{resize:none;line-height:1.5}
     </div>
     <!-- HABILLEMENT -->
     <div id="view-habillement" style="display:none">
+      <div id="admin-back-habillement" style="display:none;padding:10px 16px 0">
+        <button onclick="backToAdmin()" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600"><i class="ti ti-arrow-left" style="font-size:16px"></i>Retour vue admin</button>
+      </div>
+      <div id="admin-back-view-habillement" style="display:none;padding:10px 16px 0">
+        <button onclick="backToAdmin()" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600"><i class="ti ti-arrow-left" style="font-size:16px"></i>Retour vue admin</button>
+      </div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="s-total-hab">—</div><div class="stat-label">Total demandes</div></div>
         <div class="stat-card"><div class="stat-num" style="color:var(--green)" id="s-expedier">—</div><div class="stat-label">À expédier</div></div>
@@ -473,6 +485,8 @@ const SUPABASE_KEY = 'sb_publishable_CGHt3zrb80U-qgynO4Sg4w_Cc66hsYb';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let user = null, allDemandes = [], allEquipements = [], allMembres = [];
+let simulatedRole = null;
+function activeRole(){ return simulatedRole || user.role; }
 let currentDemandeId = null, currentEqId = null, currentEqStock = 0;
 
 const roleLabels = {sp:'Sapeur-Pompier',responsable_caserne:'Responsable habillement caserne',habillement:'Agent habillement SDIS',admin:'Administrateur'};
@@ -615,14 +629,18 @@ async function initApp(){
 
 async function loadAll(){
   const [d,e,m] = await Promise.all([
-    (user.role==='sp' ? sb.from('demandes').select('*,equipements(nom,reference)').eq('utilisateur_id',user.id).order('created_at',{ascending:false}) : sb.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false})),
+    (activeRole()==='sp' ? sb.from('demandes').select('*,equipements(nom,reference)').eq('utilisateur_id',user.id).order('created_at',{ascending:false}) : sb.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false})),
     sb.from('equipements').select('*').order('nom'),
     sb.from('utilisateurs').select('*').order('matricule')
   ]);
   const raw = d.data||[];
-  allDemandes = user.role==='responsable_caserne'
-    ? raw.filter(d => d.utilisateurs && d.utilisateurs.caserne === user.caserne)
-    : raw;
+  if(activeRole()==='sp'){
+    allDemandes = raw.filter(d => d.utilisateur_id === user.id);
+  } else if(activeRole()==='responsable_caserne'){
+    allDemandes = raw.filter(d => d.utilisateurs && d.utilisateurs.caserne === user.caserne);
+  } else {
+    allDemandes = raw;
+  }
   allEquipements = e.data||[];
   allMembres     = m.data||[];
   const sel = document.getElementById('f-eq');
@@ -643,20 +661,20 @@ function demandeRow(d, onclick){
 }
 
 function refreshHome(){
-  if(user.role==='sp'){
+  if(activeRole()==='sp'){
     document.getElementById('s-total').textContent   = allDemandes.length;
     document.getElementById('s-retrait').textContent = allDemandes.filter(d=>d.statut==='approuve_habillement').length;
     const el = document.getElementById('list-home-sp');
     el.innerHTML = allDemandes.length ? allDemandes.slice(0,5).map(d=>demandeRow(d,`openDetail('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
   }
-  if(user.role==='responsable_caserne'){
+  if(activeRole()==='responsable_caserne'){
     const aVal = allDemandes.filter(d=>d.statut==='en_attente');
     document.getElementById('s-valider').textContent    = aVal.length;
     document.getElementById('s-total-resp').textContent = allDemandes.length;
     const el = document.getElementById('list-home-resp');
     el.innerHTML = aVal.length ? aVal.map(d=>demandeRow(d,`openRespModal('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
   }
-  if(user.role==='habillement'||user.matricule==='400 557'){
+  if(user.role==='habillement'||user.role==='admin'||user.matricule==='400 557'){
     // Membres dans vue admin aussi
     const elAdmin = document.getElementById('list-membres-admin');
     if(elAdmin){
@@ -670,7 +688,7 @@ function refreshHome(){
         </div>`).join('') : '<div class="empty"><i class="ti ti-users"></i><p>Aucun membre</p></div>';
     }
   }
-  if(user.role==='habillement'){
+  if(activeRole()==='habillement'){
     const aExp = allDemandes.filter(d=>d.statut==='valide_responsable');
     document.getElementById('s-total-hab').textContent = allDemandes.length;
     document.getElementById('s-expedier').textContent  = aExp.length;
@@ -731,7 +749,7 @@ function refreshProfile(){
   document.getElementById('ps-ok').textContent      = allDemandes.filter(d=>['approuve_habillement','expedie'].includes(d.statut)).length;
   document.getElementById('ps-encours').textContent = allDemandes.filter(d=>['en_attente','valide_responsable'].includes(d.statut)).length;
   // Membres (habillement uniquement)
-  if(user.role==='habillement'){
+  if(activeRole()==='habillement'){
     const el = document.getElementById('list-membres');
     el.innerHTML = allMembres.length ? allMembres.map(m=>`
       <div class="members-row">
@@ -940,23 +958,41 @@ function showToast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
-function adminSimulate(role){
-  // Basculer la vue sans changer le vrai rôle
+async function adminSimulate(role){
+  simulatedRole = role;
   const views = ['sp','responsable_caserne','habillement','admin'];
   views.forEach(v => {
     const el = document.getElementById('view-'+v);
     if(el) el.style.display = v===role?'block':'none';
   });
-  // Recharger les données pour le rôle simulé
-  const saved = user.role;
-  user.role = role;
-  refreshHome();
-  refreshHistory();
-  user.role = saved;
-  // Badge temporaire
+  // Recharger TOUTES les données avec le bon filtre selon le rôle simulé
+  await loadAll();
   const badges = {sp:'Vue SP',responsable_caserne:'Vue Resp.',habillement:'Vue Hab.'};
   document.getElementById('header-badge').textContent = badges[role]||role;
+  // Bouton retour admin dans le header
+  document.getElementById('header-sub').textContent = 'Admin — ' + (roleLabels[role]||role);
+  // Afficher bouton retour admin
+  document.querySelectorAll('[id^="admin-back-"]').forEach(el => el.style.display='none');
+  const backEl = document.getElementById('admin-back-view-'+role.replace('_caserne','').replace('responsable','responsable'));
+  // Afficher le bon bouton retour
+  const backMap = {sp:'admin-back-sp', responsable_caserne:'admin-back-responsable', habillement:'admin-back-habillement'};
+  const backId = backMap[role];
+  if(backId){ const el=document.getElementById(backId); if(el) el.style.display='block'; }
   showToast('Vue ' + (roleLabels[role]||role) + ' activée');
+  switchTab('home', document.querySelector('.tab'));
+}
+
+function backToAdmin(){
+  simulatedRole = null;
+  const views = ['sp','responsable_caserne','habillement','admin'];
+  views.forEach(v => {
+    const el = document.getElementById('view-'+v);
+    if(el) el.style.display = v==='admin'?'block':'none';
+  });
+  document.getElementById('header-badge').textContent = 'Admin';
+  document.getElementById('header-sub').textContent = 'Administration';
+  await loadAll();
+  document.querySelectorAll('[id^="admin-back-"]').forEach(el => el.style.display='none');
   switchTab('home', document.querySelector('.tab'));
 }
 
