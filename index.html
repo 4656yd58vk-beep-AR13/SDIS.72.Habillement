@@ -507,73 +507,63 @@ function defaultPw(mat){return mat+' 2026'}
 
 /* ===== AUTH ===== */
 let loginStep = 1;
+let loginData = null;
 
 async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
-  if(!mat) return;
-  const pwGroup = document.getElementById('pw-group');
+  if(!mat){ showLoginError('Entrez votre matricule.'); return; }
   const btn = document.getElementById('btn-login');
 
-  // Étape 1 : vérifier si le matricule existe
   if(loginStep === 1){
-    btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Vérification…';
-    const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
-    btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Continuer';
-    if(error||!data){
-      document.getElementById('login-error').style.display='block';
-      document.getElementById('login-error').textContent='Matricule introuvable.';
-      return;
-    }
-    document.getElementById('login-error').style.display='none';
-    pwGroup.style.display='block';
-    loginStep = 2;
-    document.getElementById('l-pw').focus();
-    btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
+    btn.disabled=true;
+    btn.innerHTML='<i class="ti ti-loader"></i>Vérification…';
+    try {
+      const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
+      if(error||!data){ showLoginError('Matricule introuvable.'); btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Continuer'; return; }
+      loginData = data;
+      loginStep = 2;
+      document.getElementById('pw-group').style.display='block';
+      document.getElementById('l-pw').focus();
+      hideLoginError();
+      btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
+    } catch(e){ showLoginError('Erreur réseau. Réessayez.'); }
+    btn.disabled=false;
     return;
   }
 
-  // Étape 2 : vérifier le mot de passe
-  const pw = document.getElementById('l-pw').value;
-  if(!pw){document.getElementById('l-pw').focus();return;}
-  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Connexion…';
-  const {data,error} = await sb.from('utilisateurs').select('*').eq('matricule',mat).single();
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Se connecter';
-  if(error||!data){document.getElementById('login-error').style.display='block';return;}
-
-  // Première connexion : vérifier mot de passe provisoire
-  if(data.premiere_connexion){
-    if(pw !== defaultPw(mat)){
-      document.getElementById('login-error').style.display='block';
-      document.getElementById('login-error').textContent='Mot de passe provisoire incorrect. Utilisez : matricule + 2026';
-      return;
-    }
-    user = data;
-    showScreen('screen-newpw');
-    return;
+  if(loginStep === 2){
+    const pw = document.getElementById('l-pw').value;
+    if(!pw){ document.getElementById('l-pw').focus(); return; }
+    btn.disabled=true;
+    btn.innerHTML='<i class="ti ti-loader"></i>Connexion…';
+    try {
+      const d = loginData;
+      if(!d){ showLoginError('Erreur. Rechargez la page.'); btn.disabled=false; return; }
+      if(!d.mot_de_passe || d.premiere_connexion){
+        if(pw !== defaultPw(d.matricule)){ showLoginError('Mot de passe provisoire : matricule + espace + 2026'); btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Se connecter'; return; }
+        user = d;
+        showScreen('screen-newpw');
+        return;
+      }
+      if(hashPw(pw) !== d.mot_de_passe){ showLoginError('Mot de passe incorrect.'); btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i>Se connecter'; return; }
+      user = d;
+      hideLoginError();
+      showScreen('main-app');
+      initApp();
+    } catch(e){ showLoginError('Erreur réseau. Réessayez.'); }
+    btn.disabled=false;
   }
-
-  // Connexion normale (ou mot de passe jamais défini)
-  if(!data.mot_de_passe || data.premiere_connexion){
-    // Pas encore de mot de passe : vérifier le mot de passe provisoire
-    if(pw !== defaultPw(mat)){
-      document.getElementById('login-error').style.display='block';
-      document.getElementById('login-error').textContent='Mot de passe provisoire incorrect. Utilisez : matricule + 2026';
-      return;
-    }
-    user = data;
-    showScreen('screen-newpw');
-    return;
-  }
-  if(hashPw(pw) !== data.mot_de_passe){
-    document.getElementById('login-error').style.display='block';
-    document.getElementById('login-error').textContent='Mot de passe incorrect.';
-    return;
-  }
-  user = data;
-  document.getElementById('login-error').style.display='none';
-  showScreen('main-app');
-  initApp();
 }
+
+function showLoginError(msg){
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideLoginError(){
+  document.getElementById('login-error').style.display='none';
+}
+
 
 async function saveNewPassword(){
   const pw1 = document.getElementById('np-pw1').value;
@@ -605,7 +595,7 @@ function checkPwStrength(pw){
 const var_amber='var(--amber)';
 
 function doLogout(){
-  user=null;allDemandes=[];allEquipements=[];allMembres=[];simulatedRole=null;loginStep=1;
+  user=null;allDemandes=[];allEquipements=[];allMembres=[];simulatedRole=null;loginStep=1;loginData=null;document.getElementById('pw-group').style.display='none';document.getElementById('l-pw').value='';
   document.getElementById('l-mat').value='';
   document.getElementById('l-pw').value='';
   document.getElementById('pw-group').style.display='none';
