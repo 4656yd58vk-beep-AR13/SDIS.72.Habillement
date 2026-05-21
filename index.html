@@ -168,6 +168,7 @@ textarea.form-control{resize:none;line-height:1.5}
         <label class="form-label">Mot de passe</label>
         <input class="form-control" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px">
       </div>
+      <div id="db-status" style="font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center">Vérification…</div>
       <button class="btn-primary" id="btn-login" onclick="doLogin()"><i class="ti ti-login"></i>Continuer</button>
     </div>
   </div>
@@ -508,6 +509,18 @@ function defaultPw(mat){return mat+' 2026'}
 /* ===== AUTH ===== */
 let loginStep = 1;
 let loginData = null;
+// TEST CONNEXION SUPABASE AU CHARGEMENT
+window.addEventListener('load', async () => {
+  try {
+    const {data,error} = await sb.from('utilisateurs').select('count').single();
+    console.log('Supabase OK', data, error);
+    document.getElementById('db-status').textContent = error ? 'DB erreur: '+error.message : 'DB connectée ✓';
+    document.getElementById('db-status').style.color = error ? 'red' : 'green';
+  } catch(e){
+    document.getElementById('db-status').textContent = 'DB inaccessible: '+e.message;
+    document.getElementById('db-status').style.color = 'red';
+  }
+});
 
 async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
