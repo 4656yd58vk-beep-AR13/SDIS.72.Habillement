@@ -253,6 +253,27 @@ textarea.form-control{resize:none;line-height:1.5}
         <div class="card" style="padding:0 14px" id="list-home-hab"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
     </div>
+  <div id="view-admin" style="display:none">
+      <div class="section">
+        <div class="section-title">Vue administrative</div>
+        <div class="card">
+          <div style="font-size:14px;font-weight:600;margin-bottom:4px">Naviguer entre les profils</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Simulez chaque rôle pour tester et superviser</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn-primary" onclick="adminSimulate('sp')"><i class="ti ti-user"></i>Vue Sapeur-Pompier</button>
+            <button class="btn-secondary" style="border-color:var(--amber);color:var(--amber)" onclick="adminSimulate('responsable_caserne')"><i class="ti ti-user-star"></i>Vue Responsable caserne</button>
+            <button class="btn-secondary" style="border-color:var(--blue);color:var(--blue)" onclick="adminSimulate('habillement')"><i class="ti ti-building"></i>Vue Service habillement</button>
+          </div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:0">
+        <div class="section-title">Membres enregistrés</div>
+        <div class="card" style="padding:0 14px" id="list-membres-admin"><div class="loader"><i class="ti ti-loader"></i>Chargement...</div></div>
+        <div style="height:10px"></div>
+        <button class="btn-green" onclick="openAddMembre()"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- DEMANDES / HISTORIQUE -->
@@ -454,9 +475,9 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let user = null, allDemandes = [], allEquipements = [], allMembres = [];
 let currentDemandeId = null, currentEqId = null, currentEqStock = 0;
 
-const roleLabels = {sp:'Sapeur-Pompier',responsable_caserne:'Responsable habillement caserne',habillement:'Agent habillement SDIS'};
-const roleBadges = {sp:'SP',responsable_caserne:'Resp.',habillement:'Hab.'};
-const roleSubs   = {sp:'Portail équipements',responsable_caserne:'Validation des demandes',habillement:'Gestion des stocks'};
+const roleLabels = {sp:'Sapeur-Pompier',responsable_caserne:'Responsable habillement caserne',habillement:'Agent habillement SDIS',admin:'Administrateur'};
+const roleBadges = {sp:'SP',responsable_caserne:'Resp.',habillement:'Hab.',admin:'Admin'};
+const roleSubs   = {sp:'Portail équipements',responsable_caserne:'Validation des demandes',habillement:'Gestion des stocks',admin:'Administration'};
 const statutLabels = {
   en_attente:           {label:'En attente',    cls:'badge-pending'},
   valide_responsable:   {label:'Validé',        cls:'badge-transit'},
@@ -579,11 +600,15 @@ async function initApp(){
   document.getElementById('p-mat').textContent        = `Mat. ${user.matricule}`;
   document.getElementById('p-role').textContent       = roleLabels[user.role]||user.role;
   document.getElementById('p-caserne').textContent    = user.caserne||'';
-  document.getElementById('view-sp').style.display          = user.role==='sp'                  ?'block':'none';
-  document.getElementById('view-responsable').style.display = user.role==='responsable_caserne' ?'block':'none';
-  document.getElementById('view-habillement').style.display = user.role==='habillement'         ?'block':'none';
+  const isAdmin = user.matricule === '400 557';
+  const viewRole = isAdmin ? 'admin' : user.role;
+  document.getElementById('view-sp').style.display          = viewRole==='sp'                  ?'block':'none';
+  document.getElementById('view-responsable').style.display = viewRole==='responsable_caserne' ?'block':'none';
+  document.getElementById('view-habillement').style.display = viewRole==='habillement'         ?'block':'none';
+  document.getElementById('view-admin').style.display       = viewRole==='admin'               ?'block':'none';
   const secMembres = document.getElementById('section-membres');
-  secMembres.style.display = user.role==='habillement'?'block':'none';
+  secMembres.style.display = (user.role==='habillement'||isAdmin)?'block':'none';
+  if(isAdmin){ document.getElementById('header-badge').textContent='Admin'; document.getElementById('header-sub').textContent='Administration'; }
   await loadAll();
   subscribeRealtime();
 }
@@ -630,6 +655,20 @@ function refreshHome(){
     document.getElementById('s-total-resp').textContent = allDemandes.length;
     const el = document.getElementById('list-home-resp');
     el.innerHTML = aVal.length ? aVal.map(d=>demandeRow(d,`openRespModal('${d.id}')`)).join('') : '<div class="empty"><i class="ti ti-check"></i><p>Tout est traité !</p></div>';
+  }
+  if(user.role==='habillement'||user.matricule==='400 557'){
+    // Membres dans vue admin aussi
+    const elAdmin = document.getElementById('list-membres-admin');
+    if(elAdmin){
+      elAdmin.innerHTML = allMembres.length ? allMembres.map(m=>`
+        <div class="members-row">
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600">Mat. ${m.matricule}</div>
+            <div style="font-size:12px;color:var(--text2)">${m.caserne||'—'}</div>
+          </div>
+          <span class="role-pill ${m.role}">${roleLabels[m.role]||m.role}</span>
+        </div>`).join('') : '<div class="empty"><i class="ti ti-users"></i><p>Aucun membre</p></div>';
+    }
   }
   if(user.role==='habillement'){
     const aExp = allDemandes.filter(d=>d.statut==='valide_responsable');
@@ -901,6 +940,26 @@ function showToast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
+function adminSimulate(role){
+  // Basculer la vue sans changer le vrai rôle
+  const views = ['sp','responsable_caserne','habillement','admin'];
+  views.forEach(v => {
+    const el = document.getElementById('view-'+v);
+    if(el) el.style.display = v===role?'block':'none';
+  });
+  // Recharger les données pour le rôle simulé
+  const saved = user.role;
+  user.role = role;
+  refreshHome();
+  refreshHistory();
+  user.role = saved;
+  // Badge temporaire
+  const badges = {sp:'Vue SP',responsable_caserne:'Vue Resp.',habillement:'Vue Hab.'};
+  document.getElementById('header-badge').textContent = badges[role]||role;
+  showToast('Vue ' + (roleLabels[role]||role) + ' activée');
+  switchTab('home', document.querySelector('.tab'));
+}
+
 function subscribeRealtime(){
   sb.channel('sdis-rt')
     .on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async()=>{await loadAll();})
