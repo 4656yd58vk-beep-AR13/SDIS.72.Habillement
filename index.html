@@ -549,7 +549,18 @@ async function doLogin(){
     return;
   }
 
-  // Connexion normale
+  // Connexion normale (ou mot de passe jamais défini)
+  if(!data.mot_de_passe || data.premiere_connexion){
+    // Pas encore de mot de passe : vérifier le mot de passe provisoire
+    if(pw !== defaultPw(mat)){
+      document.getElementById('login-error').style.display='block';
+      document.getElementById('login-error').textContent='Mot de passe provisoire incorrect. Utilisez : matricule + 2026';
+      return;
+    }
+    user = data;
+    showScreen('screen-newpw');
+    return;
+  }
   if(hashPw(pw) !== data.mot_de_passe){
     document.getElementById('login-error').style.display='block';
     document.getElementById('login-error').textContent='Mot de passe incorrect.';
