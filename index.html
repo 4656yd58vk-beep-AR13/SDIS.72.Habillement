@@ -591,7 +591,7 @@ function checkPwStrength(pw){
 const var_amber='var(--amber)';
 
 function doLogout(){
-  user=null;allDemandes=[];allEquipements=[];allMembres=[];
+  user=null;allDemandes=[];allEquipements=[];allMembres=[];simulatedRole=null;
   document.getElementById('l-mat').value='';
   document.getElementById('l-pw').value='';
   document.getElementById('pw-group').style.display='none';
@@ -609,6 +609,7 @@ function showScreen(id){
 
 /* ===== INIT ===== */
 async function initApp(){
+  simulatedRole = null; // reset à chaque connexion
   document.getElementById('header-badge').textContent = roleBadges[user.role]||'SP';
   document.getElementById('header-sub').textContent   = roleSubs[user.role]||'';
   document.getElementById('p-mat').textContent        = `Mat. ${user.matricule}`;
@@ -639,6 +640,7 @@ async function loadAll(){
   } else if(activeRole()==='responsable_caserne'){
     allDemandes = raw.filter(d => d.utilisateurs && d.utilisateurs.caserne === user.caserne);
   } else {
+    // habillement, admin et tout autre rôle : toutes les demandes
     allDemandes = raw;
   }
   allEquipements = e.data||[];
