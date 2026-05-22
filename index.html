@@ -185,7 +185,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <div class="header-right">
       <div class="header-badge" id="h-badge">—</div>
-      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:7px;align-items:center;justify-content:center;cursor:pointer" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:15px"></i></button>
+      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:15px"></i></button>
       <button id="btn-logout" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
   </div>
@@ -235,18 +235,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <!-- ADMIN -->
     <div id="v-admin" style="display:none">
-      <div class="section">
-        <div class="section-title">Administration</div>
-        <div class="card">
-          <div style="font-size:14px;font-weight:600;margin-bottom:4px">Naviguer entre les profils</div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Accédez à chaque vue avec ses droits complets</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn-p" id="btn-sim-sp"><i class="ti ti-user"></i>Vue Sapeur-Pompier</button>
-            <button class="btn-s" id="btn-sim-resp" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-user-star"></i>Vue Responsable caserne</button>
-            <button class="btn-s" id="btn-sim-hab" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-building"></i>Vue Service habillement</button>
-          </div>
-        </div>
-      </div>
+
       <div class="section" style="padding-top:0">
         <div class="section-title">Membres enregistrés</div>
         <div class="card" style="padding:0 14px" id="l-membres-admin"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
@@ -607,7 +596,7 @@ async function initApp(){
   subscribeRT();
   // Afficher bouton switch dans header si admin
   const switcher = document.getElementById('btn-switcher');
-  if(switcher) switcher.style.display = user.matricule===ADMIN_MAT ? 'flex' : 'none';
+  if(switcher){ switcher.style.display = user.matricule===ADMIN_MAT ? 'inline-flex' : 'none'; }
 }
 
 function showView(role){
@@ -643,7 +632,7 @@ async function backToAdmin(){
   document.getElementById('h-sub').textContent='Administration';
   // Rebrancher le bouton switch
   const sw = document.getElementById('btn-switcher');
-  if(sw) sw.style.display='flex';
+  if(sw) sw.style.display='inline-flex';
   await loadAll();
   updateSwitcherActive('admin');
   switchTab('sc-home');
@@ -1043,10 +1032,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btn-save-cpw').addEventListener('click', saveChangePw);
   document.getElementById('btn-cancel-cpw').addEventListener('click',()=>closeModal('m-changepw'));
 
-  // Admin simulate
-  document.getElementById('btn-sim-sp').addEventListener('click',()=>adminSim('sp'));
-  document.getElementById('btn-sim-resp').addEventListener('click',()=>adminSim('responsable_caserne'));
-  document.getElementById('btn-sim-hab').addEventListener('click',()=>adminSim('habillement'));
+
 
   // Admin switcher
   const btnSwitcher = document.getElementById('btn-switcher');
