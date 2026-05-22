@@ -185,7 +185,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <div class="header-right">
       <div class="header-badge" id="h-badge">—</div>
-      <button class="btn-icon" id="btn-switcher" style="display:none" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:15px"></i></button>
+      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:7px;align-items:center;justify-content:center;cursor:pointer" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:15px"></i></button>
       <button id="btn-logout" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
   </div>
@@ -489,9 +489,9 @@ const STATUT_CFG  = {
 };
 const EQ_ICONS = [
   {k:'Veste',   cls:'ic1', i:'ti-shirt'},
-  {k:'Pantalon',cls:'ic2', i:'ti-trouser'},
-  {k:'Bottes',  cls:'ic3', i:'ti-boot'},
-  {k:'Casque',  cls:'ic4', i:'ti-hardhat'},
+  {k:'Pantalon',cls:'ic2', i:'ti-wash-machine'},
+  {k:'Bottes',  cls:'ic3', i:'ti-shoe'},
+  {k:'Casque',  cls:'ic4', i:'ti-hard-hat'},
   {k:'Gants',   cls:'ic5', i:'ti-glove'},
 ];
 const EQ_EMOJIS = {Veste:'🧥',Pantalon:'👖',Casque:'⛑️',Bottes:'🥾',Gants:'🧤',Cagoule:'🧣',Ceinturon:'🪢'};
@@ -680,10 +680,11 @@ async function loadAll(){
 // ── RENDER ────────────────────────────────────────────────
 function rowHtml(d, onclick){
   const eq=d.equipements||{};
-  const {cls,i}=eqIcon(eq.nom);
+  const {cls}=eqIcon(eq.nom);
+  const emoji=eqEmoji(eq.nom);
   const sc=STATUT_CFG[d.statut]||{lbl:d.statut,cls:'bp'};
   return `<div class="req-row" data-id="${d.id}">
-    <div class="eq-icon ${cls}"><i class="ti ${i}"></i></div>
+    <div class="eq-icon ${cls}" style="font-size:22px">${emoji}</div>
     <div class="req-info"><div class="req-name">${eq.nom||'—'}</div><div class="req-detail">${d.motif||''}</div></div>
     <div class="req-meta"><span class="badge ${sc.cls}">${sc.lbl}</span><div class="req-date">${fmt(d.created_at)}</div></div>
   </div>`;
@@ -741,7 +742,7 @@ function renderHome(){
     hEl.innerHTML=aExp.length?aExp.map(d=>{
       const eq=d.equipements||{};const{cls,i}=eqIcon(eq.nom);
       return `<div class="req-row" data-id="${d.id}">
-        <div class="eq-icon ${cls}"><i class="ti ${i}"></i></div>
+        <div class="eq-icon ${cls}" style="font-size:22px">${eqEmoji(eq.nom)}</div>
         <div class="req-info"><div class="req-name">${eq.nom||'—'}</div><div class="req-detail">${fmt(d.created_at)}</div></div>
         <div class="req-meta"><button class="exp-btn btn-p" data-id="${d.id}" style="width:auto;padding:6px 11px;font-size:12px"><i class="ti ti-send" style="font-size:13px"></i>Expédier</button></div>
       </div>`;
@@ -844,7 +845,7 @@ function openDetail(id){
   const{cls,i}=eqIcon(eq.nom);
   const sc=STATUT_CFG[d.statut]||{lbl:d.statut,cls:'bp'};
   document.getElementById('d-icon').className=`eq-icon ${cls}`;
-  document.getElementById('d-icon').innerHTML=`<i class="ti ${i}"></i>`;
+  document.getElementById('d-icon').innerHTML=`<span style="font-size:22px">${eqEmoji(eq.nom)}</span>`;
   document.getElementById('d-title').textContent=eq.nom||'—';
   document.getElementById('d-sub').textContent='Demande du '+fmt(d.created_at);
   document.getElementById('d-badge').className='badge '+sc.cls;
