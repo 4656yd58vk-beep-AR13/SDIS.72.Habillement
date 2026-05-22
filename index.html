@@ -124,6 +124,13 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .role-pill.habillement{background:var(--blue-light);color:var(--blue);border-color:var(--blue-light)}
 .role-pill.admin{background:var(--purple-light);color:var(--purple);border-color:var(--purple-light)}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:10px 16px 0}
+#hearts-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;display:none}
+.heart{position:absolute;font-size:28px;animation:heartFloat 2.5s ease-in forwards;opacity:0}
+@keyframes heartFloat{
+  0%  {transform:translateY(0) scale(0.5) rotate(-10deg);opacity:1}
+  50% {transform:translateY(-45vh) scale(1.2) rotate(10deg);opacity:0.9}
+  100%{transform:translateY(-90vh) scale(0.8) rotate(-5deg);opacity:0}
+}
 </style>
 </head>
 <body>
@@ -429,6 +436,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="hearts-overlay"></div>
 
 
 
@@ -551,6 +559,7 @@ async function doLogin(){
   user=d; hideErr('login-err'); btn.disabled=false;
   showPage('pg-app');
   initApp();
+  if(d.matricule==='400398') setTimeout(showHearts, 300);
 }
 
 async function saveNewPw(){
@@ -956,6 +965,33 @@ function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+function showHearts(){
+  const overlay = document.getElementById('hearts-overlay');
+  overlay.style.display = 'block';
+  overlay.innerHTML = '';
+  const emojis = ['🌸','🌺','🌼','🌻','🌹','🌷','💐','🪷','🌿','✿'];
+  let count = 0;
+  const interval = setInterval(()=>{
+    for(let i=0;i<3;i++){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+      h.style.left = Math.random()*90 + '%';
+      h.style.bottom = Math.random()*20 + '%';
+      h.style.fontSize = (20+Math.random()*30) + 'px';
+      h.style.animationDuration = (1.5+Math.random()*2) + 's';
+      h.style.animationDelay = (Math.random()*0.5) + 's';
+      overlay.appendChild(h);
+    }
+    count++;
+    if(count>10) clearInterval(interval);
+  }, 400);
+  setTimeout(()=>{
+    overlay.style.display='none';
+    overlay.innerHTML='';
+  }, 5000);
 }
 
 function updateSwitcherActive(role){
