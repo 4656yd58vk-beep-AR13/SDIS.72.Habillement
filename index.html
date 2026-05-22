@@ -32,6 +32,7 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .header-right{display:flex;align-items:center;gap:8px}
 .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
 .btn-icon{background:rgba(255,255,255,0.15);border:none;color:#fff;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#btn-switcher{display:none}
 .screen{flex:1;overflow-y:auto;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
 .screen.active{display:block}
 .section{padding:16px}
@@ -185,7 +186,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <div class="header-right">
       <div class="header-badge" id="h-badge">—</div>
       <button class="btn-icon" id="btn-switcher" style="display:none" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:15px"></i></button>
-      <button class="btn-icon" id="btn-logout"><i class="ti ti-logout" style="font-size:15px"></i></button>
+      <button id="btn-logout" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
   </div>
 
