@@ -440,6 +440,29 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 
 <div class="toast" id="toast"></div>
 
+<!-- BOUTON FLOTTANT ADMIN -->
+<div id="admin-switcher" style="display:none;position:fixed;bottom:96px;right:16px;z-index:150">
+  <button id="btn-switcher" style="width:52px;height:52px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(192,57,43,0.5);display:flex;align-items:center;justify-content:center">
+    <i class="ti ti-switch-horizontal"></i>
+  </button>
+</div>
+
+<!-- MODAL SWITCH ADMIN -->
+<div class="modal-overlay" id="m-switch">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Changer de vue</div>
+    <div class="modal-sub">Naviguez entre les profils sans vous déconnecter</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-p" id="sw-admin"><i class="ti ti-shield"></i>Vue Administrateur</button>
+      <button class="btn-s" id="sw-sp"><i class="ti ti-user"></i>Vue Sapeur-Pompier</button>
+      <button class="btn-s" id="sw-resp" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-user-star"></i>Vue Responsable caserne</button>
+      <button class="btn-s" id="sw-hab" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-building"></i>Vue Service habillement</button>
+    </div>
+    <div style="height:8px"></div>
+    <button class="btn-s" id="btn-cancel-switch">Fermer</button>
+  </div></div>
+</div>
+
 <script>
 // ── CONFIG ──────────────────────────────────────────────
 const SUPA_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
@@ -585,6 +608,9 @@ async function initApp(){
   document.getElementById('sec-membres').style.display = (isAdmin||user.role==='habillement')?'block':'none';
   await loadAll();
   subscribeRT();
+  // Afficher bouton switch si admin
+  const switcher = document.getElementById('admin-switcher');
+  if(switcher) switcher.style.display = user.matricule===ADMIN_MAT ? 'block' : 'none';
 }
 
 function showView(role){
@@ -617,6 +643,7 @@ async function adminSim(role){
   document.getElementById('h-sub').textContent   = ROLE_SUBS[role];
   await loadAll();
   switchTab('sc-home');
+  updateSwitcherActive(role);
   toast('Vue '+ROLE_LABELS[role]+' activée');
 }
 
@@ -626,6 +653,7 @@ async function backToAdmin(){
   document.getElementById('h-badge').textContent='Admin';
   document.getElementById('h-sub').textContent='Administration';
   await loadAll();
+  updateSwitcherActive('admin');
   switchTab('sc-home');
 }
 
@@ -949,6 +977,21 @@ function toast(msg){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
 
+function updateSwitcherActive(role){
+  const btns = {
+    admin:  document.getElementById('sw-admin'),
+    sp:     document.getElementById('sw-sp'),
+    responsable_caserne: document.getElementById('sw-resp'),
+    habillement: document.getElementById('sw-hab')
+  };
+  Object.entries(btns).forEach(([r,btn])=>{
+    if(!btn) return;
+    btn.style.fontWeight = r===role ? '700' : '';
+    btn.style.background = r===role ? 'var(--bg2)' : '';
+    btn.style.borderWidth = r===role ? '2px' : '';
+  });
+}
+
 function subscribeRT(){
   db.channel('rt').on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async()=>await loadAll())
     .on('postgres_changes',{event:'*',schema:'public',table:'equipements'},async()=>await loadAll())
@@ -1011,6 +1054,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btn-sim-sp').addEventListener('click',()=>adminSim('sp'));
   document.getElementById('btn-sim-resp').addEventListener('click',()=>adminSim('responsable_caserne'));
   document.getElementById('btn-sim-hab').addEventListener('click',()=>adminSim('habillement'));
+
+  // Admin switcher
+  const btnSwitcher = document.getElementById('btn-switcher');
+  if(btnSwitcher) btnSwitcher.addEventListener('click',()=>openModal('m-switch'));
+  const swAdmin = document.getElementById('sw-admin');
+  const swSp    = document.getElementById('sw-sp');
+  const swResp  = document.getElementById('sw-resp');
+  const swHab   = document.getElementById('sw-hab');
+  const cancelSw= document.getElementById('btn-cancel-switch');
+  if(swAdmin) swAdmin.addEventListener('click',()=>{ closeModal('m-switch'); backToAdmin(); });
+  if(swSp)    swSp.addEventListener('click',()=>{ closeModal('m-switch'); adminSim('sp'); });
+  if(swResp)  swResp.addEventListener('click',()=>{ closeModal('m-switch'); adminSim('responsable_caserne'); });
+  if(swHab)   swHab.addEventListener('click',()=>{ closeModal('m-switch'); adminSim('habillement'); });
+  if(cancelSw)cancelSw.addEventListener('click',()=>closeModal('m-switch'));
 
   // Fermer modales en cliquant dehors
   document.querySelectorAll('.modal-overlay').forEach(overlay=>{
