@@ -140,7 +140,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <div class="error-box" id="login-err"></div>
       <div class="form-group">
         <label class="form-label">Matricule</label>
-        <input class="form-ctrl" id="l-mat" placeholder="Ex: 400 557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px;letter-spacing:0.05em">
+        <input class="form-ctrl" id="l-mat" placeholder="Ex: 400557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px;letter-spacing:0.05em">
       </div>
       <div class="form-group" id="pw-grp" style="display:none">
         <label class="form-label">Mot de passe</label>
@@ -406,9 +406,9 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <div class="modal-overlay" id="m-membre">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Ajouter un membre</div>
-    <div class="modal-sub">Mot de passe provisoire : matricule + espace + 2026</div>
+    <div class="modal-sub">Mot de passe provisoire : matricule + 2026</div>
     <div class="error-box" id="membre-err"></div>
-    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-ctrl" id="m-mat" placeholder="Ex: 400 558" autocorrect="off"></div>
+    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-ctrl" id="m-mat" placeholder="Ex: 400558" autocorrect="off"></div>
     <div class="form-group"><label class="form-label">Rôle *</label>
       <select class="form-ctrl" id="m-role">
         <option value="">Sélectionner…</option>
@@ -446,7 +446,7 @@ const SUPA_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs';
 const db = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-const ADMIN_MAT = '400 557';
+const ADMIN_MAT = '400557';
 
 // ── ÉTAT ────────────────────────────────────────────────
 let user = null;
@@ -480,7 +480,7 @@ function eqIcon(nom=''){const f=EQ_ICONS.find(e=>nom.includes(e.k));return f||{c
 function eqEmoji(nom=''){const k=Object.keys(EQ_EMOJIS).find(k=>nom.includes(k));return k?EQ_EMOJIS[k]:'📦';}
 function fmt(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}
 function hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h.toString(36);}
-function defPw(mat){return mat+' 2026';}
+function defPw(mat){return mat+'2026';}
 function activeRole(){return simRole||user.role;}
 
 // ── LOGO BASE64 ─────────────────────────────────────────
@@ -533,7 +533,7 @@ async function doLogin(){
   const d = loginUserData;
   if(!d.mot_de_passe||d.premiere_connexion){
     btn.disabled=false; txt.textContent='Se connecter';
-    if(pw!==defPw(d.matricule)){showErr('login-err','Mot de passe provisoire : matricule + espace + 2026');return;}
+    if(pw!==defPw(d.matricule)){showErr('login-err','Mot de passe provisoire : matricule + 2026');return;}
     user=d; showPage('pg-newpw'); return;
   }
   if(hash(pw)!==d.mot_de_passe){
