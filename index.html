@@ -659,7 +659,10 @@ async function loadAll(){
     db.from('utilisateurs').select('*').order('matricule')
   ]);
   const raw = d.data||[];
-  if(role==='responsable_caserne'){
+  const isAdmin = user.matricule===ADMIN_MAT;
+  if(role==='sp' && !isAdmin){
+    demandes = raw.filter(x=>x.utilisateur_id===user.id);
+  } else if(role==='responsable_caserne' && !isAdmin){
     demandes = raw.filter(x=>x.utilisateurs&&x.utilisateurs.caserne===user.caserne);
   } else {
     demandes = raw;
@@ -680,9 +683,15 @@ function rowHtml(d, onclick){
   const {cls}=eqIcon(eq.nom);
   const emoji=eqEmoji(eq.nom);
   const sc=STATUT_CFG[d.statut]||{lbl:d.statut,cls:'bp'};
+  const mat=d.utilisateurs?.matricule ? `Mat. ${d.utilisateurs.matricule}` : '';
+  const role=activeRole();
+  const showMat = (role==='responsable_caserne'||role==='habillement'||user.matricule===ADMIN_MAT) && mat;
   return `<div class="req-row" data-id="${d.id}">
     <div class="eq-icon ${cls}" style="font-size:22px">${emoji}</div>
-    <div class="req-info"><div class="req-name">${eq.nom||'—'}</div><div class="req-detail">${d.motif||''}</div></div>
+    <div class="req-info">
+      <div class="req-name">${eq.nom||'—'}</div>
+      <div class="req-detail">${d.motif||''}${showMat?' · <b>'+mat+'</b>':''}</div>
+    </div>
     <div class="req-meta"><span class="badge ${sc.cls}">${sc.lbl}</span><div class="req-date">${fmt(d.created_at)}</div></div>
   </div>`;
 }
