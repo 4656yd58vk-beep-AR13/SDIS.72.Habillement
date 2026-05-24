@@ -9,6 +9,7 @@
 <title>SDIS EPI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -124,6 +125,15 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .role-pill.habillement{background:var(--blue-light);color:var(--blue);border-color:var(--blue-light)}
 .role-pill.admin{background:var(--purple-light);color:var(--purple);border-color:var(--purple-light)}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:10px 16px 0}
+#scanner-overlay{position:fixed;inset:0;background:#000;z-index:500;display:none;flex-direction:column}
+#scanner-header{padding:max(env(safe-area-inset-top),16px) 16px 12px;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.8)}
+#scanner-video{width:100%;flex:1;object-fit:cover}
+#scanner-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:260px;height:180px;border:3px solid var(--red);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,0.55)}
+#scanner-frame::before,#scanner-frame::after{content:'';position:absolute;width:24px;height:24px;border-color:var(--red);border-style:solid}
+#scanner-frame::before{top:-3px;left:-3px;border-width:4px 0 0 4px;border-radius:6px 0 0 0}
+#scanner-frame::after{bottom:-3px;right:-3px;border-width:0 4px 4px 0;border-radius:0 0 6px 0}
+#scanner-hint{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;text-align:center;background:rgba(0,0,0,0.6);padding:8px 16px;border-radius:20px;white-space:nowrap}
+#scanner-actions{padding:16px;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;gap:8px}
 #hearts-overlay{position:fixed;inset:0;pointer-events:none;z-index:9999;display:none}
 .heart{position:absolute;font-size:28px;animation:heartFloat 2.5s ease-in forwards;opacity:0}
 @keyframes heartFloat{
@@ -268,7 +278,10 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <!-- CATALOGUE -->
   <div class="screen" id="sc-catalog">
     <div class="section">
-      <input type="search" class="form-ctrl" id="catalog-search" placeholder="🔍 Rechercher…" style="margin-bottom:13px">
+      <div style="display:flex;gap:8px;margin-bottom:13px">
+        <input type="search" class="form-ctrl" id="catalog-search" placeholder="🔍 Rechercher…" style="flex:1">
+        <button id="btn-open-scanner" style="display:none;background:var(--red);border:none;color:#fff;border-radius:var(--radius-sm);padding:0 14px;cursor:pointer;flex-shrink:0;font-size:13px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px"><i class="ti ti-scan" style="font-size:18px"></i>Scanner</button>
+      </div>
       <div id="l-catalog"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
     </div>
   </div>
@@ -438,6 +451,43 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <div class="toast" id="toast"></div>
 <div id="hearts-overlay"></div>
 
+<!-- SCANNER ÉTIQUETTE -->
+<div id="scanner-overlay">
+  <div id="scanner-header">
+    <button onclick="closeScanner()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px"><i class="ti ti-x" style="font-size:22px"></i></button>
+    <div style="color:#fff;font-size:15px;font-weight:600">Scanner une étiquette</div>
+  </div>
+  <div style="position:relative;flex:1;display:flex">
+    <video id="scanner-video" autoplay playsinline muted></video>
+    <div id="scanner-frame"></div>
+    <div id="scanner-hint">Pointez vers un code-barres ou QR code</div>
+  </div>
+  <div id="scanner-actions">
+    <button onclick="capturePhoto()" class="btn-p" style="gap:8px"><i class="ti ti-camera"></i>Capturer et lire l'étiquette</button>
+    <button onclick="closeScanner()" class="btn-s" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL CRÉER ÉQUIPEMENT DEPUIS SCAN -->
+<div class="modal-overlay" id="m-scan-result">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un équipement</div>
+    <div class="modal-sub">Informations détectées — modifiez si besoin</div>
+    <div id="scan-preview" style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--text2);display:none"></div>
+    <div class="form-group"><label class="form-label">Nom de l'équipement *</label><input class="form-ctrl" id="sc-nom" placeholder="Ex: Veste d'intervention"></div>
+    <div class="form-group"><label class="form-label">Référence</label><input class="form-ctrl" id="sc-ref" placeholder="Ex: VI-F1-2023"></div>
+    <div class="form-group"><label class="form-label">Tailles disponibles</label><input class="form-ctrl" id="sc-tailles" placeholder="Ex: Tailles 38–58"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group"><label class="form-label">Stock initial</label><input class="form-ctrl" type="number" id="sc-stock" placeholder="0" min="0"></div>
+      <div class="form-group"><label class="form-label">Seuil d'alerte</label><input class="form-ctrl" type="number" id="sc-seuil" placeholder="10" min="0"></div>
+    </div>
+    <div class="error-box" id="sc-err"></div>
+    <button class="btn-p" id="btn-save-scan"><i class="ti ti-plus"></i>Créer l'équipement</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-scan">Annuler</button>
+  </div></div>
+</div>
+
 
 
 <!-- MODAL SWITCH ADMIN -->
@@ -600,6 +650,9 @@ async function initApp(){
   document.getElementById('p-caserne').textContent = user.caserne||'';
   showView(role);
   document.getElementById('sec-membres').style.display = (isAdmin||user.role==='habillement')?'block':'none';
+  // Afficher bouton scanner pour habillement et admin
+  const btnSc = document.getElementById('btn-open-scanner');
+  if(btnSc) btnSc.style.display = (isAdmin||user.role==='habillement')?'flex':'none';
   await loadAll();
   subscribeRT();
   // Afficher bouton switch dans header si admin
@@ -976,6 +1029,160 @@ function toast(msg){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
 }
 
+// ── SCANNER ──────────────────────────────────────────────
+let scannerStream = null;
+let barcodeReader = null;
+
+async function openScanner(){
+  const overlay = document.getElementById('scanner-overlay');
+  overlay.style.display = 'flex';
+  try {
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: {facingMode: 'environment', width:{ideal:1280}, height:{ideal:720}}
+    });
+    const video = document.getElementById('scanner-video');
+    video.srcObject = scannerStream;
+    // Essayer de lire un code-barres automatiquement
+    startBarcodeDetection(video);
+  } catch(e){
+    toast('Caméra non accessible : '+e.message);
+    closeScanner();
+  }
+}
+
+function startBarcodeDetection(video){
+  if(typeof ZXing === 'undefined') return;
+  try {
+    const hints = new Map();
+    const formats = [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.DATA_MATRIX
+    ];
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    barcodeReader = new ZXing.MultiFormatReader();
+    barcodeReader.setHints(hints);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    let scanning = true;
+
+    function scan(){
+      if(!scanning || !scannerStream) return;
+      if(video.readyState === video.HAVE_ENOUGH_DATA){
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        try {
+          const luminance = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+          const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance));
+          const result = barcodeReader.decode(bitmap);
+          if(result){
+            scanning = false;
+            closeScanner();
+            parseScannedData(result.getText(), 'barcode');
+            return;
+          }
+        } catch(e){ /* pas encore détecté */ }
+      }
+      requestAnimationFrame(scan);
+    }
+    requestAnimationFrame(scan);
+  } catch(e){ console.log('ZXing non dispo:', e); }
+}
+
+async function capturePhoto(){
+  const video = document.getElementById('scanner-video');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  // Essayer d'abord le code-barres sur la capture
+  if(typeof ZXing !== 'undefined'){
+    try {
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      const reader = new ZXing.MultiFormatReader();
+      reader.setHints(hints);
+      const luminance = new ZXing.HTMLCanvasElementLuminanceSource(canvas);
+      const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance));
+      const result = reader.decode(bitmap);
+      closeScanner();
+      parseScannedData(result.getText(), 'barcode');
+      return;
+    } catch(e){ /* pas de code-barres, on continue */ }
+  }
+
+  // Sinon : extraire le texte depuis l'image via OCR basique
+  // On récupère le texte visible dans la zone centrale
+  closeScanner();
+  // Ouvrir directement le modal de création avec les champs vides
+  parseScannedData('', 'manual');
+  toast('Aucun code détecté — remplissez les infos manuellement');
+}
+
+function parseScannedData(text, source){
+  // Essayer de parser les infos de l'étiquette
+  const nom = extractField(text, ['NOM','NAME','ARTICLE','DÉSIGNATION']) || '';
+  const ref = extractField(text, ['REF','RÉFÉRENCE','CODE','N°']) || text.substring(0,30) || '';
+  const taille = extractField(text, ['TAILLE','SIZE','T.']) || '';
+
+  document.getElementById('sc-nom').value = nom;
+  document.getElementById('sc-ref').value = ref;
+  document.getElementById('sc-tailles').value = taille;
+  document.getElementById('sc-stock').value = '';
+  document.getElementById('sc-seuil').value = '10';
+
+  const preview = document.getElementById('scan-preview');
+  if(text){
+    preview.style.display = 'block';
+    preview.innerHTML = '<b>Données scannées :</b><br>' + text.replace(/\n/g,'<br>');
+  } else {
+    preview.style.display = 'none';
+  }
+  openModal('m-scan-result');
+}
+
+function extractField(text, keys){
+  for(const key of keys){
+    const regex = new RegExp(key+'[:\s]+([^\n]+)', 'i');
+    const match = text.match(regex);
+    if(match) return match[1].trim();
+  }
+  return null;
+}
+
+function closeScanner(){
+  if(scannerStream){
+    scannerStream.getTracks().forEach(t=>t.stop());
+    scannerStream = null;
+  }
+  document.getElementById('scanner-overlay').style.display = 'none';
+}
+
+async function saveScannedEquipement(){
+  const nom = document.getElementById('sc-nom').value.trim();
+  if(!nom){showErr('sc-err','Le nom est obligatoire.');return;}
+  const btn = document.getElementById('btn-save-scan');
+  btn.disabled = true;
+  const {error} = await db.from('equipements').insert({
+    nom,
+    reference:  document.getElementById('sc-ref').value.trim(),
+    tailles_disponibles: document.getElementById('sc-tailles').value.trim(),
+    stock:      parseInt(document.getElementById('sc-stock').value)||0,
+    seuil_alerte: parseInt(document.getElementById('sc-seuil').value)||10
+  });
+  btn.disabled = false;
+  if(error){showErr('sc-err','Erreur : '+error.message);return;}
+  closeModal('m-scan-result');
+  toast('Équipement créé avec succès ✓');
+  await loadAll();
+  switchTab('sc-catalog');
+}
+
 function showHearts(){
   const overlay = document.getElementById('hearts-overlay');
   overlay.style.display = 'block';
@@ -1095,6 +1302,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(swResp)  swResp.addEventListener('click',()=>{ closeModal('m-switch'); adminSim('responsable_caserne'); });
   if(swHab)   swHab.addEventListener('click',()=>{ closeModal('m-switch'); adminSim('habillement'); });
   if(cancelSw)cancelSw.addEventListener('click',()=>closeModal('m-switch'));
+
+  // Scanner
+  const btnScanner = document.getElementById('btn-open-scanner');
+  if(btnScanner) btnScanner.addEventListener('click', openScanner);
+  const btnSaveScan = document.getElementById('btn-save-scan');
+  if(btnSaveScan) btnSaveScan.addEventListener('click', saveScannedEquipement);
+  const btnCancelScan = document.getElementById('btn-cancel-scan');
+  if(btnCancelScan) btnCancelScan.addEventListener('click',()=>closeModal('m-scan-result'));
 
   // Fermer modales en cliquant dehors
   document.querySelectorAll('.modal-overlay').forEach(overlay=>{
