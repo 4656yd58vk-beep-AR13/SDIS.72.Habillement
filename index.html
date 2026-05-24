@@ -311,6 +311,47 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
     </div>
     <div class="section" style="padding-top:0">
+      <div class="section-title">Mes coordonnées & notifications</div>
+      <div class="card" style="padding:14px">
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <input class="form-ctrl" id="p-email" type="email" placeholder="prenom.nom@sdis72.fr">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Numéro de téléphone</label>
+          <input class="form-ctrl" id="p-tel" type="tel" placeholder="06 12 34 56 78">
+        </div>
+        <div style="height:4px"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Recevoir des notifications pour :</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer">
+          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="p-notif-email" style="opacity:0;width:0;height:0;position:absolute">
+            <div id="toggle-email" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
+              <div id="thumb-email" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par email</div>
+            <div style="font-size:12px;color:var(--text2)">Changements de statut de vos demandes</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer">
+          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="p-notif-sms" style="opacity:0;width:0;height:0;position:absolute">
+            <div id="toggle-sms" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
+              <div id="thumb-sms" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par SMS</div>
+            <div style="font-size:12px;color:var(--text2)">Alertes importantes sur votre téléphone</div>
+          </div>
+        </label>
+        <div style="height:10px"></div>
+        <button class="btn-p" id="btn-save-profil"><i class="ti ti-device-floppy"></i>Enregistrer mes préférences</button>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0">
       <button class="btn-s" id="btn-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
       <div style="height:9px"></div>
       <button class="btn-s" id="btn-logout2" style="color:#DC2626;border-color:#DC2626"><i class="ti ti-logout"></i>Se déconnecter</button>
@@ -655,6 +696,7 @@ async function initApp(){
   if(btnSc) btnSc.style.display = (isAdmin||user.role==='habillement')?'flex':'none';
   await loadAll();
   subscribeRT();
+  initToggles();
   // Afficher bouton switch dans header si admin
   const switcher = document.getElementById('btn-switcher');
   if(switcher){ switcher.style.display = user.role==='admin' ? 'inline-flex' : 'none'; }
@@ -1018,6 +1060,7 @@ function switchTab(tabId){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -1183,6 +1226,67 @@ async function saveScannedEquipement(){
   switchTab('sc-catalog');
 }
 
+// ── PROFIL NOTIFICATIONS ─────────────────────────────────
+function initToggles(){
+  setupToggle('p-notif-email','toggle-email','thumb-email');
+  setupToggle('p-notif-sms','toggle-sms','thumb-sms');
+}
+
+function setupToggle(checkId, trackId, thumbId){
+  const check = document.getElementById(checkId);
+  const track = document.getElementById(trackId);
+  const thumb = document.getElementById(thumbId);
+  if(!check||!track||!thumb) return;
+  function update(){
+    track.style.background = check.checked ? 'var(--red)' : 'var(--border)';
+    thumb.style.transform = check.checked ? 'translateX(18px)' : 'translateX(0)';
+  }
+  check.addEventListener('change', update);
+  track.addEventListener('click',()=>{ check.checked=!check.checked; check.dispatchEvent(new Event('change')); });
+  update();
+}
+
+function loadProfilFields(){
+  if(!user) return;
+  const emailEl = document.getElementById('p-email');
+  const telEl   = document.getElementById('p-tel');
+  const notifEmail = document.getElementById('p-notif-email');
+  const notifSms   = document.getElementById('p-notif-sms');
+  if(emailEl) emailEl.value = user.email||'';
+  if(telEl)   telEl.value   = user.telephone||'';
+  if(notifEmail){ notifEmail.checked = user.notif_email!==false; notifEmail.dispatchEvent(new Event('change')); }
+  if(notifSms)  { notifSms.checked   = user.notif_sms===true;    notifSms.dispatchEvent(new Event('change')); }
+}
+
+async function saveProfilNotif(){
+  const email     = document.getElementById('p-email').value.trim();
+  const telephone = document.getElementById('p-tel').value.trim();
+  const notif_email = document.getElementById('p-notif-email').checked;
+  const notif_sms   = document.getElementById('p-notif-sms').checked;
+
+  // Validation basique
+  if(email && !/^[^@]+@[^@]+\.[^@]+$/.test(email)){
+    toast('Adresse email invalide'); return;
+  }
+  if(notif_sms && !telephone){
+    toast('Entrez un numéro de téléphone pour les SMS'); return;
+  }
+
+  const btn = document.getElementById('btn-save-profil');
+  btn.disabled = true;
+  const {error} = await db.from('utilisateurs').update({
+    email, telephone, notif_email, notif_sms
+  }).eq('id', user.id);
+  btn.disabled = false;
+
+  if(error){ toast('Erreur : '+error.message); return; }
+  user.email      = email;
+  user.telephone  = telephone;
+  user.notif_email= notif_email;
+  user.notif_sms  = notif_sms;
+  toast('Préférences enregistrées ✓');
+}
+
 function showHearts(){
   const overlay = document.getElementById('hearts-overlay');
   overlay.style.display = 'block';
@@ -1277,6 +1381,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btn-add-admin').addEventListener('click',()=>{hideErr('membre-err');openModal('m-membre');});
   document.getElementById('btn-save-membre').addEventListener('click', saveMembre);
   document.getElementById('btn-cancel-membre').addEventListener('click',()=>closeModal('m-membre'));
+
+  // Profil notifications
+  document.getElementById('btn-save-profil').addEventListener('click', saveProfilNotif);
 
   // Changer mdp
   document.getElementById('btn-changepw').addEventListener('click',()=>{hideErr('cpw-err');openModal('m-changepw');});
