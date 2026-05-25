@@ -859,16 +859,6 @@ async function backToAdmin(){
 
 // ── LOAD DATA ─────────────────────────────────────────────
 async function loadAll(){
-  // Si hors ligne, utiliser le cache
-  if(!navigator.onLine){
-    var cached = loadDemandesFromCache();
-    if(cached){
-      demandes = cached;
-      renderHome(); renderHistory(); renderCatalog(''); renderProfile();
-      toast('Mode hors ligne — données du cache');
-      return;
-    }
-  }
   let qDemandes = db.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false});
   const role = activeRole();
   if(role==='sp'){
