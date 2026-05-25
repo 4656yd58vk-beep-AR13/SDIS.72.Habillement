@@ -1941,6 +1941,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   });
 });
+
+// Capturer toutes les erreurs JS
+window.onerror = function(msg, src, line, col, err){
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#DC2626;color:#fff;padding:12px;font-size:12px;z-index:9999;font-family:monospace;white-space:pre-wrap;word-break:break-all';
+  div.textContent = 'ERREUR JS:\n' + msg + '\nLigne: ' + line + '\n' + (err?.stack||'');
+  document.body.appendChild(div);
+  return false;
+};
 </script>
 </body>
 </html>
