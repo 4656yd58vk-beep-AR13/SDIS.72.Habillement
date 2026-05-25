@@ -811,7 +811,8 @@ function rowHtml(d, onclick){
   const sc=STATUT_CFG[d.statut]||{lbl:d.statut,cls:'bp'};
   const mat=d.utilisateurs?.matricule ? `Mat. ${d.utilisateurs.matricule}` : '';
   const role=activeRole();
-  const showMat = (role==='responsable_caserne'||role==='habillement'||user.role==='admin') && mat;
+  const isAdmin = user.role==='admin';
+  const showMat = (role==='responsable_caserne'||role==='habillement'||isAdmin) && mat;
   return `<div class="req-row" data-id="${d.id}">
     <div class="eq-icon ${cls}" style="font-size:22px">${emoji}</div>
     <div class="req-info">
