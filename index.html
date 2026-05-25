@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="SDIS EPI">
 <title>SDIS EPI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#C0392B">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -878,6 +880,8 @@ async function loadAll(){
   }
   equipements = e.data||[];
   membres     = m.data||[];
+  // Sauvegarder en cache local
+  cacheDemandesLocally();
 
   // Remplir select équipements
   const sel=document.getElementById('f-eq');
@@ -1852,6 +1856,53 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Login
   document.getElementById('btn-login').addEventListener('click', doLogin);
   document.getElementById('l-mat').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// ── SERVICE WORKER & CACHE OFFLINE ───────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').then(function(reg){
+    console.log('SW enregistré:', reg.scope);
+  }).catch(function(err){
+    console.log('SW erreur:', err);
+  });
+}
+
+// Sauvegarder les demandes en local pour le mode hors ligne
+function cacheDemandesLocally(){
+  try {
+    localStorage.setItem('sdis_demandes_cache', JSON.stringify({
+      data: demandes,
+      timestamp: Date.now(),
+      matricule: user ? user.matricule : null
+    }));
+  } catch(e){ console.log('Cache local impossible:', e); }
+}
+
+function loadDemandesFromCache(){
+  try {
+    var cached = localStorage.getItem('sdis_demandes_cache');
+    if(!cached) return null;
+    var obj = JSON.parse(cached);
+    // Cache valide 24h et pour le même utilisateur
+    if(Date.now() - obj.timestamp > 86400000) return null;
+    if(user && obj.matricule !== user.matricule) return null;
+    return obj.data;
+  } catch(e){ return null; }
+}
+
+// Détecter mode hors ligne
+window.addEventListener('online', function(){
+  toast('Connexion rétablie ✓ — Synchronisation...');
+  loadAll();
+});
+
+window.addEventListener('offline', function(){
+  toast('Mode hors ligne — données en cache affichées');
+  var cached = loadDemandesFromCache();
+  if(cached){
+    demandes = cached;
+    renderHome(); renderHistory();
+  }
+});
   document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
   // Nouveau mot de passe
