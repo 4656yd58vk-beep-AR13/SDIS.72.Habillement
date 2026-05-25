@@ -127,6 +127,11 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .role-pill.habillement{background:var(--blue-light);color:var(--blue);border-color:var(--blue-light)}
 .role-pill.admin{background:var(--purple-light);color:var(--purple);border-color:var(--purple-light)}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:10px 16px 0}
+.photo-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px;display:none}
+.photo-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;background:var(--bg2);transition:border-color 0.2s}
+.photo-zone:active{border-color:var(--red)}
+.photo-zone i{font-size:32px;color:var(--text2);display:block;margin-bottom:8px}
+.photo-zone p{font-size:13px;color:var(--text2);margin:0}
 #scanner-overlay{position:fixed;inset:0;background:#000;z-index:500;display:none;flex-direction:column}
 #scanner-header{padding:max(env(safe-area-inset-top),16px) 16px 12px;display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.8)}
 #scanner-video{width:100%;flex:1;object-fit:cover}
@@ -412,6 +417,16 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <div class="form-group"><label class="form-label">Taille souhaitée</label><input class="form-ctrl" id="f-to" placeholder="Ex: T.48"></div>
     </div>
     <div class="form-group"><label class="form-label">Précisions</label><textarea class="form-ctrl" id="f-note" rows="3" placeholder="État, circonstances…"></textarea></div>
+    <div class="form-group">
+      <label class="form-label">Photo de l'équipement (optionnel)</label>
+      <div class="photo-zone" id="photo-zone" onclick="document.getElementById('f-photo').click()">
+        <i class="ti ti-camera"></i>
+        <p>Appuyez pour prendre une photo ou en choisir une</p>
+      </div>
+      <input type="file" id="f-photo" accept="image/*" capture="environment" style="display:none">
+      <img id="photo-preview" class="photo-preview" alt="Aperçu">
+      <button type="button" id="btn-remove-photo" style="display:none;margin-top:6px;font-size:12px;color:#DC2626;background:none;border:none;cursor:pointer;font-family:inherit"><i class="ti ti-x"></i> Supprimer la photo</button>
+    </div>
     <button class="btn-p" id="btn-submit"><i class="ti ti-send"></i>Envoyer</button>
     <div style="height:7px"></div>
     <button class="btn-s" id="btn-cancel-new">Annuler</button>
@@ -433,6 +448,10 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <div class="ig-item"><label>Taille actuelle</label><span id="d-from">—</span></div>
         <div class="ig-item"><label>Taille souhaitée</label><span id="d-to">—</span></div>
       </div>
+    </div>
+    <div id="d-photo-container" style="display:none;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:8px">Photo jointe</div>
+      <img id="d-photo" src="" alt="Photo équipement" style="width:100%;border-radius:var(--radius-sm);max-height:220px;object-fit:cover">
     </div>
     <div class="section-title" style="margin-bottom:13px">Suivi</div>
     <div id="d-timeline"></div>
@@ -957,17 +976,36 @@ async function submitRequest(){
   if(!eqId||!motif){toast('Remplissez les champs obligatoires');return;}
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader"></i>Envoi…';
+
+  // Upload photo si présente
+  let photo_url = null;
+  if(photoFile){
+    btn.innerHTML='<i class="ti ti-loader"></i>Upload photo…';
+    photo_url = await uploadPhoto(photoFile);
+  }
+
   const {error}=await db.from('demandes').insert({
     equipement_id:eqId,motif,utilisateur_id:user.id,
     taille_actuelle:document.getElementById('f-from').value,
     taille_souhaitee:document.getElementById('f-to').value,
     commentaire:document.getElementById('f-note').value,
+    photo_url,
     statut:'en_attente'
   });
   btn.disabled=false;
+  btn.innerHTML='<i class="ti ti-send"></i>Envoyer';
   if(error){toast('Erreur : '+error.message);return;}
   closeModal('m-new');
   ['f-eq','f-motif','f-from','f-to','f-note'].forEach(id=>{document.getElementById(id).value='';});
+  // Reset photo
+  photoFile=null;
+  const preview=document.getElementById('photo-preview');
+  const zone=document.getElementById('photo-zone');
+  const removeBtn=document.getElementById('btn-remove-photo');
+  if(preview){preview.src='';preview.style.display='none';}
+  if(zone) zone.style.display='block';
+  if(removeBtn) removeBtn.style.display='none';
   toast('Demande envoyée ✓');
   await loadAll();
 }
@@ -987,6 +1025,11 @@ function openDetail(id){
   document.getElementById('d-date').textContent=fmt(d.created_at);
   document.getElementById('d-from').textContent=d.taille_actuelle||'—';
   document.getElementById('d-to').textContent=d.taille_souhaitee||'—';
+  // Photo
+  const photoContainer=document.getElementById('d-photo-container');
+  const photoEl=document.getElementById('d-photo');
+  if(d.photo_url&&photoContainer&&photoEl){photoEl.src=d.photo_url;photoContainer.style.display='block';}
+  else if(photoContainer){photoContainer.style.display='none';}
   const refused=d.statut==='refuse';
   const steps=[
     {t:'Demande créée',done:true},
@@ -1320,6 +1363,52 @@ async function saveProfilNotif(){
   toast('Préférences enregistrées ✓');
 }
 
+// ── PHOTO ────────────────────────────────────────────────
+let photoFile = null;
+
+function initPhotoUpload(){
+  const input = document.getElementById('f-photo');
+  const preview = document.getElementById('photo-preview');
+  const zone = document.getElementById('photo-zone');
+  const removeBtn = document.getElementById('btn-remove-photo');
+  if(!input) return;
+
+  input.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    photoFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      preview.src = ev.target.result;
+      preview.style.display = 'block';
+      zone.style.display = 'none';
+      removeBtn.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeBtn.addEventListener('click', () => {
+    photoFile = null;
+    input.value = '';
+    preview.src = '';
+    preview.style.display = 'none';
+    zone.style.display = 'block';
+    removeBtn.style.display = 'none';
+  });
+}
+
+async function uploadPhoto(file){
+  if(!file) return null;
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `demandes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const { data, error } = await db.storage
+    .from('photos-demandes')
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if(error){ console.error('Upload photo:', error); return null; }
+  const { data: urlData } = db.storage.from('photos-demandes').getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
 // ── STATS & REPORTING ────────────────────────────────────
 let chartStatut = null;
 let chartEquip = null;
@@ -1565,6 +1654,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btn-add-admin').addEventListener('click',()=>{hideErr('membre-err');openModal('m-membre');});
   document.getElementById('btn-save-membre').addEventListener('click', saveMembre);
   document.getElementById('btn-cancel-membre').addEventListener('click',()=>closeModal('m-membre'));
+
+  // Photo upload
+  initPhotoUpload();
 
   // Stats
   document.getElementById('btn-export-excel').addEventListener('click', exportExcel);
