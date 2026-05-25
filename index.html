@@ -783,6 +783,17 @@ async function initApp(){
   if(btnSc) btnSc.style.display = (isAdmin||user.role==='habillement')?'flex':'none';
   await loadAll();
   subscribeRT();
+  // Alerte péremption au chargement
+  if(user.role==='sp'||simRole==='sp'){
+    const {data:dots} = await db.from('dotations').select('*').eq('utilisateur_id',user.id).eq('statut','actif');
+    if(dots){
+      const urgents = dots.filter(d=>{
+        if(!d.date_peremption) return false;
+        return Math.ceil((new Date(d.date_peremption)-new Date())/(1000*60*60*24)) < 30;
+      });
+      if(urgents.length) setTimeout(()=>toast('⚠️ '+urgents.length+' EPI arrivent à péremption !'), 2000);
+    }
+  }
   initToggles();
   // Afficher onglet stats pour habillement et admin
   const tabStats = document.getElementById('tab-stats');
@@ -895,22 +906,8 @@ function renderHome(){
   const role=activeRole();
   if(role==='sp'){
     document.getElementById('st-total').textContent=demandes.length;
-    // Vérifier péremptions urgentes
-    loadDotations();
     document.getElementById('st-retrait').textContent=demandes.filter(d=>d.statut==='approuve_habillement').length;
-    // Badge alerte péremption
-    setTimeout(async ()=>{
-      const {data:dots} = await db.from('dotations').select('*,equipements(nom)').eq('utilisateur_id',user.id).eq('statut','actif');
-      if(!dots) return;
-      const urgents = dots.filter(d=>{
-        if(!d.date_peremption) return false;
-        const diff = Math.ceil((new Date(d.date_peremption)-new Date())/(1000*60*60*24));
-        return diff < 30;
-      });
-      if(urgents.length){
-        toast(`⚠️ ${urgents.length} équipement(s) arrivent à péremption !`);
-      }
-    }, 1500);
+
     const el=document.getElementById('l-sp');
     el.innerHTML=demandes.length?demandes.slice(0,5).map(d=>rowHtml(d)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
     bindRows('l-sp', openDetail);
@@ -1426,7 +1423,7 @@ let sigCtx = null;
 let sigDrawing = false;
 let sigLastX = 0, sigLastY = 0;
 
-async function loadDotations(){
+async async function loadDotations(){
   if(!user) return;
   const {data} = await db.from('dotations')
     .select('*,equipements(nom)')
