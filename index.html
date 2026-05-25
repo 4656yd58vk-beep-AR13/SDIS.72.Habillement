@@ -9,6 +9,8 @@
 <title>SDIS EPI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -358,11 +360,36 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
   </div>
 
+  <!-- STATS -->
+  <div class="screen" id="sc-stats">
+    <div class="section">
+      <div class="section-title">Vue d'ensemble</div>
+      <div id="stats-cards" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
+
+      <div class="section-title">Demandes par statut</div>
+      <div class="card" style="padding:14px">
+        <canvas id="chart-statut" height="200"></canvas>
+      </div>
+
+      <div class="section-title">Top équipements demandés</div>
+      <div class="card" style="padding:14px">
+        <canvas id="chart-equip" height="200"></canvas>
+      </div>
+
+      <div class="section-title">Demandes par caserne</div>
+      <div class="card" id="stats-casernes" style="padding:0 14px"></div>
+
+      <div style="height:12px"></div>
+      <button class="btn-g" id="btn-export-excel"><i class="ti ti-file-spreadsheet"></i>Exporter en Excel</button>
+    </div>
+  </div>
+
   <div class="tab-bar">
     <button class="tab active" data-tab="sc-home"><i class="ti ti-home"></i>Accueil</button>
     <button class="tab" data-tab="sc-history"><i class="ti ti-clipboard-list"></i>Demandes</button>
     <button class="tab" data-tab="sc-catalog"><i class="ti ti-package"></i>Catalogue</button>
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
+    <button class="tab" id="tab-stats" data-tab="sc-stats" style="display:none"><i class="ti ti-chart-bar"></i>Stats</button>
   </div>
 </div>
 
@@ -697,6 +724,10 @@ async function initApp(){
   await loadAll();
   subscribeRT();
   initToggles();
+  // Afficher onglet stats pour habillement et admin
+  const tabStats = document.getElementById('tab-stats');
+  if(tabStats) tabStats.style.display = (isAdmin||user.role==='habillement') ? 'flex' : 'none';
+
   // Afficher bouton switch dans header si admin
   const switcher = document.getElementById('btn-switcher');
   if(switcher){ switcher.style.display = user.role==='admin' ? 'inline-flex' : 'none'; }
@@ -1061,6 +1092,7 @@ function switchTab(tabId){
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); }
+  if(tabId==='sc-stats'){ renderStats(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -1287,6 +1319,157 @@ async function saveProfilNotif(){
   toast('Préférences enregistrées ✓');
 }
 
+// ── STATS & REPORTING ────────────────────────────────────
+let chartStatut = null;
+let chartEquip = null;
+
+function renderStats(){
+  const role = activeRole();
+  if(role !== 'habillement' && role !== 'admin' && user.role !== 'admin') return;
+
+  // ── Cartes résumé ──
+  const total   = demandes.length;
+  const attente = demandes.filter(d=>d.statut==='en_attente').length;
+  const approuv = demandes.filter(d=>['approuve_habillement','expedie'].includes(d.statut)).length;
+  const refuses = demandes.filter(d=>d.statut==='refuse').length;
+
+  document.getElementById('stats-cards').innerHTML = [
+    {num: total,   label: 'Total demandes',  color: 'var(--red)'},
+    {num: attente, label: 'En attente',       color: 'var(--amber)'},
+    {num: approuv, label: 'Approuvées',       color: 'var(--green)'},
+    {num: refuses, label: 'Refusées',         color: '#DC2626'},
+  ].map(s=>`
+    <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:14px;border:1px solid var(--border)">
+      <div style="font-size:28px;font-weight:700;color:${s.color};line-height:1">${s.num}</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">${s.label}</div>
+    </div>`).join('');
+
+  // ── Graphique statuts ──
+  const statutData = {
+    'En attente':  demandes.filter(d=>d.statut==='en_attente').length,
+    'Validée':     demandes.filter(d=>d.statut==='valide_responsable').length,
+    'Approuvée':   demandes.filter(d=>d.statut==='approuve_habillement').length,
+    'Expédiée':    demandes.filter(d=>d.statut==='expedie').length,
+    'Refusée':     demandes.filter(d=>d.statut==='refuse').length,
+  };
+
+  if(chartStatut) chartStatut.destroy();
+  const ctx1 = document.getElementById('chart-statut').getContext('2d');
+  chartStatut = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(statutData),
+      datasets: [{
+        data: Object.values(statutData),
+        backgroundColor: ['#D97706','#2563EB','#059669','#0891B2','#DC2626'],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } }
+      }
+    }
+  });
+
+  // ── Graphique équipements ──
+  const equipCount = {};
+  demandes.forEach(d => {
+    const nom = d.equipements?.nom || 'Autre';
+    equipCount[nom] = (equipCount[nom]||0) + 1;
+  });
+  const equipSorted = Object.entries(equipCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  if(chartEquip) chartEquip.destroy();
+  const ctx2 = document.getElementById('chart-equip').getContext('2d');
+  chartEquip = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: equipSorted.map(e=>e[0]),
+      datasets: [{
+        label: 'Demandes',
+        data: equipSorted.map(e=>e[1]),
+        backgroundColor: '#C0392B',
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // ── Stats par caserne ──
+  const caserneCount = {};
+  demandes.forEach(d => {
+    const caserne = d.utilisateurs?.caserne || 'Inconnue';
+    caserneCount[caserne] = (caserneCount[caserne]||0) + 1;
+  });
+  const caserneEl = document.getElementById('stats-casernes');
+  const caserneEntries = Object.entries(caserneCount).sort((a,b)=>b[1]-a[1]);
+  const maxVal = caserneEntries[0]?.[1] || 1;
+  caserneEl.innerHTML = caserneEntries.map(([caserne, count]) => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:13px;font-weight:600">${caserne}</span>
+        <span style="font-size:13px;color:var(--text2)">${count} demande${count>1?'s':''}</span>
+      </div>
+      <div style="background:var(--bg2);border-radius:3px;height:6px;overflow:hidden">
+        <div style="background:var(--red);height:100%;width:${Math.round(count/maxVal*100)}%;border-radius:3px"></div>
+      </div>
+    </div>`).join('') || '<div class="empty"><i class="ti ti-building"></i><p>Aucune donnée</p></div>';
+}
+
+function exportExcel(){
+  if(!demandes.length){ toast('Aucune demande à exporter'); return; }
+
+  const data = demandes.map(d => ({
+    'Matricule':        d.utilisateurs?.matricule || '—',
+    'Caserne':          d.utilisateurs?.caserne   || '—',
+    'Équipement':       d.equipements?.nom        || '—',
+    'Motif':            d.motif                   || '—',
+    'Taille actuelle':  d.taille_actuelle         || '—',
+    'Taille souhaitée': d.taille_souhaitee        || '—',
+    'Statut':           d.statut                  || '—',
+    'Commentaire':      d.commentaire             || '—',
+    'Date création':    new Date(d.created_at).toLocaleDateString('fr-FR'),
+    'Dernière MAJ':     new Date(d.updated_at||d.created_at).toLocaleDateString('fr-FR'),
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+
+  // Largeurs colonnes
+  ws['!cols'] = [
+    {wch:12},{wch:20},{wch:22},{wch:22},{wch:14},{wch:14},{wch:16},{wch:25},{wch:14},{wch:14}
+  ];
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Demandes EPI');
+
+  // Feuille stats
+  const statsData = [
+    {'Indicateur': 'Total demandes',    'Valeur': demandes.length},
+    {'Indicateur': 'En attente',         'Valeur': demandes.filter(d=>d.statut==='en_attente').length},
+    {'Indicateur': 'Validées responsable','Valeur': demandes.filter(d=>d.statut==='valide_responsable').length},
+    {'Indicateur': 'Approuvées habillement','Valeur': demandes.filter(d=>d.statut==='approuve_habillement').length},
+    {'Indicateur': 'Expédiées',          'Valeur': demandes.filter(d=>d.statut==='expedie').length},
+    {'Indicateur': 'Refusées',           'Valeur': demandes.filter(d=>d.statut==='refuse').length},
+  ];
+  const ws2 = XLSX.utils.json_to_sheet(statsData);
+  ws2['!cols'] = [{wch:28},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Statistiques');
+
+  const date = new Date().toLocaleDateString('fr-FR').replace(/\//g,'-');
+  XLSX.writeFile(wb, `SDIS72_EPI_Export_${date}.xlsx`);
+  toast('Export Excel téléchargé ✓');
+}
+
 function showHearts(){
   const overlay = document.getElementById('hearts-overlay');
   overlay.style.display = 'block';
@@ -1381,6 +1564,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('btn-add-admin').addEventListener('click',()=>{hideErr('membre-err');openModal('m-membre');});
   document.getElementById('btn-save-membre').addEventListener('click', saveMembre);
   document.getElementById('btn-cancel-membre').addEventListener('click',()=>closeModal('m-membre'));
+
+  // Stats
+  document.getElementById('btn-export-excel').addEventListener('click', exportExcel);
 
   // Profil notifications
   document.getElementById('btn-save-profil').addEventListener('click', saveProfilNotif);
