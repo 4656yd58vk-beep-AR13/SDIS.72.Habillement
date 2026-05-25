@@ -148,6 +148,12 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   50% {transform:translateY(-45vh) scale(1.2) rotate(10deg);opacity:0.9}
   100%{transform:translateY(-90vh) scale(0.8) rotate(-5deg);opacity:0}
 }
+.dot-ok{color:var(--green);font-size:12px;font-weight:600}
+.dot-warn{color:var(--amber);font-size:12px;font-weight:600}
+.dot-exp{color:#DC2626;font-size:12px;font-weight:600}
+#sig-canvas{border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;touch-action:none;cursor:crosshair;display:block;width:100%}
+.sig-wrap{position:relative;margin-top:6px}
+.sig-clear{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.08);border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;color:var(--text)}
 </style>
 </head>
 <body>
@@ -440,6 +446,14 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <label class="form-label">Date péremption</label>
         <input class="form-ctrl" type="date" id="dot-perem">
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Signature du SP (optionnel)</label>
+      <div class="sig-wrap">
+        <canvas id="sig-canvas" height="150"></canvas>
+        <button type="button" class="sig-clear" id="btn-clear-sig">Effacer</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Signez dans le cadre avec le doigt</div>
     </div>
     <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer</button>
     <div style="height:7px"></div>
@@ -1653,6 +1667,79 @@ function updateSwitcherActive(role){
   });
 }
 
+// ── SIGNATURE ────────────────────────────────────────────
+var sigDrawing = false;
+var sigLastX = 0;
+var sigLastY = 0;
+var sigCanvas = null;
+var sigCtx = null;
+
+function initSignature(){
+  sigCanvas = document.getElementById("sig-canvas");
+  if(!sigCanvas) return;
+  sigCanvas.width = sigCanvas.offsetWidth || 320;
+  sigCanvas.height = 150;
+  sigCtx = sigCanvas.getContext("2d");
+  sigCtx.strokeStyle = "#1C2833";
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = "round";
+  sigCtx.lineJoin = "round";
+
+  function getPos(e){
+    var r = sigCanvas.getBoundingClientRect();
+    var src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+
+  function startDraw(e){ sigDrawing=true; var p=getPos(e); sigLastX=p.x; sigLastY=p.y; }
+  function doDraw(e){
+    if(!sigDrawing) return;
+    var p = getPos(e);
+    sigCtx.beginPath();
+    sigCtx.moveTo(sigLastX, sigLastY);
+    sigCtx.lineTo(p.x, p.y);
+    sigCtx.stroke();
+    sigLastX=p.x; sigLastY=p.y;
+  }
+  function stopDraw(){ sigDrawing=false; }
+
+  sigCanvas.addEventListener("mousedown",  startDraw);
+  sigCanvas.addEventListener("mousemove",  doDraw);
+  sigCanvas.addEventListener("mouseup",    stopDraw);
+  sigCanvas.addEventListener("mouseleave", stopDraw);
+  sigCanvas.addEventListener("touchstart", function(e){ e.preventDefault(); startDraw(e); }, {passive:false});
+  sigCanvas.addEventListener("touchmove",  function(e){ e.preventDefault(); doDraw(e); }, {passive:false});
+  sigCanvas.addEventListener("touchend",   stopDraw);
+
+  var clearBtn = document.getElementById("btn-clear-sig");
+  if(clearBtn) clearBtn.addEventListener("click", clearSig);
+}
+
+function clearSig(){
+  if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+}
+
+function isSigEmpty(){
+  if(!sigCanvas || !sigCtx) return true;
+  var d = sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data;
+  for(var i=0; i<d.length; i+=4){ if(d[i+3] > 0) return false; }
+  return true;
+}
+
+async function uploadSignature(){
+  if(isSigEmpty()) return null;
+  return new Promise(function(resolve){
+    sigCanvas.toBlob(async function(blob){
+      if(!blob){ resolve(null); return; }
+      var path = "signatures/" + Date.now() + "_" + Math.random().toString(36).slice(2) + ".png";
+      var res = await db.storage.from("photos-demandes").upload(path, blob, {contentType:"image/png"});
+      if(res.error){ resolve(null); return; }
+      var url = db.storage.from("photos-demandes").getPublicUrl(path);
+      resolve(url.data.publicUrl);
+    }, "image/png");
+  });
+}
+
 // ── DOTATIONS ────────────────────────────────────────────
 function dotStatus(dateStr){
   if(!dateStr) return null;
@@ -1691,6 +1778,7 @@ async function loadDotations(){
         "</div>" +
         "<div style='text-align:right'>" +
           (st ? "<div class='" + st.cls + "'>" + st.txt + "</div>" : "<div style='font-size:12px;color:var(--text2)'>Pas de date</div>") +
+          (d.signature_url ? "<div style='font-size:11px;color:var(--green)'>✓ Signé</div>" : "") +
         "</div>" +
       "</div>";
     }).join("");
@@ -1724,12 +1812,20 @@ async function saveDotation(){
     const {data: sp} = await db.from("utilisateurs").select("id").eq("matricule", mat).single();
     if(!sp){ showErr("dot-err", "Matricule introuvable"); btn.disabled=false; return; }
 
+    // Upload signature
+    var sigUrl = null;
+    if(!isSigEmpty()){
+      btn.innerHTML = "<i class='ti ti-loader'></i>Signature...";
+      sigUrl = await uploadSignature();
+    }
+
     const {error} = await db.from("dotations").insert({
       utilisateur_id: sp.id,
       equipement_id:  eqId,
       numero_serie:   serie || null,
       date_attribution: attr || null,
       date_peremption:  perem || null,
+      signature_url: sigUrl,
       statut: "actif"
     });
 
@@ -1809,6 +1905,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById("dot-perem").value = "";
       hideErr("dot-err");
       openModal("m-dotation");
+      setTimeout(function(){ initSignature(); clearSig(); }, 150);
     });
   }
   var btnSaveDot = document.getElementById("btn-save-dotation");
