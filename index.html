@@ -414,7 +414,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <div class="modal-overlay" id="m-dotation">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Attribuer un équipement</div>
-    <div class="modal-sub">Enregistrer l'attribution avec date de péremption</div>
+    <div class="modal-sub">Enregistrer avec date de péremption</div>
     <div class="error-box" id="dot-err"></div>
     <div class="form-group"><label class="form-label">Matricule SP *</label><input class="form-ctrl" id="dot-mat" placeholder="Ex: 400557" autocorrect="off"></div>
     <div class="form-group"><label class="form-label">Équipement *</label>
@@ -433,7 +433,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </div>
       <div style="font-size:12px;color:var(--text2);margin-top:4px">Signez dans le cadre ci-dessus</div>
     </div>
-    <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer l'attribution</button>
+    <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer l&#39;attribution</button>
     <div style="height:7px"></div>
     <button class="btn-s" id="btn-cancel-dotation">Annuler</button>
   </div></div>
@@ -1564,7 +1564,7 @@ async function saveDotation(){
     statut: 'actif'
   });
 
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i>Enregistrer l'attribution';
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i>Enregistrer l&#39;attribution';
   if(error){ showErr('dot-err','Erreur : '+error.message); return; }
 
   closeModal('m-dotation');
