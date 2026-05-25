@@ -127,11 +127,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .role-pill.habillement{background:var(--blue-light);color:var(--blue);border-color:var(--blue-light)}
 .role-pill.admin{background:var(--purple-light);color:var(--purple);border-color:var(--purple-light)}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--red);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;padding:10px 16px 0}
-.perem-ok{color:var(--green);font-size:12px;font-weight:600}
-.perem-warn{color:var(--amber);font-size:12px;font-weight:600}
-.perem-exp{color:#DC2626;font-size:12px;font-weight:600}
-#sig-canvas{border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;touch-action:none;cursor:crosshair;width:100%;height:160px}
-.sig-container{position:relative}
 .photo-preview{width:100%;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px;display:none}
 .photo-zone{border:2px dashed var(--border);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;background:var(--bg2);transition:border-color 0.2s}
 .photo-zone:active{border-color:var(--red)}
@@ -257,7 +252,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <div class="card" id="l-stocks"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
       <div class="section" style="padding-top:0">
-        <button class="btn-g" id="btn-open-dotation" style="margin-bottom:12px"><i class="ti ti-clipboard-check"></i>Attribuer un équipement</button>
         <div class="section-title">À expédier</div>
         <div class="card" style="padding:0 14px" id="l-hab"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
       </div>
@@ -408,35 +402,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
     <button class="tab" id="tab-stats" data-tab="sc-stats" style="display:none"><i class="ti ti-chart-bar"></i>Stats</button>
   </div>
-</div>
-
-<!-- MODAL ATTRIBUTION DOTATION -->
-<div class="modal-overlay" id="m-dotation">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Attribuer un équipement</div>
-    <div class="modal-sub">Enregistrer avec date de péremption</div>
-    <div class="error-box" id="dot-err"></div>
-    <div class="form-group"><label class="form-label">Matricule SP *</label><input class="form-ctrl" id="dot-mat" placeholder="Ex: 400557" autocorrect="off"></div>
-    <div class="form-group"><label class="form-label">Équipement *</label>
-      <select class="form-ctrl" id="dot-eq"><option value="">Sélectionner…</option></select>
-    </div>
-    <div class="form-group"><label class="form-label">Numéro de série</label><input class="form-ctrl" id="dot-serie" placeholder="Ex: VI-2024-00123"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group"><label class="form-label">Date attribution</label><input class="form-ctrl" type="date" id="dot-attr"></div>
-      <div class="form-group"><label class="form-label">Date péremption</label><input class="form-ctrl" type="date" id="dot-perem"></div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Signature du SP</label>
-      <div class="sig-container">
-        <canvas id="sig-canvas"></canvas>
-        <button type="button" id="btn-clear-sig" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.1);border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">Effacer</button>
-      </div>
-      <div style="font-size:12px;color:var(--text2);margin-top:4px">Signez dans le cadre ci-dessus</div>
-    </div>
-    <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer l&#39;attribution</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-dotation">Annuler</button>
-  </div></div>
 </div>
 
 <!-- MODAL NOUVELLE DEMANDE -->
@@ -783,17 +748,7 @@ async function initApp(){
   if(btnSc) btnSc.style.display = (isAdmin||user.role==='habillement')?'flex':'none';
   await loadAll();
   subscribeRT();
-  // Alerte péremption au chargement
-  if(user.role==='sp'||simRole==='sp'){
-    const {data:dots} = await db.from('dotations').select('*').eq('utilisateur_id',user.id).eq('statut','actif');
-    if(dots){
-      const urgents = dots.filter(d=>{
-        if(!d.date_peremption) return false;
-        return Math.ceil((new Date(d.date_peremption)-new Date())/(1000*60*60*24)) < 30;
-      });
-      if(urgents.length) setTimeout(()=>toast('⚠️ '+urgents.length+' EPI arrivent à péremption !'), 2000);
-    }
-  }
+
   initToggles();
   // Afficher onglet stats pour habillement et admin
   const tabStats = document.getElementById('tab-stats');
@@ -1188,7 +1143,7 @@ function switchTab(tabId){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
   document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
-  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); loadDotations(); }
+  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); }
   if(tabId==='sc-stats'){ renderStats(); }
 }
 
@@ -1414,162 +1369,6 @@ async function saveProfilNotif(){
   user.notif_email= notif_email;
   user.notif_sms  = notif_sms;
   toast('Préférences enregistrées ✓');
-}
-
-// ── DOTATIONS & PÉREMPTIONS ─────────────────────────────
-let dotations = [];
-let sigCanvas = null;
-let sigCtx = null;
-let sigDrawing = false;
-let sigLastX = 0, sigLastY = 0;
-
-async async function loadDotations(){
-  if(!user) return;
-  const {data} = await db.from('dotations')
-    .select('*,equipements(nom)')
-    .eq('utilisateur_id', user.id)
-    .order('date_peremption', {ascending: true});
-  dotations = data || [];
-  renderDotations();
-}
-
-function peremStatus(dateStr){
-  if(!dateStr) return null;
-  const today = new Date();
-  const perem = new Date(dateStr);
-  const diffDays = Math.ceil((perem - today) / (1000*60*60*24));
-  if(diffDays < 0)  return {cls:'perem-exp',  txt:'⚠️ Expiré', days: diffDays};
-  if(diffDays < 30) return {cls:'perem-warn', txt:`⚠️ Expire dans ${diffDays}j`, days: diffDays};
-  return {cls:'perem-ok', txt:`✓ Valide (${diffDays}j)`, days: diffDays};
-}
-
-function renderDotations(){
-  const el = document.getElementById('list-dotations');
-  if(!el) return;
-  if(!dotations.length){
-    el.innerHTML = '<div class="empty"><i class="ti ti-package"></i><p>Aucune dotation enregistrée</p></div>';
-    return;
-  }
-  el.innerHTML = dotations.map(d => {
-    const st = peremStatus(d.date_peremption);
-    const emoji = d.equipements?.nom ? eqEmoji(d.equipements.nom) : '📦';
-    return `<div class="req-row">
-      <div style="font-size:22px;width:42px;text-align:center;flex-shrink:0">${emoji}</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:600">${d.equipements?.nom||'—'}</div>
-        <div style="font-size:12px;color:var(--text2)">${d.numero_serie ? 'N° '+d.numero_serie : 'Sans numéro'}</div>
-        ${d.date_attribution ? `<div style="font-size:12px;color:var(--text2)">Attribué le ${new Date(d.date_attribution).toLocaleDateString('fr-FR')}</div>` : ''}
-      </div>
-      <div style="text-align:right">
-        ${st ? `<div class="${st.cls}">${st.txt}</div>` : '<div style="font-size:12px;color:var(--text2)">Pas de date</div>'}
-        ${d.signature_url ? '<div style="font-size:11px;color:var(--green)">✓ Signé</div>' : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── SIGNATURE ──
-function initSignature(){
-  sigCanvas = document.getElementById('sig-canvas');
-  if(!sigCanvas) return;
-  sigCtx = sigCanvas.getContext('2d');
-
-  // Adapter la taille
-  const rect = sigCanvas.getBoundingClientRect();
-  sigCanvas.width  = sigCanvas.offsetWidth  || 340;
-  sigCanvas.height = sigCanvas.offsetHeight || 160;
-
-  sigCtx.strokeStyle = '#1C2833';
-  sigCtx.lineWidth   = 2.5;
-  sigCtx.lineCap     = 'round';
-  sigCtx.lineJoin    = 'round';
-
-  function getPos(e){
-    const r = sigCanvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { x: src.clientX - r.left, y: src.clientY - r.top };
-  }
-
-  sigCanvas.addEventListener('mousedown',  e => { sigDrawing=true; const p=getPos(e); sigLastX=p.x; sigLastY=p.y; });
-  sigCanvas.addEventListener('mousemove',  e => { if(!sigDrawing) return; draw(getPos(e)); });
-  sigCanvas.addEventListener('mouseup',    () => sigDrawing=false);
-  sigCanvas.addEventListener('mouseleave', () => sigDrawing=false);
-  sigCanvas.addEventListener('touchstart', e => { e.preventDefault(); sigDrawing=true; const p=getPos(e); sigLastX=p.x; sigLastY=p.y; }, {passive:false});
-  sigCanvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!sigDrawing) return; draw(getPos(e)); }, {passive:false});
-  sigCanvas.addEventListener('touchend',   () => sigDrawing=false);
-
-  document.getElementById('btn-clear-sig')?.addEventListener('click', clearSig);
-}
-
-function draw(pos){
-  sigCtx.beginPath();
-  sigCtx.moveTo(sigLastX, sigLastY);
-  sigCtx.lineTo(pos.x, pos.y);
-  sigCtx.stroke();
-  sigLastX = pos.x; sigLastY = pos.y;
-}
-
-function clearSig(){
-  if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-}
-
-function isSigEmpty(){
-  if(!sigCanvas) return true;
-  const data = sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data;
-  return !data.some(v => v !== 0);
-}
-
-async function uploadSignature(){
-  if(!sigCanvas || isSigEmpty()) return null;
-  return new Promise(resolve => {
-    sigCanvas.toBlob(async blob => {
-      if(!blob){ resolve(null); return; }
-      const path = `signatures/${Date.now()}_${Math.random().toString(36).slice(2)}.png`;
-      const {data, error} = await db.storage.from('photos-demandes').upload(path, blob, {contentType:'image/png'});
-      if(error){ resolve(null); return; }
-      const {data: urlData} = db.storage.from('photos-demandes').getPublicUrl(path);
-      resolve(urlData.publicUrl);
-    }, 'image/png');
-  });
-}
-
-async function saveDotation(){
-  const mat    = document.getElementById('dot-mat').value.trim();
-  const eqId   = document.getElementById('dot-eq').value;
-  const serie  = document.getElementById('dot-serie').value.trim();
-  const attr   = document.getElementById('dot-attr').value;
-  const perem  = document.getElementById('dot-perem').value;
-  const err    = document.getElementById('dot-err');
-
-  if(!mat||!eqId){ showErr('dot-err','Matricule et équipement obligatoires'); return; }
-
-  const btn = document.getElementById('btn-save-dotation');
-  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i>Enregistrement…';
-
-  // Trouver l'utilisateur par matricule
-  const {data: sp} = await db.from('utilisateurs').select('id').eq('matricule', mat).single();
-  if(!sp){ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i>Enregistrer'; showErr('dot-err','Matricule introuvable'); return; }
-
-  // Upload signature
-  btn.innerHTML = '<i class="ti ti-loader"></i>Signature…';
-  const signature_url = await uploadSignature();
-
-  const {error} = await db.from('dotations').insert({
-    utilisateur_id: sp.id,
-    equipement_id:  eqId,
-    numero_serie:   serie||null,
-    date_attribution: attr||null,
-    date_peremption:  perem||null,
-    signature_url,
-    statut: 'actif'
-  });
-
-  btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i>Enregistrer l&#39;attribution';
-  if(error){ showErr('dot-err','Erreur : '+error.message); return; }
-
-  closeModal('m-dotation');
-  clearSig();
-  toast('Attribution enregistrée ✓');
 }
 
 // ── PHOTO ────────────────────────────────────────────────
@@ -1867,23 +1666,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Photo upload
   initPhotoUpload();
 
-  // Dotations
-  const btnOpenDot = document.getElementById('btn-open-dotation');
-  if(btnOpenDot) btnOpenDot.addEventListener('click', ()=>{
-    // Remplir select équipements
-    const sel = document.getElementById('dot-eq');
-    sel.innerHTML = '<option value="">Sélectionner…</option>' + equipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
-    // Date attribution = aujourd'hui
-    document.getElementById('dot-attr').value = new Date().toISOString().split('T')[0];
-    document.getElementById('dot-mat').value = '';
-    document.getElementById('dot-serie').value = '';
-    document.getElementById('dot-perem').value = '';
-    hideErr('dot-err');
-    openModal('m-dotation');
-    setTimeout(initSignature, 100);
-  });
-  document.getElementById('btn-save-dotation')?.addEventListener('click', saveDotation);
-  document.getElementById('btn-cancel-dotation')?.addEventListener('click', ()=>closeModal('m-dotation'));
+
 
   // Stats
   document.getElementById('btn-export-excel').addEventListener('click', exportExcel);
@@ -1942,14 +1725,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 
-// Capturer toutes les erreurs JS
-window.onerror = function(msg, src, line, col, err){
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#DC2626;color:#fff;padding:12px;font-size:12px;z-index:9999;font-family:monospace;white-space:pre-wrap;word-break:break-all';
-  div.textContent = 'ERREUR JS:\n' + msg + '\nLigne: ' + line + '\n' + (err?.stack||'');
-  document.body.appendChild(div);
-  return false;
-};
 </script>
 </body>
 </html>
