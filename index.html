@@ -766,8 +766,8 @@ async function doLogin(){
       lbl.textContent='Mémoriser mon matricule';
       lbl.style.cursor='pointer';
       remRow.appendChild(cb); remRow.appendChild(lbl);
-      var btn = document.getElementById('btn-login');
-      btn.parentNode.insertBefore(remRow, btn);
+      var btnEl = document.getElementById('btn-login');
+      btnEl.parentNode.insertBefore(remRow, btnEl);
     }
     // Pré-cocher si déjà mémorisé
     var saved = localStorage.getItem('sdis_mat');
