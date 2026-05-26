@@ -1273,7 +1273,7 @@ function startBarcodeDetection(video){
       requestAnimationFrame(scan);
     }
     requestAnimationFrame(scan);
-  } catch(e){ console.log('ZXing non dispo:', e); }
+  } catch(e){ }
 }
 
 async function capturePhoto(){
@@ -1469,7 +1469,7 @@ async function uploadPhoto(file){
   const { data, error } = await db.storage
     .from('photos-demandes')
     .upload(path, file, { contentType: file.type, upsert: false });
-  if(error){ console.error('Upload photo:', error); return null; }
+  if(error){ return null; }
   const { data: urlData } = db.storage.from('photos-demandes').getPublicUrl(path);
   return urlData.publicUrl;
 }
@@ -1792,7 +1792,6 @@ async function loadDotations(){
       setTimeout(function(){ toast("⚠️ " + urgents.length + " EPI arrivent à péremption !"); }, 2000);
     }
   } catch(e) {
-    console.error("loadDotations:", e);
   }
 }
 
