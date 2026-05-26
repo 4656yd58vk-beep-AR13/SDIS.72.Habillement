@@ -236,7 +236,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <!-- RESPONSABLE -->
     <div id="v-resp" style="display:none">
-      
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="st-valider">—</div><div class="stat-label">À valider</div></div>
         <div class="stat-card"><div class="stat-num" id="st-total-r">—</div><div class="stat-label">Ce mois-ci</div></div>
@@ -267,6 +266,16 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <!-- ADMIN -->
     <div id="v-admin" style="display:none">
+
+      <div class="section">
+        <div class="section-title">Simuler une caserne</div>
+        <div class="card" style="padding:14px">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px">Sélectionnez une caserne avant de basculer en vue Responsable</div>
+          <select class="form-ctrl" id="select-caserne" style="font-size:13px">
+            <option value="">Toutes les casernes</option>
+          </select>
+        </div>
+      </div>
 
       <div class="section" style="padding-top:0">
         <div class="section-title">Membres enregistrés</div>
@@ -667,6 +676,7 @@ const ADMIN_MAT = '400557';
 // ── ÉTAT ────────────────────────────────────────────────
 let user = null;
 let simRole = null; // rôle simulé par l'admin
+let simCaserne = null; // caserne simulée par l'admin
 let loginStep = 1;
 let loginUserData = null;
 let demandes = [], equipements = [], membres = [];
@@ -828,7 +838,9 @@ function showView(role){
 // ── ADMIN SIMULATE ───────────────────────────────────────
 async function adminSim(role){
   simRole=role;
+  simCaserne=null; // reset caserne simulée
   showView(role);
+
   // Bouton retour
   const backId = {sp:'back-resp',responsable_caserne:'back-resp',habillement:'back-hab'}[role];
   const actualBackId = role==='sp'?null:role==='responsable_caserne'?'back-resp':'back-hab';
@@ -844,6 +856,8 @@ async function adminSim(role){
 
 async function backToAdmin(){
   simRole=null;
+  simCaserne=null;
+
   showView('admin');
   document.getElementById('h-badge').textContent='Admin';
   document.getElementById('h-sub').textContent='Administration';
@@ -857,10 +871,14 @@ async function backToAdmin(){
 
 // ── LOAD DATA ─────────────────────────────────────────────
 async function loadAll(){
-  let qDemandes = db.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false});
   const role = activeRole();
+  let qDemandes;
   if(role==='sp'){
+    // Vue SP : uniquement ses propres demandes (admin simulant inclus)
     qDemandes = db.from('demandes').select('*,equipements(nom,reference)').eq('utilisateur_id',user.id).order('created_at',{ascending:false});
+  } else {
+    // Autres vues : toutes les demandes avec info utilisateur
+    qDemandes = db.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false});
   }
   const [d,e,m] = await Promise.all([
     qDemandes,
@@ -869,15 +887,35 @@ async function loadAll(){
   ]);
   const raw = d.data||[];
   const isAdmin = user.role==='admin';
-  if(role==='sp' && !isAdmin){
+  const isSimulating = simRole !== null; // Admin en train de simuler un rôle
+
+  if(role==='sp'){
+    // Vue SP : admin simulant voit ses propres demandes (comme un vrai SP)
+    // Un vrai SP voit ses demandes (déjà filtré par la requête SQL)
     demandes = raw.filter(x=>x.utilisateur_id===user.id);
-  } else if(role==='responsable_caserne' && !isAdmin){
-    demandes = raw.filter(x=>x.utilisateurs&&x.utilisateurs.caserne===user.caserne);
+  } else if(role==='responsable_caserne'){
+    // Vue responsable : filtrer par caserne
+    // Admin peut choisir la caserne via simCaserne
+    const caserneFiltree = simCaserne || user.caserne;
+    demandes = caserneFiltree
+      ? raw.filter(x=>x.utilisateurs&&x.utilisateurs.caserne===caserneFiltree)
+      : raw;
   } else {
+    // Vue habillement, admin, gestionnaire : tout voir
     demandes = raw;
   }
   equipements = e.data||[];
   membres     = m.data||[];
+  // Remplir le sélecteur de casernes pour l'admin
+  if(user && user.role==='admin'){
+    const selC = document.getElementById('select-caserne');
+    if(selC){
+      const casernes = [...new Set(membres.map(function(m){ return m.caserne; }).filter(Boolean))].sort();
+      const current = selC.value;
+      selC.innerHTML = '<option value="">Toutes les casernes</option>' +
+        casernes.map(function(c){ return '<option value="'+c+'"'+(c===current?' selected':'')+'>'+c+'</option>'; }).join('');
+    }
+  }
 
   // Remplir select équipements
   const sel=document.getElementById('f-eq');
@@ -1949,6 +1987,16 @@ function loadDemandesFromCache(){
   document.getElementById('btn-cancel-cpw').addEventListener('click',()=>closeModal('m-changepw'));
 
 
+
+  // Sélecteur caserne admin
+  var selCaserne = document.getElementById('select-caserne');
+  if(selCaserne){
+    selCaserne.addEventListener('change', async function(){
+      simCaserne = this.value || null;
+      await loadAll();
+      toast(simCaserne ? 'Caserne : ' + simCaserne : 'Toutes les casernes');
+    });
+  }
 
   // Admin switcher
   const btnSwitcher = document.getElementById('btn-switcher');
