@@ -294,6 +294,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <button class="chip" data-filter="en_attente">En attente</button>
         <button class="chip" data-filter="valide_responsable">Validées</button>
         <button class="chip" data-filter="approuve_habillement">Approuvées</button>
+        <button class="chip" data-filter="remis">Remises</button>
+        <button class="chip" data-filter="receptionne">Reçues</button>
         <button class="chip" data-filter="refuse">Refusées</button>
       </div>
       <div id="l-history"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
@@ -687,11 +689,13 @@ const ROLE_LABELS = {sp:'Sapeur-Pompier', responsable_caserne:'Responsable habil
 const ROLE_BADGES = {sp:'SP', responsable_caserne:'Resp.', habillement:'Hab.', admin:'Admin'};
 const ROLE_SUBS   = {sp:'Portail équipements', responsable_caserne:'Validation des demandes', habillement:'Gestion des stocks', admin:'Administration'};
 const STATUT_CFG  = {
-  en_attente:           {lbl:'En attente',  cls:'bp'},
-  valide_responsable:   {lbl:'Validé',      cls:'bt'},
-  approuve_habillement: {lbl:'Approuvé',    cls:'ba'},
-  expedie:              {lbl:'Expédié',     cls:'bt'},
-  refuse:               {lbl:'Refusé',      cls:'br'}
+  en_attente:           {lbl:'En attente',   cls:'bp'},
+  valide_responsable:   {lbl:'Validé',       cls:'bt'},
+  approuve_habillement: {lbl:'Approuvé',     cls:'ba'},
+  expedie:              {lbl:'Expédié',      cls:'bt'},
+  remis:                {lbl:'Remis au SP',  cls:'ba'},
+  receptionne:          {lbl:'Reçu ✓',       cls:'ba'},
+  refuse:               {lbl:'Refusé',       cls:'br'}
 };
 const EQ_ICONS = [
   {k:'Veste',   cls:'ic1', i:'ti-shirt'},
@@ -934,13 +938,20 @@ function rowHtml(d, onclick){
   const role=activeRole();
   const isAdmin = user.role==='admin';
   const showMat = (role==='responsable_caserne'||role==='habillement'||isAdmin) && mat;
+  // Bouton confirmation réception pour SP si statut remis
+  const showConfirm = (role==='sp') && d.statut==='remis';
   return `<div class="req-row" data-id="${d.id}">
     <div class="eq-icon ${cls}" style="font-size:22px">${emoji}</div>
     <div class="req-info">
       <div class="req-name">${eq.nom||'—'}</div>
       <div class="req-detail">${d.motif||''}${showMat?' · <b>'+mat+'</b>':''}</div>
     </div>
-    <div class="req-meta"><span class="badge ${sc.cls}">${sc.lbl}</span><div class="req-date">${fmt(d.created_at)}</div></div>
+    <div class="req-meta">
+      ${showConfirm
+        ? `<button class="confirmer-btn btn-p" data-id="${d.id}" style="width:auto;padding:6px 11px;font-size:11px;background:var(--green)"><i class="ti ti-thumb-up" style="font-size:12px"></i>Confirmer</button>`
+        : `<span class="badge ${sc.cls}">${sc.lbl}</span><div class="req-date">${fmt(d.created_at)}</div>`
+      }
+    </div>
   </div>`;
 }
 
@@ -948,7 +959,18 @@ function bindRows(containerId, clickFn){
   const el=document.getElementById(containerId);
   if(!el)return;
   el.querySelectorAll('.req-row').forEach(row=>{
-    row.addEventListener('click',()=>clickFn(row.dataset.id));
+    row.addEventListener('click', function(e){
+      // Ne pas déclencher openDetail si on clique sur un bouton
+      if(e.target.closest('.confirmer-btn')) return;
+      clickFn(row.dataset.id);
+    });
+  });
+  // Bouton confirmer réception
+  el.querySelectorAll('.confirmer-btn').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      confirmerReception(btn.dataset.id);
+    });
   });
 }
 
@@ -956,7 +978,7 @@ function renderHome(){
   const role=activeRole();
   if(role==='sp'){
     document.getElementById('st-total').textContent=demandes.length;
-    document.getElementById('st-retrait').textContent=demandes.filter(d=>d.statut==='approuve_habillement').length;
+    document.getElementById('st-retrait').textContent=demandes.filter(d=>['approuve_habillement','expedie','remis'].includes(d.statut)).length;
 
     const el=document.getElementById('l-sp');
     el.innerHTML=demandes.length?demandes.slice(0,5).map(d=>rowHtml(d)).join(''):'<div class="empty"><i class="ti ti-inbox"></i><p>Aucune demande</p></div>';
@@ -994,16 +1016,30 @@ function renderHome(){
     });
     // À expédier
     const hEl=document.getElementById('l-hab');
-    hEl.innerHTML=aExp.length?aExp.map(d=>{
+    // Inclure aussi les expedie pour marquer comme remis
+    const aRemettre = demandes.filter(d=>d.statut==='expedie');
+    const aAfficher = [...aExp, ...aRemettre];
+    document.getElementById('st-exp').textContent = aExp.length + aRemettre.length;
+    hEl.innerHTML=aAfficher.length?aAfficher.map(d=>{
       const eq=d.equipements||{};const{cls,i}=eqIcon(eq.nom);
+      const btnLabel = d.statut==='valide_responsable'
+        ? '<i class="ti ti-send" style="font-size:13px"></i>Expédier'
+        : '<i class="ti ti-check" style="font-size:13px"></i>Remis';
+      const btnStyle = d.statut==='valide_responsable'
+        ? 'width:auto;padding:6px 11px;font-size:12px'
+        : 'width:auto;padding:6px 11px;font-size:12px;background:var(--green)';
+      const btnClass = d.statut==='valide_responsable' ? 'exp-btn btn-p' : 'remis-btn btn-p';
       return `<div class="req-row" data-id="${d.id}">
         <div class="eq-icon ${cls}" style="font-size:22px">${eqEmoji(eq.nom)}</div>
         <div class="req-info"><div class="req-name">${eq.nom||'—'}</div><div class="req-detail">${fmt(d.created_at)}</div></div>
-        <div class="req-meta"><button class="exp-btn btn-p" data-id="${d.id}" style="width:auto;padding:6px 11px;font-size:12px"><i class="ti ti-send" style="font-size:13px"></i>Expédier</button></div>
+        <div class="req-meta"><button class="${btnClass}" data-id="${d.id}" style="${btnStyle}">${btnLabel}</button></div>
       </div>`;
     }).join(''):'<div class="empty"><i class="ti ti-truck"></i><p>Rien à expédier</p></div>';
     hEl.querySelectorAll('.exp-btn').forEach(btn=>{
       btn.addEventListener('click',()=>expedier(btn.dataset.id));
+    });
+    hEl.querySelectorAll('.remis-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>marquerRemis(btn.dataset.id));
     });
   }
   if(role==='admin'){
@@ -1136,9 +1172,11 @@ function openDetail(id){
   const refused=d.statut==='refuse';
   const steps=[
     {t:'Demande créée',done:true},
-    {t:refused?'Demande refusée':'Validée par le responsable',done:['valide_responsable','approuve_habillement','expedie','refuse'].includes(d.statut),ko:refused,desc:refused?d.commentaire:''},
-    {t:'Approuvée par l\'habillement',done:['approuve_habillement','expedie'].includes(d.statut),hidden:refused},
-    {t:'Disponible au retrait',done:d.statut==='expedie',green:true,hidden:refused}
+    {t:refused?'Demande refusée':'Validée par le responsable',done:['valide_responsable','approuve_habillement','expedie','remis','receptionne','refuse'].includes(d.statut),ko:refused,desc:refused?d.commentaire:''},
+    {t:"Approuvée par l'habillement",done:['approuve_habillement','expedie','remis','receptionne'].includes(d.statut),hidden:refused},
+    {t:'Expédiée — prête au retrait',done:['expedie','remis','receptionne'].includes(d.statut),hidden:refused},
+    {t:'Remise au SP',done:['remis','receptionne'].includes(d.statut),hidden:refused},
+    {t:'Réception confirmée ✓',done:d.statut==='receptionne',green:true,hidden:refused}
   ].filter(s=>!s.hidden);
   document.getElementById('d-timeline').innerHTML=steps.map((s,idx)=>`
     <div class="tl-item">
@@ -1175,6 +1213,20 @@ async function expedier(id){
   const{error}=await db.from('demandes').update({statut:'expedie',updated_at:new Date().toISOString()}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Expédition confirmée ✓');
+  await loadAll();
+}
+
+async function confirmerReception(id){
+  const{error}=await db.from('demandes').update({statut:'receptionne',updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Réception confirmée ! Merci 🎉');
+  await loadAll();
+}
+
+async function marquerRemis(id){
+  const{error}=await db.from('demandes').update({statut:'remis',updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Équipement marqué comme remis ✓');
   await loadAll();
 }
 
