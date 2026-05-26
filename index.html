@@ -758,8 +758,14 @@ async function doLogin(){
       var remRow = document.createElement('div');
       remRow.id = 'remember-row';
       remRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--text2)';
-      remRow.innerHTML = '<input type="checkbox" id="cb-remember" style="width:16px;height:16px;accent-color:var(--red);cursor:pointer">' +
-        '<label for="cb-remember" style="cursor:pointer">Mémoriser mon matricule</label>';
+      var cb = document.createElement('input');
+      cb.type='checkbox'; cb.id='cb-remember';
+      cb.style.cssText='width:16px;height:16px;cursor:pointer';
+      var lbl = document.createElement('label');
+      lbl.setAttribute('for','cb-remember');
+      lbl.textContent='Mémoriser mon matricule';
+      lbl.style.cursor='pointer';
+      remRow.appendChild(cb); remRow.appendChild(lbl);
       var btn = document.getElementById('btn-login');
       btn.parentNode.insertBefore(remRow, btn);
     }
