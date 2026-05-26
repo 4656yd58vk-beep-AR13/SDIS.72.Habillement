@@ -174,7 +174,12 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </div>
       <div class="form-group" id="pw-grp" style="display:none">
         <label class="form-label">Mot de passe</label>
+        <div style="position:relative">
         <input class="form-ctrl" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px">
+        <button type="button" onclick="togglePw('l-pw', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div>
       </div>
       <button class="btn-p" id="btn-login"><i class="ti ti-login"></i><span id="btn-login-txt">Continuer</span></button>
     </div>
@@ -193,11 +198,21 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <div class="error-box" id="newpw-err"></div>
       <div class="form-group">
         <label class="form-label">Mot de passe</label>
+        <div style="position:relative">
         <input class="form-ctrl" id="np-1" type="password" placeholder="Minimum 6 caractères" style="font-size:16px">
+        <button type="button" onclick="togglePw('np-1', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div>
       </div>
       <div class="form-group">
         <label class="form-label">Confirmer</label>
+        <div style="position:relative">
         <input class="form-ctrl" id="np-2" type="password" placeholder="Répétez le mot de passe" style="font-size:16px">
+        <button type="button" onclick="togglePw('np-2', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div>
       </div>
       <button class="btn-p" id="btn-newpw"><i class="ti ti-check"></i>Enregistrer</button>
     </div>
@@ -600,9 +615,24 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Changer mon mot de passe</div>
     <div class="error-box" id="cpw-err"></div>
-    <div class="form-group"><label class="form-label">Mot de passe actuel</label><input class="form-ctrl" id="cpw-old" type="password"></div>
-    <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input class="form-ctrl" id="cpw-1" type="password" placeholder="Minimum 6 caractères"></div>
-    <div class="form-group"><label class="form-label">Confirmer</label><input class="form-ctrl" id="cpw-2" type="password"></div>
+    <div class="form-group"><label class="form-label">Mot de passe actuel</label><div style="position:relative">
+        <input class="form-ctrl" id="cpw-old" type="password">
+        <button type="button" onclick="togglePw('cpw-old', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div></div>
+    <div class="form-group"><label class="form-label">Nouveau mot de passe</label><div style="position:relative">
+        <input class="form-ctrl" id="cpw-1" type="password" placeholder="Minimum 6 caractères">
+        <button type="button" onclick="togglePw('cpw-1', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div></div>
+    <div class="form-group"><label class="form-label">Confirmer</label><div style="position:relative">
+        <input class="form-ctrl" id="cpw-2" type="password">
+        <button type="button" onclick="togglePw('cpw-2', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;font-size:18px;line-height:1">
+          <i class="ti ti-eye"></i>
+        </button>
+      </div></div>
     <button class="btn-p" id="btn-save-cpw"><i class="ti ti-lock"></i>Mettre à jour</button>
     <div style="height:7px"></div>
     <button class="btn-s" id="btn-cancel-cpw">Annuler</button>
@@ -753,6 +783,19 @@ async function doLogin(){
     document.getElementById('pw-grp').style.display='block';
     document.getElementById('l-pw').focus();
     txt.textContent='Se connecter';
+    // Proposer de mémoriser le matricule
+    if(!document.getElementById('remember-row')){
+      var remRow = document.createElement('div');
+      remRow.id = 'remember-row';
+      remRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--text2)';
+      remRow.innerHTML = '<input type="checkbox" id="cb-remember" style="width:16px;height:16px;accent-color:var(--red);cursor:pointer">' +
+        '<label for="cb-remember" style="cursor:pointer">Mémoriser mon matricule</label>';
+      var btn = document.getElementById('btn-login');
+      btn.parentNode.insertBefore(remRow, btn);
+    }
+    // Pré-cocher si déjà mémorisé
+    var saved = localStorage.getItem('sdis_mat');
+    if(saved) document.getElementById('cb-remember').checked = true;
     return;
   }
 
@@ -771,6 +814,13 @@ async function doLogin(){
     showErr('login-err','Mot de passe incorrect.');return;
   }
   user=d; hideErr('login-err'); btn.disabled=false;
+  // Sauvegarder ou supprimer le matricule selon la checkbox
+  var cbRemember = document.getElementById('cb-remember');
+  if(cbRemember && cbRemember.checked){
+    localStorage.setItem('sdis_mat', d.matricule);
+  } else {
+    localStorage.removeItem('sdis_mat');
+  }
   showPage('pg-app');
   initApp();
   if(d.matricule==='400398') setTimeout(showHearts, 300);
@@ -794,7 +844,10 @@ async function saveNewPw(){
 function doLogout(){
   user=null; simRole=null; loginStep=1; loginUserData=null;
   demandes=[]; equipements=[]; membres=[];
-  document.getElementById('l-mat').value='';
+  // Garder le matricule si mémorisé
+  if(!localStorage.getItem('sdis_mat')){
+    document.getElementById('l-mat').value='';
+  }
   document.getElementById('l-pw').value='';
   document.getElementById('pw-grp').style.display='none';
   document.getElementById('btn-login-txt').textContent='Continuer';
@@ -855,14 +908,14 @@ async function adminSim(role){
   const actualBackId = role==='sp'?null:role==='responsable_caserne'?'back-resp':'back-hab';
   // Afficher bouton retour dans la vue
   // Mettre à jour le header avec badge + indicateur vue simulée
-  document.getElementById('h-badge').textContent = 'Vue '+ROLE_BADGES[role];
-  document.getElementById('h-badge').style.background = 'rgba(255,200,0,0.3)';
+  document.getElementById('h-badge').textContent = ROLE_BADGES[role];
+  document.getElementById('h-badge').style.background = 'rgba(255,200,0,0.35)';
   document.getElementById('h-badge').style.color = '#fff';
-  document.getElementById('h-sub').textContent = '↩ Retour admin · ' + ROLE_SUBS[role];
-  document.getElementById('h-sub').style.cursor = 'pointer';
-  // Changer texte du switcher
+  document.getElementById('h-sub').textContent = ROLE_SUBS[role];
+  document.getElementById('h-sub').style.cursor = '';
+  // Bouton retour admin compact
   const sw = document.getElementById('btn-switcher');
-  if(sw){ sw.innerHTML = '<i class="ti ti-arrow-left" style="font-size:13px"></i>Retour admin'; sw.style.background='rgba(255,200,0,0.25)'; }
+  if(sw){ sw.innerHTML = '<i class="ti ti-corner-up-left" style="font-size:14px"></i>Admin'; sw.style.background='rgba(255,200,0,0.25)'; }
   await loadAll();
   switchTab('sc-home');
   updateSwitcherActive(role);
@@ -1850,6 +1903,15 @@ async function uploadSignature(){
 }
 
 // ── DOTATIONS ────────────────────────────────────────────
+function togglePw(inputId, btn){
+  var input = document.getElementById(inputId);
+  if(!input) return;
+  var isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  var icon = btn.querySelector('i');
+  if(icon) icon.className = isPassword ? 'ti ti-eye-off' : 'ti ti-eye';
+}
+
 function dotStatus(dateStr){
   if(!dateStr) return null;
   const diff = Math.ceil((new Date(dateStr) - new Date()) / 86400000);
@@ -1960,6 +2022,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Login
   document.getElementById('btn-login').addEventListener('click', doLogin);
   document.getElementById('l-mat').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+// Pré-remplir le matricule mémorisé
+var savedMat = localStorage.getItem('sdis_mat');
+if(savedMat){
+  document.getElementById('l-mat').value = savedMat;
+  // Afficher message discret
+  var hint = document.createElement('div');
+  hint.style.cssText = 'font-size:12px;color:rgba(255,255,255,0.6);text-align:center;margin-top:8px';
+  hint.textContent = 'Matricule mémorisé — appuyez sur Continuer';
+  var card = document.querySelector('.auth-card');
+  if(card) card.appendChild(hint);
+}
 
 
 
