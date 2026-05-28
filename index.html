@@ -916,7 +916,7 @@ function showPage(id){
 }
 
 function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
-function hideErr(id){document.getElementById(id).style.display='none';}
+function hideErr(id){var el=document.getElementById(id);if(el)el.style.display='none';}
 
 async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
@@ -2469,14 +2469,20 @@ if(savedMat){
   // Gardes
   var btnNewGarde = document.getElementById('btn-new-garde');
   if(btnNewGarde) btnNewGarde.addEventListener('click', function(){
-    document.getElementById('g-date').value = '';
-    document.getElementById('g-motif').value = '';
-    hideErr('garde-err');
+    var gDate = document.getElementById('g-date');
+    var gMotif = document.getElementById('g-motif');
+    var gErr = document.getElementById('garde-err');
+    if(gDate) gDate.value = '';
+    if(gMotif) gMotif.value = '';
+    if(gErr) gErr.style.display = 'none';
     openModal('m-new-garde');
   });
-  document.getElementById('btn-submit-garde').addEventListener('click', submitGarde);
-  document.getElementById('btn-cancel-garde').addEventListener('click', function(){ closeModal('m-new-garde'); });
-  document.getElementById('btn-close-garde').addEventListener('click', function(){ closeModal('m-detail-garde'); });
+  var btnSubmitGarde = document.getElementById('btn-submit-garde');
+  if(btnSubmitGarde) btnSubmitGarde.addEventListener('click', submitGarde);
+  var btnCancelGarde = document.getElementById('btn-cancel-garde');
+  if(btnCancelGarde) btnCancelGarde.addEventListener('click', function(){ closeModal('m-new-garde'); });
+  var btnCloseGarde = document.getElementById('btn-close-garde');
+  if(btnCloseGarde) btnCloseGarde.addEventListener('click', function(){ closeModal('m-detail-garde'); });
 
   // Filtres gardes
   document.querySelectorAll('[data-gfilter]').forEach(function(btn){
