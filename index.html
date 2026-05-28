@@ -335,7 +335,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <div class="section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="section-title" style="margin-bottom:0">Échanges de gardes</div>
-        <button class="btn-p" id="btn-new-garde" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
+        <button class="btn-p" onclick="openNewGarde()" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
       </div>
       <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges entre collègues — la validation officielle reste dans Artemis.</div>
 
@@ -587,9 +587,9 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison de l'échange..."></textarea>
     </div>
 
-    <button class="btn-p" id="btn-submit-garde"><i class="ti ti-send"></i>Publier la demande</button>
+    <button class="btn-p" onclick="submitGarde()"><i class="ti ti-send"></i>Publier la demande</button>
     <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-garde">Annuler</button>
+    <button class="btn-s" onclick="closeModal('m-new-garde')">Annuler</button>
   </div></div>
 </div>
 
@@ -608,7 +608,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
     <div style="height:7px"></div>
-    <button class="btn-s" id="btn-close-garde">Fermer</button>
+    <button class="btn-s" onclick="closeModal('m-detail-garde')">Fermer</button>
   </div></div>
 </div>
 
@@ -2185,6 +2185,16 @@ async function updateGardeStatut(id, statut){
   await loadGardes();
 }
 
+function openNewGarde(){
+  var gDate = document.getElementById('g-date');
+  var gMotif = document.getElementById('g-motif');
+  var gErr = document.getElementById('garde-err');
+  if(gDate) gDate.value = '';
+  if(gMotif) gMotif.value = '';
+  if(gErr) gErr.style.display = 'none';
+  openModal('m-new-garde');
+}
+
 async function submitGarde(){
   var date  = document.getElementById('g-date').value;
   var type  = document.getElementById('g-type').value;
@@ -2467,22 +2477,7 @@ if(savedMat){
   document.getElementById('btn-cancel-membre').addEventListener('click',()=>closeModal('m-membre'));
 
   // Gardes
-  var btnNewGarde = document.getElementById('btn-new-garde');
-  if(btnNewGarde) btnNewGarde.addEventListener('click', function(){
-    var gDate = document.getElementById('g-date');
-    var gMotif = document.getElementById('g-motif');
-    var gErr = document.getElementById('garde-err');
-    if(gDate) gDate.value = '';
-    if(gMotif) gMotif.value = '';
-    if(gErr) gErr.style.display = 'none';
-    openModal('m-new-garde');
-  });
-  var btnSubmitGarde = document.getElementById('btn-submit-garde');
-  if(btnSubmitGarde) btnSubmitGarde.addEventListener('click', submitGarde);
-  var btnCancelGarde = document.getElementById('btn-cancel-garde');
-  if(btnCancelGarde) btnCancelGarde.addEventListener('click', function(){ closeModal('m-new-garde'); });
-  var btnCloseGarde = document.getElementById('btn-close-garde');
-  if(btnCloseGarde) btnCloseGarde.addEventListener('click', function(){ closeModal('m-detail-garde'); });
+
 
   // Filtres gardes
   document.querySelectorAll('[data-gfilter]').forEach(function(btn){
