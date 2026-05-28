@@ -325,13 +325,29 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 
   <!-- GARDES -->
   <div class="screen" id="sc-gardes">
+    <!-- Stats gardes -->
+    <div class="stat-grid" style="padding:14px 16px 0">
+      <div class="stat-card"><div class="stat-num" id="gst-open" style="color:var(--amber)">—</div><div class="stat-label">Ouvertes</div></div>
+      <div class="stat-card"><div class="stat-num" id="gst-prop" style="color:var(--blue)">—</div><div class="stat-label">Proposées</div></div>
+      <div class="stat-card"><div class="stat-num" id="gst-valid" style="color:var(--green)">—</div><div class="stat-label">Validées</div></div>
+    </div>
+
     <div class="section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="section-title" style="margin-bottom:0">Échanges de gardes</div>
         <button class="btn-p" id="btn-new-garde" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
       </div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Organisez vos échanges de créneaux entre collègues — la validation officielle reste dans Artemis.</div>
-      <div id="l-gardes">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges entre collègues — la validation officielle reste dans Artemis.</div>
+
+      <!-- Filtres -->
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px">
+        <button class="chip active" data-gfilter="all">Toutes</button>
+        <button class="chip" data-gfilter="ouverte">Ouvertes</button>
+        <button class="chip" data-gfilter="proposee">Proposées</button>
+        <button class="chip" data-gfilter="validee">Validées</button>
+      </div>
+
+      <div class="card" style="padding:0 14px" id="l-gardes">
         <div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande d'échange</p></div>
       </div>
     </div>
@@ -530,6 +546,70 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <button class="tab" data-tab="sc-sdis"><i class="ti ti-link"></i>SDIS</button>
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
   </div>
+</div>
+
+<!-- MODAL NOUVELLE GARDE -->
+<div class="modal-overlay" id="m-new-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Demande d'échange de garde</div>
+    <div class="modal-sub">Trouvez un collègue pour reprendre votre créneau</div>
+    <div class="error-box" id="garde-err"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date de la garde *</label>
+        <input class="form-ctrl" type="date" id="g-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de garde *</label>
+        <select class="form-ctrl" id="g-type">
+          <option value="journee">Journée</option>
+          <option value="nuit">Nuit</option>
+          <option value="24h">24h</option>
+          <option value="weekend">Week-end</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="g-debut" value="08:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure fin</label>
+        <input class="form-ctrl" type="time" id="g-fin" value="18:00">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Motif</label>
+      <textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison de l'échange..."></textarea>
+    </div>
+
+    <button class="btn-p" id="btn-submit-garde"><i class="ti ti-send"></i>Publier la demande</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-garde">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DÉTAIL GARDE -->
+<div class="modal-overlay" id="m-detail-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Détail de l'échange</div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Date</label><span id="gd-date">—</span></div>
+      <div class="ig-item"><label>Type</label><span id="gd-type">—</span></div>
+      <div class="ig-item"><label>Horaires</label><span id="gd-horaires">—</span></div>
+      <div class="ig-item"><label>Demandeur</label><span id="gd-demandeur">—</span></div>
+      <div class="ig-item"><label>Remplaçant</label><span id="gd-remplacant">—</span></div>
+      <div class="ig-item"><label>Motif</label><span id="gd-motif">—</span></div>
+      <div class="ig-item"><label>Statut</label><span id="gd-statut">—</span></div>
+    </div>
+    <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-close-garde">Fermer</button>
+  </div></div>
 </div>
 
 <!-- MODAL DOTATION -->
@@ -1490,6 +1570,7 @@ function switchTab(tabId){
   var subnav = document.getElementById('epi-subnav');
   if(subnav) subnav.style.display = 'none';
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
+  if(tabId==='sc-gardes'){ loadGardes(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -1955,6 +2036,181 @@ function updateSwitcherActive(role){
   });
 }
 
+// ── GARDES ───────────────────────────────────────────────
+var gardes = [];
+var gardeFilter = 'all';
+var currentGardeId = null;
+
+const GARDE_TYPE_LBL = {
+  journee: 'Journée', nuit: 'Nuit', '24h': '24h', weekend: 'Week-end'
+};
+const GARDE_STATUT_CFG = {
+  ouverte:  {lbl:'Ouverte',   cls:'bp', emoji:'🟡'},
+  proposee: {lbl:'Proposée',  cls:'bt', emoji:'🔵'},
+  validee:  {lbl:'Validée',   cls:'ba', emoji:'🟢'},
+  refusee:  {lbl:'Refusée',   cls:'br', emoji:'🔴'},
+  annulee:  {lbl:'Annulée',   cls:'br', emoji:'⚫'},
+};
+
+async function loadGardes(){
+  if(!user) return;
+  var q = db.from('gardes')
+    .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
+    .order('date_garde', {ascending:true});
+  // SP voit les siennes + les ouvertes de sa caserne
+  var role = activeRole();
+  var res = await q;
+  gardes = res.data || [];
+  renderGardes();
+}
+
+function renderGardes(){
+  // Stats
+  var open  = gardes.filter(function(g){return g.statut==='ouverte';}).length;
+  var prop  = gardes.filter(function(g){return g.statut==='proposee';}).length;
+  var valid = gardes.filter(function(g){return g.statut==='validee';}).length;
+  var gstOpen = document.getElementById('gst-open');
+  var gstProp = document.getElementById('gst-prop');
+  var gstValid = document.getElementById('gst-valid');
+  if(gstOpen) gstOpen.textContent = open;
+  if(gstProp) gstProp.textContent = prop;
+  if(gstValid) gstValid.textContent = valid;
+
+  var filtered = gardeFilter==='all' ? gardes : gardes.filter(function(g){return g.statut===gardeFilter;});
+  var el = document.getElementById('l-gardes');
+  if(!el) return;
+  if(!filtered.length){
+    el.innerHTML = "<div class='empty'><i class='ti ti-calendar-event'></i><p>Aucune demande d'échange</p></div>";
+    return;
+  }
+  el.innerHTML = filtered.map(function(g){
+    var sc = GARDE_STATUT_CFG[g.statut] || {lbl:g.statut,cls:'bp',emoji:'📋'};
+    var typeLbl = GARDE_TYPE_LBL[g.type_garde] || g.type_garde;
+    var dateStr = g.date_garde ? new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}) : '—';
+    var isMine = g.demandeur_id === user.id;
+    return '<div class="req-row" data-gid="'+g.id+'" style="cursor:pointer">' +
+      '<div style="font-size:28px;width:42px;text-align:center;flex-shrink:0">'+sc.emoji+'</div>' +
+      '<div class="req-info">' +
+        '<div class="req-name">'+dateStr+' — '+typeLbl+'</div>' +
+        '<div class="req-detail">'+(isMine?'Ma garde':'Mat. '+(g.demandeur&&g.demandeur.matricule||'?'))+(g.motif?' · '+g.motif:'')+'</div>' +
+      '</div>' +
+      '<div class="req-meta"><span class="badge '+sc.cls+'">'+sc.lbl+'</span></div>' +
+    '</div>';
+  }).join('');
+
+  // Brancher les clics
+  el.querySelectorAll('[data-gid]').forEach(function(row){
+    row.addEventListener('click', function(){ openGardeDetail(row.dataset.gid); });
+  });
+}
+
+function openGardeDetail(id){
+  currentGardeId = id;
+  var g = gardes.find(function(x){return x.id===id;});
+  if(!g) return;
+  var sc = GARDE_STATUT_CFG[g.statut] || {lbl:g.statut};
+  var dateStr = g.date_garde ? new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('gd-date').textContent = dateStr;
+  document.getElementById('gd-type').textContent = GARDE_TYPE_LBL[g.type_garde]||g.type_garde;
+  document.getElementById('gd-horaires').textContent = (g.heure_debut&&g.heure_fin) ? g.heure_debut+' → '+g.heure_fin : '—';
+  document.getElementById('gd-demandeur').textContent = g.demandeur ? 'Mat. '+g.demandeur.matricule : '—';
+  document.getElementById('gd-remplacant').textContent = g.remplacant ? 'Mat. '+g.remplacant.matricule : 'En recherche';
+  document.getElementById('gd-motif').textContent = g.motif||'—';
+  document.getElementById('gd-statut').textContent = sc.lbl;
+
+  // Actions selon rôle et statut
+  var actions = document.getElementById('gd-actions');
+  actions.innerHTML = '';
+  var role = activeRole();
+  var isMine = g.demandeur_id === user.id;
+
+  // SP peut proposer de reprendre une garde ouverte
+  if(g.statut==='ouverte' && !isMine){
+    var btn = document.createElement('button');
+    btn.className = 'btn-p';
+    btn.innerHTML = "<i class='ti ti-hand-stop'></i>Je reprends cette garde";
+    btn.addEventListener('click', function(){ proposerReprise(id); });
+    actions.appendChild(btn);
+  }
+  // Demandeur peut annuler sa garde ouverte
+  if(isMine && g.statut==='ouverte'){
+    var btn2 = document.createElement('button');
+    btn2.className = 'btn-s';
+    btn2.style.color = '#DC2626';
+    btn2.style.borderColor = '#DC2626';
+    btn2.innerHTML = "<i class='ti ti-x'></i>Annuler ma demande";
+    btn2.addEventListener('click', function(){ updateGardeStatut(id,'annulee'); });
+    actions.appendChild(btn2);
+  }
+  // Responsable/admin peut valider ou refuser une garde proposée
+  if((role==='responsable_caserne'||user.role==='admin') && g.statut==='proposee'){
+    var btnV = document.createElement('button');
+    btnV.className = 'btn-p';
+    btnV.innerHTML = "<i class='ti ti-check'></i>Valider l'échange";
+    btnV.addEventListener('click', function(){ updateGardeStatut(id,'validee'); });
+    actions.appendChild(btnV);
+    var btnR = document.createElement('button');
+    btnR.className = 'btn-s';
+    btnR.style.color = '#DC2626';
+    btnR.style.borderColor = '#DC2626';
+    btnR.innerHTML = "<i class='ti ti-x'></i>Refuser l'échange";
+    btnR.addEventListener('click', function(){ updateGardeStatut(id,'refusee'); });
+    actions.appendChild(btnR);
+  }
+
+  openModal('m-detail-garde');
+}
+
+async function proposerReprise(id){
+  var res = await db.from('gardes').update({
+    remplacant_id: user.id,
+    statut: 'proposee',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-detail-garde');
+  toast('Proposition envoyée ! En attente de validation ✓');
+  await loadGardes();
+}
+
+async function updateGardeStatut(id, statut){
+  var res = await db.from('gardes').update({
+    statut: statut,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-detail-garde');
+  var msgs = {validee:'Échange validé ✓', refusee:'Échange refusé', annulee:'Demande annulée'};
+  toast(msgs[statut]||'Mise à jour effectuée');
+  await loadGardes();
+}
+
+async function submitGarde(){
+  var date  = document.getElementById('g-date').value;
+  var type  = document.getElementById('g-type').value;
+  var debut = document.getElementById('g-debut').value;
+  var fin   = document.getElementById('g-fin').value;
+  var motif = document.getElementById('g-motif').value.trim();
+  if(!date||!type){ showErr('garde-err','La date et le type sont obligatoires'); return; }
+
+  var btn = document.getElementById('btn-submit-garde');
+  btn.disabled = true;
+  var res = await db.from('gardes').insert({
+    demandeur_id: user.id,
+    date_garde: date,
+    type_garde: type,
+    heure_debut: debut||null,
+    heure_fin: fin||null,
+    motif: motif||null,
+    statut: 'ouverte'
+  });
+  btn.disabled = false;
+  if(res.error){ showErr('garde-err','Erreur : '+res.error.message); return; }
+  closeModal('m-new-garde');
+  toast('Demande publiée ✓ Vos collègues peuvent y répondre');
+  await loadGardes();
+}
+
 // ── SIGNATURE ────────────────────────────────────────────
 var sigDrawing = false;
 var sigLastX = 0;
@@ -2209,6 +2465,28 @@ if(savedMat){
   document.getElementById('btn-add-admin').addEventListener('click',()=>{hideErr('membre-err');openModal('m-membre');});
   document.getElementById('btn-save-membre').addEventListener('click', saveMembre);
   document.getElementById('btn-cancel-membre').addEventListener('click',()=>closeModal('m-membre'));
+
+  // Gardes
+  var btnNewGarde = document.getElementById('btn-new-garde');
+  if(btnNewGarde) btnNewGarde.addEventListener('click', function(){
+    document.getElementById('g-date').value = '';
+    document.getElementById('g-motif').value = '';
+    hideErr('garde-err');
+    openModal('m-new-garde');
+  });
+  document.getElementById('btn-submit-garde').addEventListener('click', submitGarde);
+  document.getElementById('btn-cancel-garde').addEventListener('click', function(){ closeModal('m-new-garde'); });
+  document.getElementById('btn-close-garde').addEventListener('click', function(){ closeModal('m-detail-garde'); });
+
+  // Filtres gardes
+  document.querySelectorAll('[data-gfilter]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      gardeFilter = btn.dataset.gfilter;
+      document.querySelectorAll('[data-gfilter]').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderGardes();
+    });
+  });
 
   // Dotations
   var btnOpenDot = document.getElementById("btn-open-dotation");
