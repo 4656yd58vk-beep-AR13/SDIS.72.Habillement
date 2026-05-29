@@ -96,7 +96,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
 .chip{display:inline-flex;align-items:center;padding:5px 13px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap}
 .chip.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:0 16px max(env(safe-area-inset-bottom),24px);width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
 .modal-inner{padding:18px 0}
@@ -171,10 +171,9 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .drawer-section{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;padding:10px 18px 3px}
 .drawer-footer{padding:8px 0 max(env(safe-area-inset-bottom),12px);border-top:1px solid var(--border);flex-shrink:0}
 .main-header{position:sticky;top:0;background:var(--red);padding:max(env(safe-area-inset-top),14px) 14px 12px;display:flex;align-items:center;gap:10px;z-index:50;flex-shrink:0}
-.main-header-btn{background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px;-webkit-tap-highlight-color:transparent}
+.main-header-btn{background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px}
 .main-header-title{color:#fff;font-size:16px;font-weight:700;flex:1;font-family:inherit}
 .main-header-badge{background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:inherit;cursor:pointer}
-
 </style>
 </head>
 <body>
@@ -226,64 +225,48 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 </div>
 
 <!-- APPLI -->
+<div class="app" id="pg-app" style="display:none">
   <!-- DRAWER OVERLAY -->
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
-  <!-- DRAWER LATERAL -->
+  <!-- DRAWER -->
   <div class="drawer" id="drawer">
     <div class="drawer-head">
       <div class="drawer-avatar"><i class="ti ti-shield" style="color:#fff;font-size:18px"></i></div>
       <div style="flex:1;min-width:0">
         <div style="color:#fff;font-weight:700;font-size:15px">CSP LFB</div>
-        <div style="color:rgba(255,255,255,0.75);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="drawer-sub">—</div>
+        <div style="color:rgba(255,255,255,0.75);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="drawer-sub">—</div>
       </div>
-      <button class="main-header-btn" id="btn-close-drawer" style="color:rgba(255,255,255,0.8)"><i class="ti ti-x" style="font-size:20px"></i></button>
+      <button class="main-header-btn" id="btn-close-drawer"><i class="ti ti-x" style="font-size:20px"></i></button>
     </div>
     <div class="drawer-body">
       <div class="drawer-section">Modules</div>
-      <button class="drawer-item active" data-drawer="sc-home" id="di-epi">
-        <i class="ti ti-shield"></i><span>EPI</span>
-      </button>
-      <button class="drawer-item" data-drawer="sc-gardes" id="di-gardes">
-        <i class="ti ti-calendar-event"></i><span>Gardes</span>
-      </button>
-      <button class="drawer-item" data-drawer="sc-amicale" id="di-amicale">
-        <i class="ti ti-heart"></i><span>Amicale</span>
-      </button>
-      <button class="drawer-item" data-drawer="sc-sdis" id="di-sdis">
-        <i class="ti ti-building"></i><span>Portail SDIS</span>
-      </button>
+      <button class="drawer-item active" id="di-epi" data-drawer="sc-home"><i class="ti ti-shield"></i><span>EPI</span></button>
+      <button class="drawer-item" id="di-gardes" data-drawer="sc-gardes"><i class="ti ti-calendar-event"></i><span>Gardes</span></button>
+      <button class="drawer-item" id="di-amicale" data-drawer="sc-amicale"><i class="ti ti-heart"></i><span>Amicale</span></button>
+      <button class="drawer-item" id="di-sdis" data-drawer="sc-sdis"><i class="ti ti-building"></i><span>Portail SDIS</span></button>
       <div class="drawer-sep"></div>
-      <div class="drawer-section">Compte</div>
-      <button class="drawer-item" data-drawer="sc-profile" id="di-profile">
-        <i class="ti ti-user-circle"></i><span>Mon profil</span>
-      </button>
+      <button class="drawer-item" id="di-profile" data-drawer="sc-profile"><i class="ti ti-user-circle"></i><span>Mon profil</span></button>
       <div class="drawer-sep"></div>
-      <div class="drawer-section" id="drawer-admin-section" style="display:none">Administration</div>
-      <button class="drawer-item" id="di-switch" style="display:none">
-        <i class="ti ti-switch-horizontal"></i><span>Changer de vue</span>
-      </button>
+      <div class="drawer-section" id="drawer-admin-sec" style="display:none">Administration</div>
+      <button class="drawer-item" id="di-switch" style="display:none"><i class="ti ti-switch-horizontal"></i><span>Changer de vue</span></button>
     </div>
     <div class="drawer-footer">
-      <button class="drawer-item" id="di-logout" style="color:#DC2626">
-        <i class="ti ti-logout" style="color:#DC2626"></i><span>Se déconnecter</span>
-      </button>
+      <button class="drawer-item" id="di-logout" style="color:#DC2626"><i class="ti ti-logout" style="color:#DC2626"></i><span>Se déconnecter</span></button>
     </div>
   </div>
 
-<div class="app" id="pg-app" style="display:none">
-  <!-- HEADER PRINCIPAL -->
-  <div class="main-header" id="main-header">
-    <button class="main-header-btn" id="btn-open-drawer" aria-label="Menu">
-      <i class="ti ti-menu-2" style="font-size:22px"></i>
-    </button>
+  <!-- HEADER -->
+  <div class="main-header">
+    <button class="main-header-btn" id="btn-open-drawer"><i class="ti ti-menu-2" style="font-size:22px"></i></button>
     <div class="main-header-title" id="h-module-title">EPI</div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="main-header-badge" id="h-badge">—</span>
-      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;padding:5px 10px;gap:5px;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap"><i class="ti ti-switch-horizontal" style="font-size:13px"></i>Vues</button>
+      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit"><i class="ti ti-switch-horizontal" style="font-size:13px"></i> Vues</button>
+    </div>
   </div>
 
-  <!-- ACCUEIL -->
+  <!-- ACCUEIL -->  <!-- ACCUEIL -->
   <!-- SOUS-NAV EPI -->
   <div id="epi-subnav" style="display:none;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
     <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
@@ -495,7 +478,59 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   </div>
 
 
-  <!-- PROFIL -->
+  <!-- GARDES -->
+  <div class="screen" id="sc-gardes">
+    <div class="stat-grid" style="padding:14px 16px 0">
+      <div class="stat-card"><div class="stat-num" id="gst-open" style="color:var(--amber)">—</div><div class="stat-label">Ouvertes</div></div>
+      <div class="stat-card"><div class="stat-num" id="gst-prop" style="color:var(--blue)">—</div><div class="stat-label">Proposées</div></div>
+      <div class="stat-card"><div class="stat-num" id="gst-valid" style="color:var(--green)">—</div><div class="stat-label">Validées</div></div>
+    </div>
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="section-title" style="margin-bottom:0">Échanges de gardes</div>
+        <button class="btn-p" id="btn-new-garde" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges — validation officielle dans Artemis.</div>
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px">
+        <button class="chip active" data-gfilter="all">Toutes</button>
+        <button class="chip" data-gfilter="ouverte">Ouvertes</button>
+        <button class="chip" data-gfilter="proposee">Proposées</button>
+        <button class="chip" data-gfilter="validee">Validées</button>
+      </div>
+      <div class="card" style="padding:0 14px" id="l-gardes">
+        <div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AMICALE -->
+  <div class="screen" id="sc-amicale">
+    <div class="section">
+      <div class="section-title">Amicale des sapeurs-pompiers</div>
+      <div id="l-amicale-actu"><div class="empty"><i class="ti ti-news"></i><p>Aucune actualité</p></div></div>
+    </div>
+  </div>
+
+  <!-- PORTAIL SDIS -->
+  <div class="screen" id="sc-sdis">
+    <div class="section">
+      <div class="section-title">Portail SDIS 72</div>
+      <div class="card" style="padding:0 14px;margin-bottom:14px">
+        <a href="https://artemis.sdis72.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
+          <div style="font-size:24px;width:42px;text-align:center">🚒</div>
+          <div class="req-info"><div class="req-name">Artemis</div><div class="req-detail">Gardes et plannings</div></div>
+          <i class="ti ti-external-link" style="color:var(--text2)"></i>
+        </a>
+        <a href="https://www.sisbra.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
+          <div style="font-size:24px;width:42px;text-align:center">🗺️</div>
+          <div class="req-info"><div class="req-name">SISBRA</div><div class="req-detail">SIG</div></div>
+          <i class="ti ti-external-link" style="color:var(--text2)"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+    <!-- PROFIL -->
   <div class="screen" id="sc-profile">
     <div class="ph">
       <div class="av"><i class="ti ti-user"></i></div>
@@ -601,11 +636,310 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <div style="height:12px"></div>
       <button class="btn-g" id="btn-export-excel"><i class="ti ti-file-spreadsheet"></i>Exporter en Excel</button>
     </div>
-  
+  </div>
 
 
 </div>
+
+<!-- MODAL NOUVELLE GARDE -->
+<div class="modal-overlay" id="m-new-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Demande d'échange de garde</div>
+    <div class="modal-sub">Trouvez un collègue pour reprendre votre créneau</div>
+    <div class="error-box" id="garde-err"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date de la garde *</label>
+        <input class="form-ctrl" type="date" id="g-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de garde *</label>
+        <select class="form-ctrl" id="g-type">
+          <option value="journee">Journée</option>
+          <option value="nuit">Nuit</option>
+          <option value="24h">24h</option>
+          <option value="weekend">Week-end</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="g-debut" value="08:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure fin</label>
+        <input class="form-ctrl" type="time" id="g-fin" value="18:00">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Motif</label>
+      <textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison de l'échange..."></textarea>
+    </div>
+
+    <button class="btn-p" onclick="submitGarde()"><i class="ti ti-send"></i>Publier la demande</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-garde')">Annuler</button>
+  </div></div>
 </div>
+
+<!-- MODAL DÉTAIL GARDE -->
+<div class="modal-overlay" id="m-detail-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Détail de l'échange</div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Date</label><span id="gd-date">—</span></div>
+      <div class="ig-item"><label>Type</label><span id="gd-type">—</span></div>
+      <div class="ig-item"><label>Horaires</label><span id="gd-horaires">—</span></div>
+      <div class="ig-item"><label>Demandeur</label><span id="gd-demandeur">—</span></div>
+      <div class="ig-item"><label>Remplaçant</label><span id="gd-remplacant">—</span></div>
+      <div class="ig-item"><label>Motif</label><span id="gd-motif">—</span></div>
+      <div class="ig-item"><label>Statut</label><span id="gd-statut">—</span></div>
+    </div>
+    <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-detail-garde')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL DOTATION -->
+<div class="modal-overlay" id="m-dotation">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Enregistrer une attribution</div>
+    <div class="modal-sub">Équipement remis à un agent</div>
+    <div class="error-box" id="dot-err"></div>
+    <div class="form-group">
+      <label class="form-label">Matricule SP *</label>
+      <input class="form-ctrl" id="dot-mat" placeholder="Ex: 400557" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Équipement *</label>
+      <select class="form-ctrl" id="dot-eq"><option value="">Sélectionner…</option></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Numéro de série</label>
+      <input class="form-ctrl" id="dot-serie" placeholder="Ex: VI-2024-00123">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date attribution</label>
+        <input class="form-ctrl" type="date" id="dot-attr">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date péremption</label>
+        <input class="form-ctrl" type="date" id="dot-perem">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Signature du SP (optionnel)</label>
+      <div class="sig-wrap">
+        <canvas id="sig-canvas" height="150"></canvas>
+        <button type="button" class="sig-clear" id="btn-clear-sig">Effacer</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Signez dans le cadre avec le doigt</div>
+    </div>
+    <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-dotation">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVELLE DEMANDE -->
+<div class="modal-overlay" id="m-new">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Nouvelle demande</div>
+    <div class="modal-sub">Champs obligatoires *</div>
+    <div class="form-group"><label class="form-label">Équipement *</label><select class="form-ctrl" id="f-eq"><option value="">Sélectionner…</option></select></div>
+    <div class="form-group"><label class="form-label">Motif *</label>
+      <select class="form-ctrl" id="f-motif">
+        <option value="">Sélectionner…</option>
+        <option>Échange de taille</option><option>Usure / Dégradation</option>
+        <option>Perte / Vol</option><option>Défaut de conformité</option>
+        <option>Sinistre opérationnel</option><option>Fin de vie réglementaire</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group"><label class="form-label">Taille actuelle</label><input class="form-ctrl" id="f-from" placeholder="Ex: T.46"></div>
+      <div class="form-group"><label class="form-label">Taille souhaitée</label><input class="form-ctrl" id="f-to" placeholder="Ex: T.48"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Précisions</label><textarea class="form-ctrl" id="f-note" rows="3" placeholder="État, circonstances…"></textarea></div>
+    <div class="form-group">
+      <label class="form-label">Photo de l'équipement (optionnel)</label>
+      <div class="photo-zone" id="photo-zone" onclick="document.getElementById('f-photo').click()">
+        <i class="ti ti-camera"></i>
+        <p>Appuyez pour prendre une photo ou en choisir une</p>
+      </div>
+      <input type="file" id="f-photo" accept="image/*" capture="environment" style="display:none">
+      <img id="photo-preview" class="photo-preview" alt="Aperçu">
+      <button type="button" id="btn-remove-photo" style="display:none;margin-top:6px;font-size:12px;color:#DC2626;background:none;border:none;cursor:pointer;font-family:inherit"><i class="ti ti-x"></i> Supprimer la photo</button>
+    </div>
+    <button class="btn-p" id="btn-submit"><i class="ti ti-send"></i>Envoyer</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-new">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div class="modal-overlay" id="m-detail">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="eq-icon ic0" id="d-icon"><i class="ti ti-package"></i></div>
+      <div><div style="font-size:16px;font-weight:700" id="d-title">—</div><div style="font-size:12px;color:var(--text2)" id="d-sub">—</div></div>
+      <span class="badge bp" id="d-badge" style="margin-left:auto">—</span>
+    </div>
+    <div class="card">
+      <div class="ig">
+        <div class="ig-item"><label>Motif</label><span id="d-motif">—</span></div>
+        <div class="ig-item"><label>Date</label><span id="d-date">—</span></div>
+        <div class="ig-item"><label>Taille actuelle</label><span id="d-from">—</span></div>
+        <div class="ig-item"><label>Taille souhaitée</label><span id="d-to">—</span></div>
+      </div>
+    </div>
+    <div id="d-photo-container" style="display:none;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:8px">Photo jointe</div>
+      <img id="d-photo" src="" alt="Photo équipement" style="width:100%;border-radius:var(--radius-sm);max-height:220px;object-fit:cover">
+    </div>
+    <div class="section-title" style="margin-bottom:13px">Suivi</div>
+    <div id="d-timeline"></div>
+    <button class="btn-s" id="btn-close-detail">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL VALIDATION RESPONSABLE -->
+<div class="modal-overlay" id="m-resp">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Valider la demande</div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:15px;font-weight:700" id="rv-eq">—</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px" id="rv-info">—</div>
+    </div>
+    <div class="form-group"><label class="form-label">Commentaire</label><textarea class="form-ctrl" id="rv-comment" rows="2" placeholder="Observation…"></textarea></div>
+    <div class="action-row">
+      <button class="btn-ok" id="btn-valider"><i class="ti ti-check"></i>Valider</button>
+      <button class="btn-ko" id="btn-refuser"><i class="ti ti-x"></i>Refuser</button>
+    </div>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-resp">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL STOCK -->
+<div class="modal-overlay" id="m-stock">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Ajuster le stock</div>
+    <div class="modal-sub" id="stock-name">—</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0">
+      <div style="font-size:12px;color:var(--text2)">Quantité en stock</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="step-btn" id="s-m10">−10</button>
+        <button class="step-btn" id="s-m1">−</button>
+        <div style="font-size:28px;font-weight:700;min-width:44px;text-align:center" id="stock-val">0</div>
+        <button class="step-btn" id="s-p1">+</button>
+        <button class="step-btn" id="s-p10">+10</button>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Seuil d'alerte</label><input class="form-ctrl" type="number" id="stock-seuil" min="0" placeholder="Ex: 10"></div>
+    <button class="btn-p" id="btn-save-stock"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-stock">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL MEMBRE -->
+<div class="modal-overlay" id="m-membre">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Ajouter un membre</div>
+    <div class="modal-sub">Mot de passe provisoire : matricule + 2026</div>
+    <div class="error-box" id="membre-err"></div>
+    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-ctrl" id="m-mat" placeholder="Ex: 400558" autocorrect="off"></div>
+    <div class="form-group"><label class="form-label">Rôle *</label>
+      <select class="form-ctrl" id="m-role">
+        <option value="">Sélectionner…</option>
+        <option value="sp">Sapeur-Pompier</option>
+        <option value="responsable_caserne">Responsable habillement caserne</option>
+        <option value="habillement">Agent habillement SDIS</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Caserne</label><input class="form-ctrl" id="m-caserne" placeholder="Ex: CS Le Mans-Nord"></div>
+    <button class="btn-p" id="btn-save-membre"><i class="ti ti-user-plus"></i>Ajouter</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-membre">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL CHANGER MOT DE PASSE -->
+<div class="modal-overlay" id="m-changepw">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Changer mon mot de passe</div>
+    <div class="error-box" id="cpw-err"></div>
+    <div class="form-group"><label class="form-label">Mot de passe actuel</label><div style="position:relative"><input class="form-ctrl" id="cpw-old" type="password" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-old',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
+    <div class="form-group"><label class="form-label">Nouveau mot de passe</label><div style="position:relative"><input class="form-ctrl" id="cpw-1" type="password" placeholder="Minimum 6 caractères" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-1',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
+    <div class="form-group"><label class="form-label">Confirmer</label><div style="position:relative"><input class="form-ctrl" id="cpw-2" type="password" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-2',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
+    <button class="btn-p" id="btn-save-cpw"><i class="ti ti-lock"></i>Mettre à jour</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-cpw">Annuler</button>
+  </div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="hearts-overlay"></div>
+
+<!-- SCANNER ÉTIQUETTE -->
+<div id="scanner-overlay">
+  <div id="scanner-header">
+    <button onclick="closeScanner()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px"><i class="ti ti-x" style="font-size:22px"></i></button>
+    <div style="color:#fff;font-size:15px;font-weight:600">Scanner une étiquette</div>
+  </div>
+  <div style="position:relative;flex:1;display:flex">
+    <video id="scanner-video" autoplay playsinline muted></video>
+    <div id="scanner-frame"></div>
+    <div id="scanner-hint">Pointez vers un code-barres ou QR code</div>
+  </div>
+  <div id="scanner-actions">
+    <button onclick="capturePhoto()" class="btn-p" style="gap:8px"><i class="ti ti-camera"></i>Capturer et lire l'étiquette</button>
+    <button onclick="closeScanner()" class="btn-s" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)">Annuler</button>
+  </div>
+</div>
+
+<!-- MODAL CRÉER ÉQUIPEMENT DEPUIS SCAN -->
+<div class="modal-overlay" id="m-scan-result">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un équipement</div>
+    <div class="modal-sub">Informations détectées — modifiez si besoin</div>
+    <div id="scan-preview" style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--text2);display:none"></div>
+    <div class="form-group"><label class="form-label">Nom de l'équipement *</label><input class="form-ctrl" id="sc-nom" placeholder="Ex: Veste d'intervention"></div>
+    <div class="form-group"><label class="form-label">Référence</label><input class="form-ctrl" id="sc-ref" placeholder="Ex: VI-F1-2023"></div>
+    <div class="form-group"><label class="form-label">Tailles disponibles</label><input class="form-ctrl" id="sc-tailles" placeholder="Ex: Tailles 38–58"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group"><label class="form-label">Stock initial</label><input class="form-ctrl" type="number" id="sc-stock" placeholder="0" min="0"></div>
+      <div class="form-group"><label class="form-label">Seuil d'alerte</label><input class="form-ctrl" type="number" id="sc-seuil" placeholder="10" min="0"></div>
+    </div>
+    <div class="error-box" id="sc-err"></div>
+    <button class="btn-p" id="btn-save-scan"><i class="ti ti-plus"></i>Créer l'équipement</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" id="btn-cancel-scan">Annuler</button>
+  </div></div>
+</div>
+
+
+
+<!-- MODAL SWITCH ADMIN -->
+<div class="modal-overlay" id="m-switch">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Changer de vue</div>
+    <div class="modal-sub">Naviguez entre les profils sans vous déconnecter</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-p" id="sw-admin"><i class="ti ti-shield"></i>Vue Administrateur</button>
+      <button class="btn-s" id="sw-sp"><i class="ti ti-user"></i>Vue Sapeur-Pompier</button>
+      <button class="btn-s" id="sw-resp" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-user-star"></i>Vue Responsable caserne</button>
+      <button class="btn-s" id="sw-hab" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-building"></i>Vue Service habillement</button>
+    </div>
+    <div style="height:8px"></div>
+    <button class="btn-s" id="btn-cancel-switch">Fermer</button>
+  </div></div>
 </div>
 
 <script>
@@ -783,7 +1117,7 @@ async function initApp(){
   document.getElementById('p-role').textContent  = ROLE_LABELS[role]||role;
   document.getElementById('p-caserne').textContent = user.caserne||'';
   showView(role);
-  updateDrawerUser();
+  updateDrawerHeader();
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
   document.getElementById('sec-membres').style.display = showMembres?'block':'none';
@@ -817,7 +1151,7 @@ async function adminSim(role){
   simRole=role;
   simCaserne=null;
   showView(role);
-  updateDrawerUser();
+  updateDrawerHeader();
   // Masquer membres si vue simulée != admin
   const secMem = document.getElementById('sec-membres');
   if(secMem) secMem.style.display = 'none';
@@ -837,6 +1171,9 @@ async function adminSim(role){
   if(sw){ sw.innerHTML = '<i class="ti ti-corner-up-left" style="font-size:14px"></i>Admin'; sw.style.background='rgba(255,200,0,0.25)'; }
   await loadAll();
   switchTab('sc-home');
+  // Afficher sous-nav EPI au démarrage
+  var subnavInit = document.getElementById('epi-subnav');
+  if(subnavInit) subnavInit.style.display = 'block';
   updateSwitcherActive(role);
   toast('Vue '+ROLE_LABELS[role]+' activée');
 }
@@ -849,7 +1186,7 @@ async function backToAdmin(){
   if(secMem) secMem.style.display = 'block';
 
   showView('admin');
-  updateDrawerUser();
+  updateDrawerHeader();
   document.getElementById('h-badge').textContent='Admin';
   document.getElementById('h-badge').style.background = '';
   document.getElementById('h-badge').style.color = '';
@@ -1277,86 +1614,6 @@ async function saveChangePw(){
 }
 
 // ── NAVIGATION ────────────────────────────────────────────
-
-// ── DRAWER NAVIGATION ────────────────────────────────────
-function openDrawer(){
-  document.getElementById('drawer').classList.add('open');
-  document.getElementById('drawer-overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeDrawer(){
-  document.getElementById('drawer').classList.remove('open');
-  document.getElementById('drawer-overlay').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-const MODULE_TITLES = {
-  'sc-home':    'EPI',
-  'sc-history': 'EPI',
-  'sc-catalog': 'EPI',
-  'sc-stats':   'EPI',
-  'sc-gardes':  'Gardes',
-  'sc-amicale': 'Amicale',
-  'sc-sdis':    'Portail SDIS',
-  'sc-profile': 'Mon profil',
-};
-
-const DRAWER_ITEM_MAP = {
-  'sc-home':    'di-epi',
-  'sc-history': 'di-epi',
-  'sc-catalog': 'di-epi',
-  'sc-stats':   'di-epi',
-  'sc-gardes':  'di-gardes',
-  'sc-amicale': 'di-amicale',
-  'sc-sdis':    'di-sdis',
-  'sc-profile': 'di-profile',
-};
-
-function setActiveDrawerItem(tabId){
-  document.querySelectorAll('.drawer-item').forEach(function(item){
-    item.classList.remove('active');
-  });
-  var activeId = DRAWER_ITEM_MAP[tabId];
-  if(activeId){
-    var el = document.getElementById(activeId);
-    if(el) el.classList.add('active');
-  }
-  var titleEl = document.getElementById('h-module-title');
-  if(titleEl) titleEl.textContent = MODULE_TITLES[tabId] || 'CSP LFB';
-}
-
-function updateDrawerUser(){
-  if(!user) return;
-  var role = activeRole();
-  var sub = document.getElementById('drawer-sub');
-  if(sub) sub.textContent = (ROLE_LABELS[role]||role) + (user.caserne ? ' · ' + user.caserne : '');
-  var badge = document.getElementById('h-badge');
-  if(badge) badge.textContent = ROLE_BADGES[simRole||user.role] || 'SP';
-  // Afficher section admin si admin
-  var adminSec = document.getElementById('drawer-admin-section');
-  var diSwitch = document.getElementById('di-switch');
-  var hdrSwitcher = document.getElementById('btn-switcher');
-  if(user.role === 'admin'){
-    if(adminSec) adminSec.style.display = 'block';
-    if(diSwitch) diSwitch.style.display = 'flex';
-    if(hdrSwitcher) hdrSwitcher.style.display = 'inline-flex';
-  } else {
-    if(adminSec) adminSec.style.display = 'none';
-    if(diSwitch) diSwitch.style.display = 'none';
-    if(hdrSwitcher) hdrSwitcher.style.display = 'none';
-  }
-  // Badge simulé
-  if(simRole){
-    if(badge){
-      badge.textContent = ROLE_BADGES[simRole] + ' ↩';
-      badge.style.background = 'rgba(255,200,0,0.35)';
-    }
-    if(sub) sub.textContent = ROLE_LABELS[simRole] + ' (simulé)';
-  } else {
-    if(badge) badge.style.background = '';
-  }
-}
-
 // ── NAVIGATION PRINCIPALE ────────────────────────────────
 const EPI_TABS = ['sc-home','sc-history','sc-catalog','sc-stats'];
 const EPI_SUBNAV_MAP = {
@@ -1387,27 +1644,30 @@ function switchEpiTab(tabId){
 }
 
 function switchTab(tabId){
-  closeDrawer();
   if(EPI_TABS.includes(tabId)){
-    // Masquer écrans non-EPI
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    var epiMainTab = document.querySelector('.tab[data-tab="sc-home"]');
+    if(epiMainTab) epiMainTab.classList.add('active');
+    var subnav = document.getElementById('epi-subnav');
+    if(subnav) subnav.style.display = 'block';
     ['sc-gardes','sc-amicale','sc-sdis','sc-profile'].forEach(function(id){
       var el = document.getElementById(id);
       if(el) el.classList.remove('active');
     });
-    var subnav = document.getElementById('epi-subnav');
-    if(subnav) subnav.style.display = 'block';
     switchEpiTab(tabId);
-    setActiveDrawerItem(tabId);
     return;
   }
-  // Masquer tous
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  var subnav = document.getElementById('epi-subnav');
-  if(subnav) subnav.style.display = 'none';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   var targetEl = document.getElementById(tabId);
   if(targetEl) targetEl.classList.add('active');
-  setActiveDrawerItem(tabId);
+  var targetTab = document.querySelector('.tab[data-tab="'+tabId+'"]');
+  if(targetTab) targetTab.classList.add('active');
+  var subnav = document.getElementById('epi-subnav');
+  if(subnav) subnav.style.display = 'none';
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
+  if(tabId==='sc-gardes'){ loadGardes(); }
+  setActiveDrawer(tabId);
   if(tabId==='sc-gardes'){ loadGardes(); }
 }
 
@@ -2248,28 +2508,163 @@ function subscribeRT(){
 }
 
 // ── EVENTS ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', ()=>{
 
-  // Drawer
-  var btnOpenDrawer = document.getElementById('btn-open-drawer');
-  if(btnOpenDrawer) btnOpenDrawer.addEventListener('click', openDrawer);
-  var btnCloseDrawer = document.getElementById('btn-close-drawer');
-  if(btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDrawer);
-  var drawerOverlay = document.getElementById('drawer-overlay');
-  if(drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
-  // Items du drawer
-  document.querySelectorAll('.drawer-item[data-drawer]').forEach(function(item){
-    item.addEventListener('click', function(){ switchTab(item.dataset.drawer); });
+// ── DRAWER ───────────────────────────────────────────────
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+const MODULE_TITLES = {
+  'sc-home':'EPI','sc-history':'EPI','sc-catalog':'EPI','sc-stats':'EPI',
+  'sc-gardes':'Gardes','sc-amicale':'Amicale','sc-sdis':'Portail SDIS','sc-profile':'Mon profil'
+};
+const DRAWER_MAP = {
+  'sc-home':'di-epi','sc-history':'di-epi','sc-catalog':'di-epi','sc-stats':'di-epi',
+  'sc-gardes':'di-gardes','sc-amicale':'di-amicale','sc-sdis':'di-sdis','sc-profile':'di-profile'
+};
+
+function setActiveDrawer(tabId){
+  document.querySelectorAll('.drawer-item').forEach(b=>b.classList.remove('active'));
+  var did = DRAWER_MAP[tabId];
+  if(did){ var el=document.getElementById(did); if(el) el.classList.add('active'); }
+  var t=document.getElementById('h-module-title');
+  if(t) t.textContent = MODULE_TITLES[tabId]||'CSP LFB';
+}
+
+function updateDrawerHeader(){
+  if(!user) return;
+  var role = activeRole();
+  var sub = document.getElementById('drawer-sub');
+  if(sub) sub.textContent = (ROLE_LABELS[role]||role)+(user.caserne?' · '+user.caserne:'');
+  var badge = document.getElementById('h-badge');
+  if(badge){ badge.textContent=ROLE_BADGES[simRole||user.role]||'SP'; badge.style.background=simRole?'rgba(255,200,0,0.35)':''; }
+  var adminSec=document.getElementById('drawer-admin-sec');
+  var diSwitch=document.getElementById('di-switch');
+  var show=user.role==='admin';
+  if(adminSec) adminSec.style.display=show?'block':'none';
+  if(diSwitch) diSwitch.style.display=show?'flex':'none';
+  var sw=document.getElementById('btn-switcher');
+  if(sw) sw.style.display=show?'inline-flex':'none';
+}
+
+// ── GARDES ────────────────────────────────────────────────
+var gardes=[], gardeFilter='all';
+
+const GARDE_TYPE={journee:'Journée',nuit:'Nuit','24h':'24h',weekend:'Week-end'};
+const GARDE_STATUT={
+  ouverte:{lbl:'Ouverte',cls:'bp',e:'🟡'},
+  proposee:{lbl:'Proposée',cls:'bt',e:'🔵'},
+  validee:{lbl:'Validée',cls:'ba',e:'🟢'},
+  refusee:{lbl:'Refusée',cls:'br',e:'🔴'},
+  annulee:{lbl:'Annulée',cls:'br',e:'⚫'}
+};
+
+async function loadGardes(){
+  if(!user) return;
+  var res = await db.from('gardes')
+    .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
+    .order('date_garde',{ascending:true});
+  gardes = res.data||[];
+  renderGardes();
+}
+
+function renderGardes(){
+  var o=gardes.filter(g=>g.statut==='ouverte').length;
+  var p=gardes.filter(g=>g.statut==='proposee').length;
+  var v=gardes.filter(g=>g.statut==='validee').length;
+  var el;
+  el=document.getElementById('gst-open'); if(el) el.textContent=o;
+  el=document.getElementById('gst-prop'); if(el) el.textContent=p;
+  el=document.getElementById('gst-valid'); if(el) el.textContent=v;
+  var list=gardeFilter==='all'?gardes:gardes.filter(g=>g.statut===gardeFilter);
+  var c=document.getElementById('l-gardes'); if(!c) return;
+  if(!list.length){ c.innerHTML='<div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande</p></div>'; return; }
+  c.innerHTML=list.map(function(g){
+    var sc=GARDE_STATUT[g.statut]||{lbl:g.statut,cls:'bp',e:'📋'};
+    var d=g.date_garde?new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}):'—';
+    var mine=g.demandeur_id===user.id;
+    return '<div class="req-row" data-gid="'+g.id+'" style="cursor:pointer">'+
+      '<div style="font-size:26px;width:40px;text-align:center">'+sc.e+'</div>'+
+      '<div class="req-info"><div class="req-name">'+d+' — '+(GARDE_TYPE[g.type_garde]||g.type_garde)+'</div>'+
+      '<div class="req-detail">'+(mine?'Ma garde':'Mat. '+(g.demandeur&&g.demandeur.matricule||'?'))+(g.motif?' · '+g.motif:'')+'</div></div>'+
+      '<div class="req-meta"><span class="badge '+sc.cls+'">'+sc.lbl+'</span></div></div>';
+  }).join('');
+  c.querySelectorAll('[data-gid]').forEach(function(r){
+    r.addEventListener('click',function(){ openGardeDetail(r.dataset.gid); });
   });
-  // Déconnexion drawer
-  var diLogout = document.getElementById('di-logout');
-  if(diLogout) diLogout.addEventListener('click', doLogout);
-  // Switch vue (admin) depuis drawer
-  var diSwitch = document.getElementById('di-switch');
-  if(diSwitch) diSwitch.addEventListener('click', function(){ closeDrawer(); openModal('m-switch'); });
-  // Badge = retour admin si vue simulée
-  var hBadge = document.getElementById('h-badge');
-  if(hBadge) hBadge.addEventListener('click', function(){ if(simRole) backToAdmin(); });
+}
+
+function openGardeDetail(id){
+  var g=gardes.find(function(x){return x.id===id;}); if(!g) return;
+  var sc=GARDE_STATUT[g.statut]||{lbl:g.statut};
+  var d=g.date_garde?new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
+  document.getElementById('gd-date').textContent=d;
+  document.getElementById('gd-type').textContent=GARDE_TYPE[g.type_garde]||g.type_garde;
+  document.getElementById('gd-horaires').textContent=(g.heure_debut&&g.heure_fin)?g.heure_debut+' → '+g.heure_fin:'—';
+  document.getElementById('gd-statut').textContent=sc.lbl;
+  var actions=document.getElementById('gd-actions'); actions.innerHTML='';
+  var role=activeRole(), mine=g.demandeur_id===user.id;
+  if(g.statut==='ouverte'&&!mine){
+    var b=document.createElement('button'); b.className='btn-p';
+    b.innerHTML='<i class="ti ti-hand-stop"></i>Je reprends';
+    b.onclick=function(){ updateGardeStatut(id,'proposee',user.id); };
+    actions.appendChild(b);
+  }
+  if(mine&&g.statut==='ouverte'){
+    var b2=document.createElement('button'); b2.className='btn-s'; b2.style.color='#DC2626'; b2.style.borderColor='#DC2626';
+    b2.innerHTML='<i class="ti ti-x"></i>Annuler';
+    b2.onclick=function(){ updateGardeStatut(id,'annulee',null); };
+    actions.appendChild(b2);
+  }
+  if((role==='responsable_caserne'||user.role==='admin')&&g.statut==='proposee'){
+    var bv=document.createElement('button'); bv.className='btn-p';
+    bv.innerHTML='<i class="ti ti-check"></i>Valider';
+    bv.onclick=function(){ updateGardeStatut(id,'validee',null); };
+    actions.appendChild(bv);
+    var br=document.createElement('button'); br.className='btn-s'; br.style.color='#DC2626'; br.style.borderColor='#DC2626';
+    br.innerHTML='<i class="ti ti-x"></i>Refuser';
+    br.onclick=function(){ updateGardeStatut(id,'refusee',null); };
+    actions.appendChild(br);
+  }
+  openModal('m-detail-garde');
+}
+
+async function updateGardeStatut(id,statut,remplacantId){
+  var upd={statut:statut,updated_at:new Date().toISOString()};
+  if(remplacantId) upd.remplacant_id=remplacantId;
+  var res=await db.from('gardes').update(upd).eq('id',id);
+  if(res.error){toast('Erreur : '+res.error.message);return;}
+  closeModal('m-detail-garde');
+  var msgs={validee:'Échange validé ✓',refusee:'Refusé',annulee:'Annulé',proposee:'Proposition envoyée ✓'};
+  toast(msgs[statut]||'OK');
+  await loadGardes();
+}
+
+async function submitGarde(){
+  var date=document.getElementById('g-date').value;
+  var type=document.getElementById('g-type').value;
+  if(!date||!type){showErr('garde-err','Date et type obligatoires');return;}
+  var btn=document.getElementById('btn-submit-garde'); btn.disabled=true;
+  var res=await db.from('gardes').insert({
+    demandeur_id:user.id, date_garde:date, type_garde:type,
+    heure_debut:document.getElementById('g-debut').value||null,
+    heure_fin:document.getElementById('g-fin').value||null,
+    motif:document.getElementById('g-motif').value.trim()||null,
+    statut:'ouverte'
+  });
+  btn.disabled=false;
+  if(res.error){showErr('garde-err','Erreur : '+res.error.message);return;}
+  closeModal('m-new-garde');
+  toast('Demande publiée ✓');
+  await loadGardes();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
 
   // Login
   document.getElementById('btn-login').addEventListener('click', doLogin);
@@ -2301,10 +2696,44 @@ if(savedMat){
   document.getElementById('btn-newpw').addEventListener('click', saveNewPw);
 
   // Logout
-  document.getElementById('btn-logout').addEventListener('click', doLogout);
+  // Drawer
+  document.getElementById('btn-open-drawer').addEventListener('click', openDrawer);
+  document.getElementById('btn-close-drawer').addEventListener('click', closeDrawer);
+  document.getElementById('drawer-overlay').addEventListener('click', closeDrawer);
+  document.querySelectorAll('.drawer-item[data-drawer]').forEach(function(item){
+    item.addEventListener('click', function(){ closeDrawer(); switchTab(item.dataset.drawer); });
+  });
+  document.getElementById('di-logout').addEventListener('click', doLogout);
+  var diSwitch2=document.getElementById('di-switch');
+  if(diSwitch2) diSwitch2.addEventListener('click',function(){ closeDrawer(); openModal('m-switch'); });
+  document.getElementById('h-badge').addEventListener('click',function(){ if(simRole) backToAdmin(); });
+
+  // Gardes
+  document.getElementById('btn-new-garde').addEventListener('click', function(){
+    document.getElementById('g-date').value='';
+    document.getElementById('g-motif').value='';
+    hideErr('garde-err');
+    openModal('m-new-garde');
+  });
+  document.getElementById('btn-submit-garde').addEventListener('click', submitGarde);
+  document.getElementById('btn-cancel-garde').addEventListener('click', function(){ closeModal('m-new-garde'); });
+  document.getElementById('btn-close-garde').addEventListener('click', function(){ closeModal('m-detail-garde'); });
+  document.querySelectorAll('[data-gfilter]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      gardeFilter=btn.dataset.gfilter;
+      document.querySelectorAll('[data-gfilter]').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderGardes();
+    });
+  });
+
+    document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
 
-  // Tabs gérées par drawer
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>switchTab(tab.dataset.tab));
+  });
 
   // Nouvelle demande
   document.getElementById('btn-nouvelle').addEventListener('click',()=>openNewRequest());
@@ -2397,7 +2826,10 @@ if(savedMat){
   // Admin switcher
   const btnSwitcher = document.getElementById('btn-switcher');
   if(btnSwitcher) btnSwitcher.addEventListener('click',()=>openModal('m-switch'));
-  // h-sub supprimé (géré par badge)
+  // Clic sur le sous-titre = retour admin si en vue simulée
+  document.getElementById('h-sub').addEventListener('click',()=>{
+    if(simRole) backToAdmin();
+  });
   const swAdmin = document.getElementById('sw-admin');
   const swSp    = document.getElementById('sw-sp');
   const swResp  = document.getElementById('sw-resp');
@@ -2455,21 +2887,14 @@ if(savedMat){
 
 </script>
 
-
 <!-- MODAL NOUVELLE GARDE -->
 <div class="modal-overlay" id="m-new-garde">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Demande d'échange de garde</div>
-    <div class="modal-sub">Trouvez un collègue pour reprendre votre créneau</div>
     <div class="error-box" id="garde-err"></div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group">
-        <label class="form-label">Date de la garde *</label>
-        <input class="form-ctrl" type="date" id="g-date">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Type de garde *</label>
+      <div class="form-group"><label class="form-label">Date *</label><input class="form-ctrl" type="date" id="g-date"></div>
+      <div class="form-group"><label class="form-label">Type *</label>
         <select class="form-ctrl" id="g-type">
           <option value="journee">Journée</option>
           <option value="nuit">Nuit</option>
@@ -2478,292 +2903,31 @@ if(savedMat){
         </select>
       </div>
     </div>
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group">
-        <label class="form-label">Heure début</label>
-        <input class="form-ctrl" type="time" id="g-debut" value="08:00">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Heure fin</label>
-        <input class="form-ctrl" type="time" id="g-fin" value="18:00">
-      </div>
+      <div class="form-group"><label class="form-label">Heure début</label><input class="form-ctrl" type="time" id="g-debut" value="08:00"></div>
+      <div class="form-group"><label class="form-label">Heure fin</label><input class="form-ctrl" type="time" id="g-fin" value="18:00"></div>
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Motif</label>
-      <textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison de l'échange..."></textarea>
-    </div>
-
-    <button class="btn-p" onclick="submitGarde()"><i class="ti ti-send"></i>Publier la demande</button>
+    <div class="form-group"><label class="form-label">Motif</label><textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison..."></textarea></div>
+    <button class="btn-p" id="btn-submit-garde"><i class="ti ti-send"></i>Publier</button>
     <div style="height:7px"></div>
-    <button class="btn-s" onclick="closeModal('m-new-garde')">Annuler</button>
+    <button class="btn-s" id="btn-cancel-garde">Annuler</button>
   </div></div>
 </div>
 
-<!-- MODAL DÉTAIL GARDE -->
+<!-- MODAL DETAIL GARDE -->
 <div class="modal-overlay" id="m-detail-garde">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Détail de l'échange</div>
-    <div class="info-grid" style="margin-bottom:14px">
+    <div class="modal-title">Détail échange</div>
+    <div class="ig" style="margin-bottom:14px">
       <div class="ig-item"><label>Date</label><span id="gd-date">—</span></div>
       <div class="ig-item"><label>Type</label><span id="gd-type">—</span></div>
       <div class="ig-item"><label>Horaires</label><span id="gd-horaires">—</span></div>
-      <div class="ig-item"><label>Demandeur</label><span id="gd-demandeur">—</span></div>
-      <div class="ig-item"><label>Remplaçant</label><span id="gd-remplacant">—</span></div>
-      <div class="ig-item"><label>Motif</label><span id="gd-motif">—</span></div>
       <div class="ig-item"><label>Statut</label><span id="gd-statut">—</span></div>
     </div>
     <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
     <div style="height:7px"></div>
-    <button class="btn-s" onclick="closeModal('m-detail-garde')">Fermer</button>
+    <button class="btn-s" id="btn-close-garde">Fermer</button>
   </div></div>
-</div>
-
-<!-- MODAL DOTATION -->
-<div class="modal-overlay" id="m-dotation">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Enregistrer une attribution</div>
-    <div class="modal-sub">Équipement remis à un agent</div>
-    <div class="error-box" id="dot-err"></div>
-    <div class="form-group">
-      <label class="form-label">Matricule SP *</label>
-      <input class="form-ctrl" id="dot-mat" placeholder="Ex: 400557" autocorrect="off" spellcheck="false">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Équipement *</label>
-      <select class="form-ctrl" id="dot-eq"><option value="">Sélectionner…</option></select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Numéro de série</label>
-      <input class="form-ctrl" id="dot-serie" placeholder="Ex: VI-2024-00123">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group">
-        <label class="form-label">Date attribution</label>
-        <input class="form-ctrl" type="date" id="dot-attr">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Date péremption</label>
-        <input class="form-ctrl" type="date" id="dot-perem">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Signature du SP (optionnel)</label>
-      <div class="sig-wrap">
-        <canvas id="sig-canvas" height="150"></canvas>
-        <button type="button" class="sig-clear" id="btn-clear-sig">Effacer</button>
-      </div>
-      <div style="font-size:12px;color:var(--text2);margin-top:4px">Signez dans le cadre avec le doigt</div>
-    </div>
-    <button class="btn-p" id="btn-save-dotation"><i class="ti ti-check"></i>Enregistrer</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-dotation">Annuler</button>
-  </div></div>
-</div>
-
-<!-- MODAL NOUVELLE DEMANDE -->
-<div class="modal-overlay" id="m-new">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Nouvelle demande</div>
-    <div class="modal-sub">Champs obligatoires *</div>
-    <div class="form-group"><label class="form-label">Équipement *</label><select class="form-ctrl" id="f-eq"><option value="">Sélectionner…</option></select></div>
-    <div class="form-group"><label class="form-label">Motif *</label>
-      <select class="form-ctrl" id="f-motif">
-        <option value="">Sélectionner…</option>
-        <option>Échange de taille</option><option>Usure / Dégradation</option>
-        <option>Perte / Vol</option><option>Défaut de conformité</option>
-        <option>Sinistre opérationnel</option><option>Fin de vie réglementaire</option>
-      </select>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group"><label class="form-label">Taille actuelle</label><input class="form-ctrl" id="f-from" placeholder="Ex: T.46"></div>
-      <div class="form-group"><label class="form-label">Taille souhaitée</label><input class="form-ctrl" id="f-to" placeholder="Ex: T.48"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Précisions</label><textarea class="form-ctrl" id="f-note" rows="3" placeholder="État, circonstances…"></textarea></div>
-    <div class="form-group">
-      <label class="form-label">Photo de l'équipement (optionnel)</label>
-      <div class="photo-zone" id="photo-zone" onclick="document.getElementById('f-photo').click()">
-        <i class="ti ti-camera"></i>
-        <p>Appuyez pour prendre une photo ou en choisir une</p>
-      </div>
-      <input type="file" id="f-photo" accept="image/*" capture="environment" style="display:none">
-      <img id="photo-preview" class="photo-preview" alt="Aperçu">
-      <button type="button" id="btn-remove-photo" style="display:none;margin-top:6px;font-size:12px;color:#DC2626;background:none;border:none;cursor:pointer;font-family:inherit"><i class="ti ti-x"></i> Supprimer la photo</button>
-    </div>
-    <button class="btn-p" id="btn-submit"><i class="ti ti-send"></i>Envoyer</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-new">Annuler</button>
-  </div></div>
-</div>
-
-<!-- MODAL DÉTAIL -->
-<div class="modal-overlay" id="m-detail">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <div class="eq-icon ic0" id="d-icon"><i class="ti ti-package"></i></div>
-      <div><div style="font-size:16px;font-weight:700" id="d-title">—</div><div style="font-size:12px;color:var(--text2)" id="d-sub">—</div></div>
-      <span class="badge bp" id="d-badge" style="margin-left:auto">—</span>
-    </div>
-    <div class="card">
-      <div class="ig">
-        <div class="ig-item"><label>Motif</label><span id="d-motif">—</span></div>
-        <div class="ig-item"><label>Date</label><span id="d-date">—</span></div>
-        <div class="ig-item"><label>Taille actuelle</label><span id="d-from">—</span></div>
-        <div class="ig-item"><label>Taille souhaitée</label><span id="d-to">—</span></div>
-      </div>
-    </div>
-    <div id="d-photo-container" style="display:none;margin-bottom:14px">
-      <div class="section-title" style="margin-bottom:8px">Photo jointe</div>
-      <img id="d-photo" src="" alt="Photo équipement" style="width:100%;border-radius:var(--radius-sm);max-height:220px;object-fit:cover">
-    </div>
-    <div class="section-title" style="margin-bottom:13px">Suivi</div>
-    <div id="d-timeline"></div>
-    <button class="btn-s" id="btn-close-detail">Fermer</button>
-  </div></div>
-</div>
-
-<!-- MODAL VALIDATION RESPONSABLE -->
-<div class="modal-overlay" id="m-resp">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Valider la demande</div>
-    <div class="card" style="margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700" id="rv-eq">—</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px" id="rv-info">—</div>
-    </div>
-    <div class="form-group"><label class="form-label">Commentaire</label><textarea class="form-ctrl" id="rv-comment" rows="2" placeholder="Observation…"></textarea></div>
-    <div class="action-row">
-      <button class="btn-ok" id="btn-valider"><i class="ti ti-check"></i>Valider</button>
-      <button class="btn-ko" id="btn-refuser"><i class="ti ti-x"></i>Refuser</button>
-    </div>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-resp">Annuler</button>
-  </div></div>
-</div>
-
-<!-- MODAL STOCK -->
-<div class="modal-overlay" id="m-stock">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Ajuster le stock</div>
-    <div class="modal-sub" id="stock-name">—</div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0">
-      <div style="font-size:12px;color:var(--text2)">Quantité en stock</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <button class="step-btn" id="s-m10">−10</button>
-        <button class="step-btn" id="s-m1">−</button>
-        <div style="font-size:28px;font-weight:700;min-width:44px;text-align:center" id="stock-val">0</div>
-        <button class="step-btn" id="s-p1">+</button>
-        <button class="step-btn" id="s-p10">+10</button>
-      </div>
-    </div>
-    <div class="form-group"><label class="form-label">Seuil d'alerte</label><input class="form-ctrl" type="number" id="stock-seuil" min="0" placeholder="Ex: 10"></div>
-    <button class="btn-p" id="btn-save-stock"><i class="ti ti-device-floppy"></i>Enregistrer</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-stock">Annuler</button>
-  </div></div>
-</div>
-
-<!-- MODAL MEMBRE -->
-<div class="modal-overlay" id="m-membre">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Ajouter un membre</div>
-    <div class="modal-sub">Mot de passe provisoire : matricule + 2026</div>
-    <div class="error-box" id="membre-err"></div>
-    <div class="form-group"><label class="form-label">Matricule *</label><input class="form-ctrl" id="m-mat" placeholder="Ex: 400558" autocorrect="off"></div>
-    <div class="form-group"><label class="form-label">Rôle *</label>
-      <select class="form-ctrl" id="m-role">
-        <option value="">Sélectionner…</option>
-        <option value="sp">Sapeur-Pompier</option>
-        <option value="responsable_caserne">Responsable habillement caserne</option>
-        <option value="habillement">Agent habillement SDIS</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">Caserne</label><input class="form-ctrl" id="m-caserne" placeholder="Ex: CS Le Mans-Nord"></div>
-    <button class="btn-p" id="btn-save-membre"><i class="ti ti-user-plus"></i>Ajouter</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-membre">Annuler</button>
-  </div></div>
-</div>
-
-<!-- MODAL CHANGER MOT DE PASSE -->
-<div class="modal-overlay" id="m-changepw">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Changer mon mot de passe</div>
-    <div class="error-box" id="cpw-err"></div>
-    <div class="form-group"><label class="form-label">Mot de passe actuel</label><div style="position:relative"><input class="form-ctrl" id="cpw-old" type="password" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-old',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
-    <div class="form-group"><label class="form-label">Nouveau mot de passe</label><div style="position:relative"><input class="form-ctrl" id="cpw-1" type="password" placeholder="Minimum 6 caractères" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-1',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
-    <div class="form-group"><label class="form-label">Confirmer</label><div style="position:relative"><input class="form-ctrl" id="cpw-2" type="password" style="padding-right:44px"><button type="button" onclick="togglePw('cpw-2',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div></div>
-    <button class="btn-p" id="btn-save-cpw"><i class="ti ti-lock"></i>Mettre à jour</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-cpw">Annuler</button>
-  </div></div>
-</div>
-
-<div class="toast" id="toast"></div>
-<div id="hearts-overlay"></div>
-
-<!-- SCANNER ÉTIQUETTE -->
-<div id="scanner-overlay">
-  <div id="scanner-header">
-    <button onclick="closeScanner()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px"><i class="ti ti-x" style="font-size:22px"></i></button>
-    <div style="color:#fff;font-size:15px;font-weight:600">Scanner une étiquette</div>
-  </div>
-  <div style="position:relative;flex:1;display:flex">
-    <video id="scanner-video" autoplay playsinline muted></video>
-    <div id="scanner-frame"></div>
-    <div id="scanner-hint">Pointez vers un code-barres ou QR code</div>
-  </div>
-  <div id="scanner-actions">
-    <button onclick="capturePhoto()" class="btn-p" style="gap:8px"><i class="ti ti-camera"></i>Capturer et lire l'étiquette</button>
-    <button onclick="closeScanner()" class="btn-s" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)">Annuler</button>
-  </div>
-</div>
-
-<!-- MODAL CRÉER ÉQUIPEMENT DEPUIS SCAN -->
-<div class="modal-overlay" id="m-scan-result">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Créer un équipement</div>
-    <div class="modal-sub">Informations détectées — modifiez si besoin</div>
-    <div id="scan-preview" style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--text2);display:none"></div>
-    <div class="form-group"><label class="form-label">Nom de l'équipement *</label><input class="form-ctrl" id="sc-nom" placeholder="Ex: Veste d'intervention"></div>
-    <div class="form-group"><label class="form-label">Référence</label><input class="form-ctrl" id="sc-ref" placeholder="Ex: VI-F1-2023"></div>
-    <div class="form-group"><label class="form-label">Tailles disponibles</label><input class="form-ctrl" id="sc-tailles" placeholder="Ex: Tailles 38–58"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group"><label class="form-label">Stock initial</label><input class="form-ctrl" type="number" id="sc-stock" placeholder="0" min="0"></div>
-      <div class="form-group"><label class="form-label">Seuil d'alerte</label><input class="form-ctrl" type="number" id="sc-seuil" placeholder="10" min="0"></div>
-    </div>
-    <div class="error-box" id="sc-err"></div>
-    <button class="btn-p" id="btn-save-scan"><i class="ti ti-plus"></i>Créer l'équipement</button>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-cancel-scan">Annuler</button>
-  </div></div>
-</div>
-
-
-
-<!-- MODAL SWITCH ADMIN -->
-<div class="modal-overlay" id="m-switch">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Changer de vue</div>
-    <div class="modal-sub">Naviguez entre les profils sans vous déconnecter</div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-p" id="sw-admin"><i class="ti ti-shield"></i>Vue Administrateur</button>
-      <button class="btn-s" id="sw-sp"><i class="ti ti-user"></i>Vue Sapeur-Pompier</button>
-      <button class="btn-s" id="sw-resp" style="border-color:var(--amber);color:var(--amber)"><i class="ti ti-user-star"></i>Vue Responsable caserne</button>
-      <button class="btn-s" id="sw-hab" style="border-color:var(--blue);color:var(--blue)"><i class="ti ti-building"></i>Vue Service habillement</button>
-    </div>
-    <div style="height:8px"></div>
-    <button class="btn-s" id="btn-cancel-switch">Fermer</button>
-  </div></div>
-</div>
-
-
-</div>
-
-
-
-
-
 </div>
 
 </body>
