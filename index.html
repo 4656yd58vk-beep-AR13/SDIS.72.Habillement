@@ -77,10 +77,10 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .form-ctrl:focus{outline:none;border-color:var(--red)}
 select.form-ctrl{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 textarea.form-ctrl{resize:none;line-height:1.5}
-.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:430px;max-width:100%;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;gap:3px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;font-weight:500;font-family:inherit}
-.tab i{font-size:23px}
-.tab.active{color:var(--red)}
+.tab-bar{display:none!important}
+
+
+
 .ph{background:linear-gradient(135deg,var(--red),var(--red-dark));padding:26px 16px 20px;text-align:center}
 .av{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border:2px solid rgba(255,255,255,0.4)}
 .av i{font-size:30px;color:#fff}
@@ -160,10 +160,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .drawer{position:fixed;top:0;left:0;bottom:0;width:272px;background:var(--bg);z-index:301;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.18)}
 .drawer.open{transform:translateX(0)}
 .drawer-head{background:var(--red);padding:max(env(safe-area-inset-top),44px) 16px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.drawer-avatar{width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .drawer-body{flex:1;overflow-y:auto;padding:6px 0;scrollbar-width:none}
-.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;font-size:14px;color:var(--text);text-align:left;transition:background 0.12s;border-left:3px solid transparent}
-.drawer-item:active{background:var(--bg2)}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;font-size:14px;color:var(--text);text-align:left;border-left:3px solid transparent;-webkit-tap-highlight-color:transparent}
 .drawer-item.active{background:var(--bg2);color:var(--red);font-weight:600;border-left-color:var(--red)}
 .drawer-item i{font-size:20px;width:24px;flex-shrink:0;color:var(--text2)}
 .drawer-item.active i{color:var(--red)}
@@ -171,7 +169,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .drawer-section{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;padding:10px 18px 3px}
 .drawer-footer{padding:8px 0 max(env(safe-area-inset-bottom),12px);border-top:1px solid var(--border);flex-shrink:0}
 .main-header{position:sticky;top:0;background:var(--red);padding:max(env(safe-area-inset-top),14px) 14px 12px;display:flex;align-items:center;gap:10px;z-index:50;flex-shrink:0}
-.main-header-btn{background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.main-header-btn{background:none;border:none;color:#fff;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px;-webkit-tap-highlight-color:transparent}
 .main-header-title{color:#fff;font-size:16px;font-weight:700;flex:1;font-family:inherit}
 .main-header-badge{background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:inherit;cursor:pointer}
 </style>
@@ -232,7 +230,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <!-- DRAWER -->
   <div class="drawer" id="drawer">
     <div class="drawer-head">
-      <div class="drawer-avatar"><i class="ti ti-shield" style="color:#fff;font-size:18px"></i></div>
+      <div style="width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-shield" style="color:#fff;font-size:18px"></i></div>
       <div style="flex:1;min-width:0">
         <div style="color:#fff;font-weight:700;font-size:15px">CSP LFB</div>
         <div style="color:rgba(255,255,255,0.75);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="drawer-sub">—</div>
@@ -266,7 +264,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
   </div>
 
-  <!-- ACCUEIL -->  <!-- ACCUEIL -->
+  <!-- ACCUEIL -->
   <!-- SOUS-NAV EPI -->
   <div id="epi-subnav" style="display:none;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
     <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
@@ -371,36 +369,121 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   </div>
 
   <!-- GARDES -->
-  
-
-
-  <!-- AMICALE -->
-  
-
-
-  <!-- PORTAIL SDIS -->
-  
-
-
-  <!-- GARDES -->
   <div class="screen" id="sc-gardes">
+    <!-- Stats gardes -->
     <div class="stat-grid" style="padding:14px 16px 0">
       <div class="stat-card"><div class="stat-num" id="gst-open" style="color:var(--amber)">—</div><div class="stat-label">Ouvertes</div></div>
       <div class="stat-card"><div class="stat-num" id="gst-prop" style="color:var(--blue)">—</div><div class="stat-label">Proposées</div></div>
       <div class="stat-card"><div class="stat-num" id="gst-valid" style="color:var(--green)">—</div><div class="stat-label">Validées</div></div>
     </div>
+
     <div class="section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="section-title" style="margin-bottom:0">Échanges de gardes</div>
-        <button class="btn-p" id="btn-new-garde" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
+        <button class="btn-p" onclick="openNewGarde()" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
       </div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges — validation officielle dans Artemis.</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges entre collègues — la validation officielle reste dans Artemis.</div>
+
+      <!-- Filtres -->
       <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px">
         <button class="chip active" data-gfilter="all">Toutes</button>
         <button class="chip" data-gfilter="ouverte">Ouvertes</button>
         <button class="chip" data-gfilter="proposee">Proposées</button>
         <button class="chip" data-gfilter="validee">Validées</button>
       </div>
+
+      <div class="card" style="padding:0 14px" id="l-gardes">
+        <div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande d'échange</p></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- AMICALE -->
+  <div class="screen" id="sc-amicale">
+    <div class="section">
+      <div class="section-title">Amicale des sapeurs-pompiers</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Retrouvez les actualités, événements et informations de votre amicale.</div>
+      <div id="l-amicale-actu">
+        <div class="empty"><i class="ti ti-news"></i><p>Aucune actualité pour le moment</p></div>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0">
+      <div class="section-title">Événements à venir</div>
+      <div id="l-amicale-events">
+        <div class="empty"><i class="ti ti-calendar"></i><p>Aucun événement programmé</p></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PORTAIL SDIS -->
+  <div class="screen" id="sc-sdis">
+    <div class="section">
+      <div class="section-title">Portail SDIS 72</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Accès rapide aux outils et ressources du SDIS 72.</div>
+
+      <!-- Applications -->
+      <div class="section-title" style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin-bottom:10px">Applications</div>
+      <div class="card" style="padding:0 14px;margin-bottom:14px">
+        <a href="https://artemis.sdis72.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
+          <div style="font-size:24px;width:42px;text-align:center">🚒</div>
+          <div class="req-info"><div class="req-name">Artemis</div><div class="req-detail">Gestion des gardes et plannings</div></div>
+          <div><i class="ti ti-external-link" style="color:var(--text2);font-size:18px"></i></div>
+        </a>
+        <a href="https://www.sisbra.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
+          <div style="font-size:24px;width:42px;text-align:center">🗺️</div>
+          <div class="req-info"><div class="req-name">SISBRA</div><div class="req-detail">Système d'information géographique</div></div>
+          <div><i class="ti ti-external-link" style="color:var(--text2);font-size:18px"></i></div>
+        </a>
+        <a href="https://portail.sdacr.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
+          <div style="font-size:24px;width:42px;text-align:center">📋</div>
+          <div class="req-info"><div class="req-name">SDACR</div><div class="req-detail">Schéma départemental d'analyse</div></div>
+          <div><i class="ti ti-external-link" style="color:var(--text2);font-size:18px"></i></div>
+        </a>
+      </div>
+
+      <!-- Contacts utiles -->
+      <div class="section-title" style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin-bottom:10px">Contacts utiles</div>
+      <div class="card" style="padding:0 14px;margin-bottom:14px">
+        <div class="req-row">
+          <div style="font-size:24px;width:42px;text-align:center">📞</div>
+          <div class="req-info"><div class="req-name">Direction SDIS 72</div><div class="req-detail">02 43 81 72 00</div></div>
+          <a href="tel:0243817200"><button class="btn-s" style="width:auto;padding:6px 12px;font-size:12px"><i class="ti ti-phone"></i>Appeler</button></a>
+        </div>
+        <div class="req-row">
+          <div style="font-size:24px;width:42px;text-align:center">📞</div>
+          <div class="req-info"><div class="req-name">Service habillement</div><div class="req-detail">Magasin central SDIS 72</div></div>
+          <button class="btn-s" style="width:auto;padding:6px 12px;font-size:12px"><i class="ti ti-phone"></i>Appeler</button>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="section-title" style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin-bottom:10px">Documents de référence</div>
+      <div class="card" style="padding:0 14px">
+        <div class="req-row">
+          <div style="font-size:24px;width:42px;text-align:center">📄</div>
+          <div class="req-info"><div class="req-name">Règlement intérieur</div><div class="req-detail">SDIS 72 — Version en vigueur</div></div>
+          <i class="ti ti-lock" style="color:var(--text2);font-size:16px"></i>
+        </div>
+        <div class="req-row">
+          <div style="font-size:24px;width:42px;text-align:center">📄</div>
+          <div class="req-info"><div class="req-name">Notes d'information</div><div class="req-detail">Dernières circulaires</div></div>
+          <i class="ti ti-lock" style="color:var(--text2);font-size:16px"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- GARDES -->
+  <div class="screen" id="sc-gardes">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Échanges de gardes</div>
+        <button class="btn-p" id="btn-new-garde" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Demande</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Organisez vos échanges — validation officielle dans Artemis.</div>
       <div class="card" style="padding:0 14px" id="l-gardes">
         <div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande</p></div>
       </div>
@@ -411,7 +494,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <div class="screen" id="sc-amicale">
     <div class="section">
       <div class="section-title">Amicale des sapeurs-pompiers</div>
-      <div id="l-amicale-actu"><div class="empty"><i class="ti ti-news"></i><p>Aucune actualité</p></div></div>
+      <div class="empty"><i class="ti ti-heart"></i><p>Bientôt disponible</p></div>
     </div>
   </div>
 
@@ -419,7 +502,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <div class="screen" id="sc-sdis">
     <div class="section">
       <div class="section-title">Portail SDIS 72</div>
-      <div class="card" style="padding:0 14px;margin-bottom:14px">
+      <div class="card" style="padding:0 14px">
         <a href="https://artemis.sdis72.fr" target="_blank" class="req-row" style="text-decoration:none;color:inherit">
           <div style="font-size:24px;width:42px;text-align:center">🚒</div>
           <div class="req-info"><div class="req-name">Artemis</div><div class="req-detail">Gardes et plannings</div></div>
@@ -546,10 +629,68 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 </div>
 
 <!-- MODAL NOUVELLE GARDE -->
+<div class="modal-overlay" id="m-new-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Demande d'échange de garde</div>
+    <div class="modal-sub">Trouvez un collègue pour reprendre votre créneau</div>
+    <div class="error-box" id="garde-err"></div>
 
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date de la garde *</label>
+        <input class="form-ctrl" type="date" id="g-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de garde *</label>
+        <select class="form-ctrl" id="g-type">
+          <option value="journee">Journée</option>
+          <option value="nuit">Nuit</option>
+          <option value="24h">24h</option>
+          <option value="weekend">Week-end</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="g-debut" value="08:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure fin</label>
+        <input class="form-ctrl" type="time" id="g-fin" value="18:00">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Motif</label>
+      <textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison de l'échange..."></textarea>
+    </div>
+
+    <button class="btn-p" onclick="submitGarde()"><i class="ti ti-send"></i>Publier la demande</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-garde')">Annuler</button>
+  </div></div>
+</div>
 
 <!-- MODAL DÉTAIL GARDE -->
-
+<div class="modal-overlay" id="m-detail-garde">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Détail de l'échange</div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Date</label><span id="gd-date">—</span></div>
+      <div class="ig-item"><label>Type</label><span id="gd-type">—</span></div>
+      <div class="ig-item"><label>Horaires</label><span id="gd-horaires">—</span></div>
+      <div class="ig-item"><label>Demandeur</label><span id="gd-demandeur">—</span></div>
+      <div class="ig-item"><label>Remplaçant</label><span id="gd-remplacant">—</span></div>
+      <div class="ig-item"><label>Motif</label><span id="gd-motif">—</span></div>
+      <div class="ig-item"><label>Statut</label><span id="gd-statut">—</span></div>
+    </div>
+    <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-detail-garde')">Fermer</button>
+  </div></div>
+</div>
 
 <!-- MODAL DOTATION -->
 <div class="modal-overlay" id="m-dotation">
@@ -997,7 +1138,6 @@ async function adminSim(role){
   simRole=role;
   simCaserne=null;
   showView(role);
-  updateDrawerHeader();
   // Masquer membres si vue simulée != admin
   const secMem = document.getElementById('sec-membres');
   if(secMem) secMem.style.display = 'none';
@@ -1032,7 +1172,6 @@ async function backToAdmin(){
   if(secMem) secMem.style.display = 'block';
 
   showView('admin');
-  updateDrawerHeader();
   document.getElementById('h-badge').textContent='Admin';
   document.getElementById('h-badge').style.background = '';
   document.getElementById('h-badge').style.color = '';
@@ -2355,7 +2494,7 @@ function subscribeRT(){
 
 // ── EVENTS ────────────────────────────────────────────────
 
-// ── DRAWER ───────────────────────────────────────────────
+// ── DRAWER ────────────────────────────────────────────────
 function openDrawer(){
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawer-overlay').classList.add('open');
@@ -2364,150 +2503,61 @@ function closeDrawer(){
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('drawer-overlay').classList.remove('open');
 }
-
-const MODULE_TITLES = {
-  'sc-home':'EPI','sc-history':'EPI','sc-catalog':'EPI','sc-stats':'EPI',
-  'sc-gardes':'Gardes','sc-amicale':'Amicale','sc-sdis':'Portail SDIS','sc-profile':'Mon profil'
-};
-const DRAWER_MAP = {
-  'sc-home':'di-epi','sc-history':'di-epi','sc-catalog':'di-epi','sc-stats':'di-epi',
-  'sc-gardes':'di-gardes','sc-amicale':'di-amicale','sc-sdis':'di-sdis','sc-profile':'di-profile'
-};
+const MODULE_TITLES={'sc-home':'EPI','sc-history':'EPI','sc-catalog':'EPI','sc-stats':'EPI','sc-gardes':'Gardes','sc-amicale':'Amicale','sc-sdis':'Portail SDIS','sc-profile':'Mon profil'};
+const DRAWER_MAP={'sc-home':'di-epi','sc-history':'di-epi','sc-catalog':'di-epi','sc-stats':'di-epi','sc-gardes':'di-gardes','sc-amicale':'di-amicale','sc-sdis':'di-sdis','sc-profile':'di-profile'};
 
 function setActiveDrawer(tabId){
   document.querySelectorAll('.drawer-item').forEach(b=>b.classList.remove('active'));
-  var did = DRAWER_MAP[tabId];
-  if(did){ var el=document.getElementById(did); if(el) el.classList.add('active'); }
-  var t=document.getElementById('h-module-title');
-  if(t) t.textContent = MODULE_TITLES[tabId]||'CSP LFB';
+  var did=DRAWER_MAP[tabId]; if(did){var el=document.getElementById(did);if(el)el.classList.add('active');}
+  var t=document.getElementById('h-module-title'); if(t) t.textContent=MODULE_TITLES[tabId]||'CSP LFB';
 }
-
 function updateDrawerHeader(){
   if(!user) return;
-  var role = activeRole();
-  var sub = document.getElementById('drawer-sub');
-  if(sub) sub.textContent = (ROLE_LABELS[role]||role)+(user.caserne?' · '+user.caserne:'');
-  var badge = document.getElementById('h-badge');
-  if(badge){ badge.textContent=ROLE_BADGES[simRole||user.role]||'SP'; badge.style.background=simRole?'rgba(255,200,0,0.35)':''; }
-  var adminSec=document.getElementById('drawer-admin-sec');
-  var diSwitch=document.getElementById('di-switch');
+  var role=activeRole();
+  var sub=document.getElementById('drawer-sub');
+  if(sub) sub.textContent=(ROLE_LABELS[role]||role)+(user.caserne?' · '+user.caserne:'');
+  var badge=document.getElementById('h-badge');
+  if(badge){badge.textContent=ROLE_BADGES[simRole||user.role]||'SP';badge.style.background=simRole?'rgba(255,200,0,0.35)':'';}
   var show=user.role==='admin';
-  if(adminSec) adminSec.style.display=show?'block':'none';
-  if(diSwitch) diSwitch.style.display=show?'flex':'none';
-  var sw=document.getElementById('btn-switcher');
-  if(sw) sw.style.display=show?'inline-flex':'none';
+  var sec=document.getElementById('drawer-admin-sec'); if(sec) sec.style.display=show?'block':'none';
+  var dsw=document.getElementById('di-switch'); if(dsw) dsw.style.display=show?'flex':'none';
+  var sw=document.getElementById('btn-switcher'); if(sw) sw.style.display=show?'inline-flex':'none';
 }
 
 // ── GARDES ────────────────────────────────────────────────
-var gardes=[], gardeFilter='all';
-
-const GARDE_TYPE={journee:'Journée',nuit:'Nuit','24h':'24h',weekend:'Week-end'};
-const GARDE_STATUT={
-  ouverte:{lbl:'Ouverte',cls:'bp',e:'🟡'},
-  proposee:{lbl:'Proposée',cls:'bt',e:'🔵'},
-  validee:{lbl:'Validée',cls:'ba',e:'🟢'},
-  refusee:{lbl:'Refusée',cls:'br',e:'🔴'},
-  annulee:{lbl:'Annulée',cls:'br',e:'⚫'}
-};
-
+var gardes=[];
 async function loadGardes(){
   if(!user) return;
-  var res = await db.from('gardes')
-    .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
-    .order('date_garde',{ascending:true});
-  gardes = res.data||[];
+  var res=await db.from('gardes').select('*,demandeur:demandeur_id(matricule),remplacant:remplacant_id(matricule)').order('date_garde',{ascending:true});
+  gardes=res.data||[];
   renderGardes();
 }
-
 function renderGardes(){
-  var o=gardes.filter(g=>g.statut==='ouverte').length;
-  var p=gardes.filter(g=>g.statut==='proposee').length;
-  var v=gardes.filter(g=>g.statut==='validee').length;
-  var el;
-  el=document.getElementById('gst-open'); if(el) el.textContent=o;
-  el=document.getElementById('gst-prop'); if(el) el.textContent=p;
-  el=document.getElementById('gst-valid'); if(el) el.textContent=v;
-  var list=gardeFilter==='all'?gardes:gardes.filter(g=>g.statut===gardeFilter);
   var c=document.getElementById('l-gardes'); if(!c) return;
-  if(!list.length){ c.innerHTML='<div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande</p></div>'; return; }
-  c.innerHTML=list.map(function(g){
-    var sc=GARDE_STATUT[g.statut]||{lbl:g.statut,cls:'bp',e:'📋'};
+  if(!gardes.length){c.innerHTML='<div class="empty"><i class="ti ti-calendar-event"></i><p>Aucune demande</p></div>';return;}
+  var STATUT={ouverte:{lbl:'Ouverte',cls:'bp',e:'🟡'},proposee:{lbl:'Proposée',cls:'bt',e:'🔵'},validee:{lbl:'Validée',cls:'ba',e:'🟢'},refusee:{lbl:'Refusée',cls:'br',e:'🔴'},annulee:{lbl:'Annulée',cls:'br',e:'⚫'}};
+  var TYPE={journee:'Journée',nuit:'Nuit','24h':'24h',weekend:'Week-end'};
+  c.innerHTML=gardes.map(function(g){
+    var sc=STATUT[g.statut]||{lbl:g.statut,cls:'bp',e:'📋'};
     var d=g.date_garde?new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}):'—';
-    var mine=g.demandeur_id===user.id;
     return '<div class="req-row" data-gid="'+g.id+'" style="cursor:pointer">'+
       '<div style="font-size:26px;width:40px;text-align:center">'+sc.e+'</div>'+
-      '<div class="req-info"><div class="req-name">'+d+' — '+(GARDE_TYPE[g.type_garde]||g.type_garde)+'</div>'+
-      '<div class="req-detail">'+(mine?'Ma garde':'Mat. '+(g.demandeur&&g.demandeur.matricule||'?'))+(g.motif?' · '+g.motif:'')+'</div></div>'+
-      '<div class="req-meta"><span class="badge '+sc.cls+'">'+sc.lbl+'</span></div></div>';
+      '<div class="req-info"><div class="req-name">'+d+' — '+(TYPE[g.type_garde]||g.type_garde)+'</div>'+
+      '<div class="req-detail">'+(g.demandeur?'Mat. '+g.demandeur.matricule:'—')+(g.motif?' · '+g.motif:'')+'</div></div>'+
+      '<span class="badge '+sc.cls+'">'+sc.lbl+'</span></div>';
   }).join('');
-  c.querySelectorAll('[data-gid]').forEach(function(r){
-    r.addEventListener('click',function(){ openGardeDetail(r.dataset.gid); });
-  });
 }
-
-function openGardeDetail(id){
-  var g=gardes.find(function(x){return x.id===id;}); if(!g) return;
-  var sc=GARDE_STATUT[g.statut]||{lbl:g.statut};
-  var d=g.date_garde?new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
-  document.getElementById('gd-date').textContent=d;
-  document.getElementById('gd-type').textContent=GARDE_TYPE[g.type_garde]||g.type_garde;
-  document.getElementById('gd-horaires').textContent=(g.heure_debut&&g.heure_fin)?g.heure_debut+' → '+g.heure_fin:'—';
-  document.getElementById('gd-statut').textContent=sc.lbl;
-  var actions=document.getElementById('gd-actions'); actions.innerHTML='';
-  var role=activeRole(), mine=g.demandeur_id===user.id;
-  if(g.statut==='ouverte'&&!mine){
-    var b=document.createElement('button'); b.className='btn-p';
-    b.innerHTML='<i class="ti ti-hand-stop"></i>Je reprends';
-    b.onclick=function(){ updateGardeStatut(id,'proposee',user.id); };
-    actions.appendChild(b);
-  }
-  if(mine&&g.statut==='ouverte'){
-    var b2=document.createElement('button'); b2.className='btn-s'; b2.style.color='#DC2626'; b2.style.borderColor='#DC2626';
-    b2.innerHTML='<i class="ti ti-x"></i>Annuler';
-    b2.onclick=function(){ updateGardeStatut(id,'annulee',null); };
-    actions.appendChild(b2);
-  }
-  if((role==='responsable_caserne'||user.role==='admin')&&g.statut==='proposee'){
-    var bv=document.createElement('button'); bv.className='btn-p';
-    bv.innerHTML='<i class="ti ti-check"></i>Valider';
-    bv.onclick=function(){ updateGardeStatut(id,'validee',null); };
-    actions.appendChild(bv);
-    var br=document.createElement('button'); br.className='btn-s'; br.style.color='#DC2626'; br.style.borderColor='#DC2626';
-    br.innerHTML='<i class="ti ti-x"></i>Refuser';
-    br.onclick=function(){ updateGardeStatut(id,'refusee',null); };
-    actions.appendChild(br);
-  }
-  openModal('m-detail-garde');
-}
-
-async function updateGardeStatut(id,statut,remplacantId){
-  var upd={statut:statut,updated_at:new Date().toISOString()};
-  if(remplacantId) upd.remplacant_id=remplacantId;
-  var res=await db.from('gardes').update(upd).eq('id',id);
-  if(res.error){toast('Erreur : '+res.error.message);return;}
-  closeModal('m-detail-garde');
-  var msgs={validee:'Échange validé ✓',refusee:'Refusé',annulee:'Annulé',proposee:'Proposition envoyée ✓'};
-  toast(msgs[statut]||'OK');
-  await loadGardes();
-}
-
 async function submitGarde(){
   var date=document.getElementById('g-date').value;
   var type=document.getElementById('g-type').value;
-  if(!date||!type){showErr('garde-err','Date et type obligatoires');return;}
-  var btn=document.getElementById('btn-submit-garde'); btn.disabled=true;
-  var res=await db.from('gardes').insert({
-    demandeur_id:user.id, date_garde:date, type_garde:type,
-    heure_debut:document.getElementById('g-debut').value||null,
-    heure_fin:document.getElementById('g-fin').value||null,
-    motif:document.getElementById('g-motif').value.trim()||null,
-    statut:'ouverte'
-  });
-  btn.disabled=false;
-  if(res.error){showErr('garde-err','Erreur : '+res.error.message);return;}
+  if(!date){toast('Date obligatoire');return;}
+  var btn=document.getElementById('btn-submit-garde'); if(btn) btn.disabled=true;
+  var res=await db.from('gardes').insert({demandeur_id:user.id,date_garde:date,type_garde:type,motif:(document.getElementById('g-motif').value||null),statut:'ouverte'});
+  if(btn) btn.disabled=false;
+  if(res.error){toast('Erreur: '+res.error.message);return;}
   closeModal('m-new-garde');
   toast('Demande publiée ✓');
-  await loadGardes();
+  loadGardes();
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -2550,20 +2600,17 @@ if(savedMat){
     item.addEventListener('click', function(){ closeDrawer(); switchTab(item.dataset.drawer); });
   });
   document.getElementById('di-logout').addEventListener('click', doLogout);
-  var diSwitch2=document.getElementById('di-switch');
-  if(diSwitch2) diSwitch2.addEventListener('click',function(){ closeDrawer(); openModal('m-switch'); });
-  document.getElementById('h-badge').addEventListener('click',function(){ if(simRole) backToAdmin(); });
+  var diSw=document.getElementById('di-switch');
+  if(diSw) diSw.addEventListener('click',function(){closeDrawer();openModal('m-switch');});
+  document.getElementById('h-badge').addEventListener('click',function(){if(simRole)backToAdmin();});
 
-  // Gardes
-  // gardes via délégation
-  document.querySelectorAll('[data-gfilter]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      gardeFilter=btn.dataset.gfilter;
-      document.querySelectorAll('[data-gfilter]').forEach(function(b){ b.classList.remove('active'); });
-      btn.classList.add('active');
-      renderGardes();
-    });
-  });
+  // Gardes - addEventListener DIRECT (pas de délégation)
+  var btnNG=document.getElementById('btn-new-garde');
+  if(btnNG) btnNG.addEventListener('click',function(){ openModal('m-new-garde'); });
+  var btnSG=document.getElementById('btn-submit-garde');
+  if(btnSG) btnSG.addEventListener('click', submitGarde);
+  var btnCG=document.getElementById('btn-cancel-garde');
+  if(btnCG) btnCG.addEventListener('click',function(){ closeModal('m-new-garde'); });
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
@@ -2721,29 +2768,6 @@ if(savedMat){
       renderHistory(chip.dataset.filter);
     });
   });
-
-  // Debug
-  function dbg(msg){
-    var el = document.getElementById('debug-bar');
-    if(el){ el.style.display='block'; el.textContent = msg; }
-  }
-  window.onerror = function(msg,src,line){ dbg('ERREUR: '+msg+' ligne '+line); return true; };
-
-  // ── DÉLÉGATION GLOBALE ────────────────────────────────
-  document.addEventListener('click', function(e){
-    var t = e.target;
-    dbg('clic: '+t.id+' tag:'+t.tagName);
-    while(t && t.tagName){
-      var id = t.id;
-      if(id==='btn-new-garde'){ dbg('ouverture modal garde'); openModal('m-new-garde'); return; }
-      if(id==='btn-submit-garde'){ submitGarde(); return; }
-      if(id==='btn-cancel-garde'){ closeModal('m-new-garde'); return; }
-      if(id==='btn-close-garde'){ closeModal('m-detail-garde'); return; }
-      if(id==='btn-open-scanner'){ openScanner(); return; }
-      t = t.parentNode;
-    }
-  });
-
 });
 
 </script>
@@ -2752,7 +2776,7 @@ if(savedMat){
 <div class="modal-overlay" id="m-new-garde">
   <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
     <div class="modal-title">Demande d'échange de garde</div>
-    <div class="error-box" id="garde-err"></div>
+    <div class="error-box" id="garde-err" style="display:none"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
       <div class="form-group"><label class="form-label">Date *</label><input class="form-ctrl" type="date" id="g-date"></div>
       <div class="form-group"><label class="form-label">Type *</label>
@@ -2764,32 +2788,11 @@ if(savedMat){
         </select>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div class="form-group"><label class="form-label">Heure début</label><input class="form-ctrl" type="time" id="g-debut" value="08:00"></div>
-      <div class="form-group"><label class="form-label">Heure fin</label><input class="form-ctrl" type="time" id="g-fin" value="18:00"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Motif</label><textarea class="form-ctrl" id="g-motif" rows="2" placeholder="Raison..."></textarea></div>
+    <div class="form-group"><label class="form-label">Motif</label><textarea class="form-ctrl" id="g-motif" rows="2"></textarea></div>
     <button class="btn-p" id="btn-submit-garde"><i class="ti ti-send"></i>Publier</button>
     <div style="height:7px"></div>
     <button class="btn-s" id="btn-cancel-garde">Annuler</button>
   </div></div>
 </div>
-
-<!-- MODAL DETAIL GARDE -->
-<div class="modal-overlay" id="m-detail-garde">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
-    <div class="modal-title">Détail échange</div>
-    <div class="ig" style="margin-bottom:14px">
-      <div class="ig-item"><label>Date</label><span id="gd-date">—</span></div>
-      <div class="ig-item"><label>Type</label><span id="gd-type">—</span></div>
-      <div class="ig-item"><label>Horaires</label><span id="gd-horaires">—</span></div>
-      <div class="ig-item"><label>Statut</label><span id="gd-statut">—</span></div>
-    </div>
-    <div id="gd-actions" style="display:flex;flex-direction:column;gap:8px"></div>
-    <div style="height:7px"></div>
-    <button class="btn-s" id="btn-close-garde">Fermer</button>
-  </div></div>
-</div>
-
 </body>
 </html>
