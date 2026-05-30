@@ -317,7 +317,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <div class="section">
       <div style="display:flex;gap:8px;margin-bottom:13px">
         <input type="search" class="form-ctrl" id="catalog-search" placeholder="🔍 Rechercher…" style="flex:1">
-        <button id="btn-open-scanner" onclick="openScanner()" style="display:none;background:var(--red);border:none;color:#fff;border-radius:var(--radius-sm);padding:0 14px;cursor:pointer;flex-shrink:0;font-size:13px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px"><i class="ti ti-scan" style="font-size:18px"></i>Scanner</button>
+        <button id="btn-open-scanner" style="display:none;background:var(--red);border:none;color:#fff;border-radius:var(--radius-sm);padding:0 14px;cursor:pointer;flex-shrink:0;font-size:13px;font-weight:600;font-family:inherit;display:flex;align-items:center;gap:6px"><i class="ti ti-scan" style="font-size:18px"></i>Scanner</button>
       </div>
       <div id="l-catalog"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
     </div>
@@ -439,7 +439,70 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:3px" id="p-role">—</div>
       <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="p-caserne">—</div>
     </div>
-        <div class="section" style="padding-top:0" id="sec-dot-sp">
+    <div class="section">
+      <div class="section-title">Statistiques</div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+          <div><div style="font-size:22px;font-weight:700" id="ps-tot">—</div><div style="font-size:11px;color:var(--text2)">Total</div></div>
+          <div><div style="font-size:22px;font-weight:700;color:var(--green)" id="ps-ok">—</div><div style="font-size:11px;color:var(--text2)">Approuvées</div></div>
+          <div><div style="font-size:22px;font-weight:700;color:var(--amber)" id="ps-en">—</div><div style="font-size:11px;color:var(--text2)">En cours</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="sec-membres" style="display:none" class="section" style="padding-top:0">
+      <div class="section-title">Membres</div>
+      <div class="card" style="padding:0 14px" id="l-membres"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+      <div style="height:10px"></div>
+      <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
+    </div>
+    <div class="section" style="padding-top:0">
+      <div class="section-title">Mes coordonnées & notifications</div>
+      <div class="card" style="padding:14px">
+        <div class="form-group">
+          <label class="form-label">Adresse email</label>
+          <input class="form-ctrl" id="p-email" type="email" placeholder="prenom.nom@sdis72.fr">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Numéro de téléphone</label>
+          <input class="form-ctrl" id="p-tel" type="tel" placeholder="06 12 34 56 78">
+        </div>
+        <div style="height:4px"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Recevoir des notifications pour :</div>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer">
+          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="p-notif-email" style="opacity:0;width:0;height:0;position:absolute">
+            <div id="toggle-email" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
+              <div id="thumb-email" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par email</div>
+            <div style="font-size:12px;color:var(--text2)">Changements de statut de vos demandes</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer">
+          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
+            <input type="checkbox" id="p-notif-sms" style="opacity:0;width:0;height:0;position:absolute">
+            <div id="toggle-sms" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
+              <div id="thumb-sms" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par SMS</div>
+            <div style="font-size:12px;color:var(--text2)">Alertes importantes sur votre téléphone</div>
+          </div>
+        </label>
+        <div style="height:10px"></div>
+        <button class="btn-p" id="btn-save-profil"><i class="ti ti-device-floppy"></i>Enregistrer mes préférences</button>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0" id="sec-dotations">
+      <div class="section-title">Ma dotation & péremptions</div>
+      <div class="card" style="padding:0 14px" id="list-dotations">
+        <div class="loader"><i class="ti ti-loader"></i>Chargement…</div>
+      </div>
+    </div>
+    <div class="section" style="padding-top:0" id="sec-dot-sp">
       <div class="section-title">Ma dotation & péremptions</div>
       <div class="card" style="padding:0 14px" id="list-dotations">
         <div class="empty"><i class="ti ti-package"></i><p>Aucune dotation</p></div>
@@ -1525,7 +1588,6 @@ let barcodeReader = null;
 
 async function openScanner(){
   const overlay = document.getElementById('scanner-overlay');
-  if(!overlay){ toast('Scanner indisponible'); return; }
   overlay.style.display = 'flex';
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
@@ -2513,7 +2575,8 @@ if(savedMat){
   }
 
   // Scanner
-  // scanner via onclick direct
+  const btnScanner = document.getElementById('btn-open-scanner');
+  if(btnScanner) btnScanner.addEventListener('click', openScanner);
   const btnSaveScan = document.getElementById('btn-save-scan');
   if(btnSaveScan) btnSaveScan.addEventListener('click', saveScannedEquipement);
   const btnCancelScan = document.getElementById('btn-cancel-scan');
