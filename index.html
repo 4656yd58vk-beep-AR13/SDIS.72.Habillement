@@ -2722,12 +2722,20 @@ if(savedMat){
     });
   });
 
+  // Debug
+  function dbg(msg){
+    var el = document.getElementById('debug-bar');
+    if(el){ el.style.display='block'; el.textContent = msg; }
+  }
+  window.onerror = function(msg,src,line){ dbg('ERREUR: '+msg+' ligne '+line); return true; };
+
   // ── DÉLÉGATION GLOBALE ────────────────────────────────
   document.addEventListener('click', function(e){
     var t = e.target;
+    dbg('clic: '+t.id+' tag:'+t.tagName);
     while(t && t.tagName){
       var id = t.id;
-      if(id==='btn-new-garde'){ openModal('m-new-garde'); return; }
+      if(id==='btn-new-garde'){ dbg('ouverture modal garde'); openModal('m-new-garde'); return; }
       if(id==='btn-submit-garde'){ submitGarde(); return; }
       if(id==='btn-cancel-garde'){ closeModal('m-new-garde'); return; }
       if(id==='btn-close-garde'){ closeModal('m-detail-garde'); return; }
