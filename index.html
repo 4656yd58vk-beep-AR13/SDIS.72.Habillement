@@ -2555,15 +2555,7 @@ if(savedMat){
   document.getElementById('h-badge').addEventListener('click',function(){ if(simRole) backToAdmin(); });
 
   // Gardes
-  document.getElementById('btn-new-garde').addEventListener('click', function(){
-    document.getElementById('g-date').value='';
-    document.getElementById('g-motif').value='';
-    hideErr('garde-err');
-    openModal('m-new-garde');
-  });
-  document.getElementById('btn-submit-garde').addEventListener('click', submitGarde);
-  document.getElementById('btn-cancel-garde').addEventListener('click', function(){ closeModal('m-new-garde'); });
-  document.getElementById('btn-close-garde').addEventListener('click', function(){ closeModal('m-detail-garde'); });
+  // gardes via délégation
   document.querySelectorAll('[data-gfilter]').forEach(function(btn){
     btn.addEventListener('click', function(){
       gardeFilter=btn.dataset.gfilter;
@@ -2729,6 +2721,21 @@ if(savedMat){
       renderHistory(chip.dataset.filter);
     });
   });
+
+  // ── DÉLÉGATION GLOBALE ────────────────────────────────
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    while(t && t.tagName){
+      var id = t.id;
+      if(id==='btn-new-garde'){ openModal('m-new-garde'); return; }
+      if(id==='btn-submit-garde'){ submitGarde(); return; }
+      if(id==='btn-cancel-garde'){ closeModal('m-new-garde'); return; }
+      if(id==='btn-close-garde'){ closeModal('m-detail-garde'); return; }
+      if(id==='btn-open-scanner'){ openScanner(); return; }
+      t = t.parentNode;
+    }
+  });
+
 });
 
 </script>
