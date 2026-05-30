@@ -1588,6 +1588,7 @@ let barcodeReader = null;
 
 async function openScanner(){
   const overlay = document.getElementById('scanner-overlay');
+  if(!overlay){ toast('Scanner indisponible'); return; }
   overlay.style.display = 'flex';
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
