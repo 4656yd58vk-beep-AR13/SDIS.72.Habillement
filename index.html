@@ -214,6 +214,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <div class="header-right">
       <div class="header-badge" id="h-badge">—</div>
+      <button id="btn-superadmin" onclick="openModal('m-superadmin')" style="display:none;background:rgba(255,215,0,0.3);border:none;color:#fff;border-radius:20px;cursor:pointer;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit"><i class="ti ti-key" style="font-size:13px"></i> SA</button>
       <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;padding:5px 10px;gap:5px;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:13px"></i>Changer de vue</button>
       <button id="btn-logout" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
     </div>
@@ -1032,6 +1033,7 @@ async function initApp(){
   document.getElementById('p-role').textContent  = ROLE_LABELS[role]||role;
   document.getElementById('p-caserne').textContent = user.caserne||'';
   showView(role);
+  initSuperAdmin();
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
   document.getElementById('sec-membres').style.display = showMembres?'block':'none';
@@ -2434,6 +2436,53 @@ function subscribeRT(){
 }
 
 // ── EVENTS ────────────────────────────────────────────────
+
+// ── SUPER ADMIN ───────────────────────────────────────────
+async function initSuperAdmin(){
+  if(!user || !user.super_admin) return;
+  // Afficher bouton SA
+  var btnSA = document.getElementById('btn-superadmin');
+  if(btnSA) btnSA.style.display = 'inline-flex';
+}
+
+async function simulateUser(){
+  var mat = document.getElementById('sa-matricule').value.trim();
+  if(!mat){ toast('Entre un matricule'); return; }
+  var res = document.getElementById('sa-result');
+  if(res) res.textContent = 'Recherche...';
+  
+  var {data, error} = await db.from('utilisateurs')
+    .select('id,matricule,role,caserne')
+    .eq('matricule', mat)
+    .single();
+  
+  if(error || !data){
+    if(res) res.textContent = '❌ Matricule introuvable';
+    return;
+  }
+  
+  if(res) res.textContent = 'Mat. '+data.matricule+' · '+data.caserne+' · '+(ROLE_LABELS[data.role]||data.role);
+  
+  // Simuler : stocker l'utilisateur simulé
+  window.simulatedUser = data;
+  
+  // Fermer modal et basculer
+  closeModal('m-superadmin');
+  toast('Vue de Mat. '+data.matricule+' activée');
+  
+  // Changer le header
+  var hSub = document.getElementById('h-sub');
+  if(hSub) hSub.textContent = 'Simulation Mat. '+data.matricule;
+  var hBadge = document.getElementById('h-badge');
+  if(hBadge){ hBadge.textContent = (ROLE_BADGES[data.role]||data.role)+' ↩'; hBadge.style.display=''; hBadge.style.background='rgba(255,200,0,0.35)'; }
+  
+  // Simuler le rôle
+  simRole = data.role;
+  showView(data.role);
+  await loadAll();
+  switchTab('sc-home');
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
 
   // Login
@@ -2466,7 +2515,20 @@ if(savedMat){
   document.getElementById('btn-newpw').addEventListener('click', saveNewPw);
 
   // Logout
-  document.getElementById('btn-logout').addEventListener('click', doLogout);
+  // Super admin
+  var btnSaSim = document.getElementById('btn-sa-simulate');
+  if(btnSaSim) btnSaSim.addEventListener('click', simulateUser);
+  // Recherche en temps réel
+  var saMat = document.getElementById('sa-matricule');
+  if(saMat) saMat.addEventListener('input', async function(){
+    var mat = this.value.trim();
+    var res = document.getElementById('sa-result');
+    if(mat.length < 4){ if(res) res.textContent=''; return; }
+    var {data} = await db.from('utilisateurs').select('matricule,role,caserne').eq('matricule',mat).single();
+    if(res) res.textContent = data ? '✅ '+data.caserne+' · '+(ROLE_LABELS[data.role]||data.role) : '❌ Introuvable';
+  });
+
+    document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
 
   // Tabs
@@ -2625,5 +2687,21 @@ if(savedMat){
 });
 
 </script>
+
+<!-- MODAL SUPER ADMIN -->
+<div class="modal-overlay" id="m-superadmin">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">🔑 Super Admin</div>
+    <div class="modal-sub">Simuler la vue d'un matricule</div>
+    <div class="form-group">
+      <label class="form-label">Matricule à simuler</label>
+      <input class="form-ctrl" type="text" id="sa-matricule" placeholder="Ex: 103918" inputmode="numeric">
+    </div>
+    <div id="sa-result" style="font-size:13px;color:var(--text2);margin-bottom:12px;min-height:20px"></div>
+    <button class="btn-p" id="btn-sa-simulate"><i class="ti ti-eye"></i>Simuler ce profil</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-superadmin')">Fermer</button>
+  </div></div>
+</div>
 </body>
 </html>
