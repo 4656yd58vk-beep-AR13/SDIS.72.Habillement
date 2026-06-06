@@ -432,7 +432,31 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   </div>
 
 
-  <!-- PROFIL -->
+  <!-- APS -->
+  <div class="screen" id="sc-aps">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="section-title" style="margin-bottom:0">Séances sportives</div>
+        <button class="btn-p" onclick="openNewAps()" style="width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Créer</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Proposez et rejoignez des séances sport.</div>
+      <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px">
+        <button class="chip active" data-apsfilter="all">Toutes</button>
+        <button class="chip" data-apsfilter="course">🏃 Course</button>
+        <button class="chip" data-apsfilter="musculation">💪 Muscu</button>
+        <button class="chip" data-apsfilter="collectif">⚽ Collectif</button>
+        <button class="chip" data-apsfilter="natation">🏊 Natation</button>
+        <button class="chip" data-apsfilter="cross">🌲 Cross</button>
+        <button class="chip" data-apsfilter="velo">🚴 Vélo</button>
+        <button class="chip" data-apsfilter="autre">➕ Autre</button>
+      </div>
+      <div id="l-aps">
+        <div class="empty"><i class="ti ti-run"></i><p>Aucune séance programmée</p></div>
+      </div>
+    </div>
+  </div>
+
+    <!-- PROFIL -->
   <div class="screen" id="sc-profile">
     <div class="ph">
       <div class="av"><i class="ti ti-user"></i></div>
@@ -544,6 +568,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <button class="tab active" data-tab="sc-home"><i class="ti ti-shield"></i>EPI</button>
     <button class="tab" data-tab="sc-gardes"><i class="ti ti-calendar-event"></i>Gardes</button>
     <button class="tab" data-tab="sc-amicale"><i class="ti ti-heart"></i>Amicale</button>
+    <button class="tab" data-tab="sc-aps"><i class="ti ti-run"></i>APS</button>
     <button class="tab" data-tab="sc-sdis"><i class="ti ti-link"></i>SDIS</button>
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
   </div>
@@ -1586,6 +1611,7 @@ function switchTab(tabId){
   if(subnav) subnav.style.display = 'none';
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
   if(tabId==='sc-gardes'){ loadGardes(); }
+  if(tabId==='sc-aps'){ loadAps(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -2486,6 +2512,179 @@ async function simulateUser(){
   switchTab('sc-home');
 }
 
+
+// ── APS ───────────────────────────────────────────────────
+var seances = [], apsFilter = 'all';
+
+const APS_TYPES = {
+  course:'🏃 Course', musculation:'💪 Muscu', collectif:'⚽ Collectif',
+  natation:'🏊 Natation', cross:'🌲 Cross', velo:'🚴 Vélo', autre:'➕ Autre'
+};
+const APS_NIVEAUX = {tous:'Tous niveaux', intermediaire:'Intermédiaire', confirme:'Confirmé'};
+
+function openNewAps(){
+  var d = document.getElementById('aps-date');
+  if(d) d.value = '';
+  var t = document.getElementById('aps-titre');
+  if(t) t.value = '';
+  var desc = document.getElementById('aps-desc');
+  if(desc) desc.value = '';
+  var lieu = document.getElementById('aps-lieu');
+  if(lieu) lieu.value = '';
+  var err = document.getElementById('aps-err');
+  if(err) err.style.display = 'none';
+  openModal('m-new-aps');
+}
+
+async function loadAps(){
+  if(!user) return;
+  var res = await db.from('seances_aps')
+    .select('*, createur:createur_id(matricule,caserne), inscriptions_aps(id,utilisateur_id)')
+    .eq('statut','ouverte')
+    .order('date_seance', {ascending:true});
+  seances = res.data || [];
+  renderAps();
+}
+
+function renderAps(){
+  var list = apsFilter==='all' ? seances : seances.filter(function(s){ return s.type_seance===apsFilter; });
+  var el = document.getElementById('l-aps');
+  if(!el) return;
+  if(!list.length){
+    el.innerHTML = '<div class="empty"><i class="ti ti-run"></i><p>Aucune séance programmée</p></div>';
+    return;
+  }
+  var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  el.innerHTML = list.map(function(s){
+    var inscrits = s.inscriptions_aps ? s.inscriptions_aps.length : 0;
+    var inscrit = s.inscriptions_aps && s.inscriptions_aps.some(function(i){ return i.utilisateur_id === currentId; });
+    var places = s.places_max ? inscrits+'/'+s.places_max : inscrits+' inscrit'+(inscrits>1?'s':'');
+    var dateStr = s.date_seance ? new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}) : '—';
+    var heure = s.heure_debut ? s.heure_debut.slice(0,5) : '';
+    return '<div class="req-row" data-apsid="'+s.id+'" style="cursor:pointer">'+
+      '<div style="font-size:26px;width:42px;text-align:center;flex-shrink:0">'+(APS_TYPES[s.type_seance]||'🏅').split(' ')[0]+'</div>'+
+      '<div class="req-info">'+
+        '<div class="req-name">'+s.titre+'</div>'+
+        '<div class="req-detail">'+dateStr+(heure?' · '+heure:'')+(s.lieu?' · '+s.lieu:'')+'</div>'+
+        '<div class="req-detail">'+places+(inscrit?' · <span style="color:var(--green)">✓ Inscrit</span>':'')+'</div>'+
+      '</div>'+
+      '<div class="req-meta"><span class="badge ba" style="font-size:11px">'+APS_NIVEAUX[s.niveau||'tous']+'</span></div>'+
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('[data-apsid]').forEach(function(r){
+    r.addEventListener('click', function(){ openApsDetail(r.dataset.apsid); });
+  });
+}
+
+async function openApsDetail(id){
+  var s = seances.find(function(x){ return x.id===id; });
+  if(!s) return;
+  var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  var inscrit = s.inscriptions_aps && s.inscriptions_aps.some(function(i){ return i.utilisateur_id===currentId; });
+  var inscrits = s.inscriptions_aps ? s.inscriptions_aps.length : 0;
+
+  document.getElementById('aps-d-titre').textContent = s.titre;
+  document.getElementById('aps-d-date').textContent = s.date_seance ? new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('aps-d-horaires').textContent = s.heure_debut ? s.heure_debut.slice(0,5)+(s.heure_fin?' → '+s.heure_fin.slice(0,5):'') : '—';
+  document.getElementById('aps-d-lieu').textContent = s.lieu || '—';
+  document.getElementById('aps-d-niveau').textContent = APS_NIVEAUX[s.niveau||'tous'];
+  document.getElementById('aps-d-places').textContent = inscrits+(s.places_max?' / '+s.places_max+' places':' inscrit'+(inscrits>1?'s':''));
+  document.getElementById('aps-d-createur').textContent = s.createur ? 'Mat. '+s.createur.matricule : '—';
+  document.getElementById('aps-d-desc').textContent = s.description || '';
+
+  var actions = document.getElementById('aps-d-actions');
+  actions.innerHTML = '';
+  var complet = s.places_max && inscrits >= s.places_max;
+
+  if(!inscrit && !complet){
+    var btn = document.createElement('button');
+    btn.className = 'btn-p';
+    btn.innerHTML = '<i class="ti ti-user-plus"></i>Je participe !';
+    btn.onclick = function(){ inscrireAps(id); };
+    actions.appendChild(btn);
+  } else if(inscrit){
+    var btn2 = document.createElement('button');
+    btn2.className = 'btn-s';
+    btn2.style.color = '#DC2626';
+    btn2.style.borderColor = '#DC2626';
+    btn2.innerHTML = '<i class="ti ti-user-minus"></i>Me désinscrire';
+    btn2.onclick = function(){ desinscrireAps(id); };
+    actions.appendChild(btn2);
+  } else if(complet){
+    var p = document.createElement('p');
+    p.style.cssText = 'text-align:center;color:var(--text2);font-size:13px';
+    p.textContent = 'Séance complète';
+    actions.appendChild(p);
+  }
+
+  // Annuler si organisateur ou admin
+  var isOrga = s.createur_id === user.id;
+  var isAdm = user.role === 'admin' || user.super_admin;
+  if(isOrga || isAdm){
+    var btnAnn = document.createElement('button');
+    btnAnn.className = 'btn-s';
+    btnAnn.style.color = '#DC2626';
+    btnAnn.style.borderColor = '#DC2626';
+    btnAnn.innerHTML = '<i class="ti ti-trash"></i>Annuler la séance';
+    btnAnn.onclick = function(){ annulerAps(id); };
+    actions.appendChild(btnAnn);
+  }
+
+  openModal('m-detail-aps');
+}
+
+async function inscrireAps(id){
+  var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  var res = await db.from('inscriptions_aps').insert({seance_id:id, utilisateur_id:currentId});
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-detail-aps');
+  toast('Inscription confirmée ✓');
+  await loadAps();
+}
+
+async function desinscrireAps(id){
+  var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  var res = await db.from('inscriptions_aps').delete().eq('seance_id',id).eq('utilisateur_id',currentId);
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-detail-aps');
+  toast('Désinscription effectuée');
+  await loadAps();
+}
+
+async function annulerAps(id){
+  var res = await db.from('seances_aps').update({statut:'annulee'}).eq('id',id);
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-detail-aps');
+  toast('Séance annulée');
+  await loadAps();
+}
+
+async function submitAps(){
+  var titre = document.getElementById('aps-titre').value.trim();
+  var date = document.getElementById('aps-date').value;
+  var type = document.getElementById('aps-type').value;
+  if(!titre || !date){ toast('Titre et date obligatoires'); return; }
+  var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  var res = await db.from('seances_aps').insert({
+    createur_id: currentId,
+    titre: titre,
+    type_seance: type,
+    date_seance: date,
+    heure_debut: document.getElementById('aps-debut').value || null,
+    heure_fin: document.getElementById('aps-fin').value || null,
+    lieu: document.getElementById('aps-lieu').value.trim() || null,
+    places_max: parseInt(document.getElementById('aps-places').value) || null,
+    niveau: document.getElementById('aps-niveau').value,
+    description: document.getElementById('aps-desc').value.trim() || null,
+    statut: 'ouverte'
+  });
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
+  closeModal('m-new-aps');
+  toast('Séance publiée ✓');
+  await loadAps();
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
 
   // Login
@@ -2529,6 +2728,16 @@ if(savedMat){
     if(mat.length < 4){ if(res) res.textContent=''; return; }
     var {data} = await db.from('utilisateurs').select('matricule,role,caserne').eq('matricule',mat).single();
     if(res) res.textContent = data ? '✅ '+data.caserne+' · '+(ROLE_LABELS[data.role]||data.role) : '❌ Introuvable';
+  });
+
+    // APS filtres
+  document.querySelectorAll('[data-apsfilter]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      apsFilter = btn.dataset.apsfilter;
+      document.querySelectorAll('[data-apsfilter]').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderAps();
+    });
   });
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
@@ -2704,6 +2913,98 @@ if(savedMat){
     <button class="btn-p" id="btn-sa-simulate"><i class="ti ti-eye"></i>Simuler ce profil</button>
     <div style="height:7px"></div>
     <button class="btn-s" onclick="closeModal('m-superadmin')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVELLE SEANCE APS -->
+<div class="modal-overlay" id="m-new-aps">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer une séance</div>
+    <div class="error-box" id="aps-err" style="display:none"></div>
+
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="aps-titre" placeholder="Ex: Footing matinal">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Type *</label>
+        <select class="form-ctrl" id="aps-type">
+          <option value="course">🏃 Course</option>
+          <option value="musculation">💪 Musculation</option>
+          <option value="collectif">⚽ Sport collectif</option>
+          <option value="natation">🏊 Natation</option>
+          <option value="cross">🌲 Cross</option>
+          <option value="velo">🚴 Vélo</option>
+          <option value="autre">➕ Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Niveau</label>
+        <select class="form-ctrl" id="aps-niveau">
+          <option value="tous">Tous niveaux</option>
+          <option value="intermediaire">Intermédiaire</option>
+          <option value="confirme">Confirmé</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date *</label>
+        <input class="form-ctrl" type="date" id="aps-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Places max</label>
+        <input class="form-ctrl" type="number" id="aps-places" placeholder="Illimité" min="1">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="aps-debut">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure fin</label>
+        <input class="form-ctrl" type="time" id="aps-fin">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Lieu</label>
+      <input class="form-ctrl" type="text" id="aps-lieu" placeholder="Ex: Gymnase Bellevue">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-ctrl" id="aps-desc" rows="2" placeholder="Détails, équipement requis..."></textarea>
+    </div>
+
+    <button class="btn-p" onclick="submitAps()"><i class="ti ti-send"></i>Publier la séance</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-aps')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DETAIL SEANCE APS -->
+<div class="modal-overlay" id="m-detail-aps">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title" id="aps-d-titre">—</div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Date</label><span id="aps-d-date">—</span></div>
+      <div class="ig-item"><label>Horaires</label><span id="aps-d-horaires">—</span></div>
+      <div class="ig-item"><label>Lieu</label><span id="aps-d-lieu">—</span></div>
+      <div class="ig-item"><label>Niveau</label><span id="aps-d-niveau">—</span></div>
+      <div class="ig-item"><label>Places</label><span id="aps-d-places">—</span></div>
+      <div class="ig-item"><label>Organisateur</label><span id="aps-d-createur">—</span></div>
+    </div>
+    <div id="aps-d-desc" style="font-size:13px;color:var(--text2);margin-bottom:14px"></div>
+    <div id="aps-d-inscrits" style="margin-bottom:14px"></div>
+    <div id="aps-d-actions" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-detail-aps')">Fermer</button>
   </div></div>
 </div>
 </body>
