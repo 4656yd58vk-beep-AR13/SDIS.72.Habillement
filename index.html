@@ -1018,7 +1018,15 @@ async function initApp(){
   simRole=null;
   const isAdmin = user.role==='admin';
   const role = isAdmin ? 'admin' : user.role;
-  document.getElementById('h-badge').textContent = ROLE_BADGES[role]||'SP';
+  var badgeEl = document.getElementById('h-badge');
+  if(badgeEl){
+    if(user.role === 'admin'){
+      badgeEl.style.display = 'none'; // btn-switcher suffit
+    } else {
+      badgeEl.style.display = '';
+      badgeEl.textContent = ROLE_BADGES[role]||'SP';
+    }
+  }
   document.getElementById('h-sub').textContent   = ROLE_SUBS[role]||'';
   document.getElementById('p-mat').textContent   = 'Mat. '+user.matricule;
   document.getElementById('p-role').textContent  = ROLE_LABELS[role]||role;
@@ -1068,7 +1076,8 @@ async function adminSim(role){
   const actualBackId = role==='sp'?null:role==='responsable_caserne'?'back-resp':'back-hab';
   // Afficher bouton retour dans la vue
   // Mettre à jour le header avec badge + indicateur vue simulée
-  document.getElementById('h-badge').textContent = ROLE_BADGES[role];
+  document.getElementById('h-badge').style.display = '';
+    document.getElementById('h-badge').textContent = ROLE_BADGES[role];
   document.getElementById('h-badge').style.background = 'rgba(255,200,0,0.35)';
   document.getElementById('h-badge').style.color = '#fff';
   document.getElementById('h-sub').textContent = ROLE_SUBS[role];
@@ -1095,7 +1104,7 @@ async function backToAdmin(){
   if(secMem) secMem.style.display = 'block';
 
   showView('admin');
-  document.getElementById('h-badge').textContent='Admin';
+  document.getElementById('h-badge').style.display='none';
   document.getElementById('h-badge').style.background = '';
   document.getElementById('h-badge').style.color = '';
   document.getElementById('h-sub').textContent='Administration';
