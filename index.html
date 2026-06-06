@@ -2212,26 +2212,26 @@ function openNewGarde(){
 }
 
 async function submitGarde(){
-  var date  = document.getElementById('g-date').value;
-  var type  = document.getElementById('g-type').value;
-  var debut = document.getElementById('g-debut').value;
-  var fin   = document.getElementById('g-fin').value;
-  var motif = document.getElementById('g-motif').value.trim();
-  if(!date||!type){ showErr('garde-err','La date et le type sont obligatoires'); return; }
-
-  var btn = document.getElementById('btn-submit-garde');
-  if(btn) btn.disabled = true;
+  var elDate = document.getElementById('g-date');
+  var elType = document.getElementById('g-type');
+  var elDebut = document.getElementById('g-debut');
+  var elFin = document.getElementById('g-fin');
+  var elMotif = document.getElementById('g-motif');
+  var elErr = document.getElementById('garde-err');
+  if(!elDate||!elType){ toast('Formulaire indisponible'); return; }
+  var date = elDate.value;
+  var type = elType.value;
+  if(!date){ toast('La date est obligatoire'); return; }
   var res = await db.from('gardes').insert({
     demandeur_id: user.id,
     date_garde: date,
     type_garde: type,
-    heure_debut: debut||null,
-    heure_fin: fin||null,
-    motif: motif||null,
+    heure_debut: elDebut ? elDebut.value||null : null,
+    heure_fin: elFin ? elFin.value||null : null,
+    motif: elMotif ? elMotif.value.trim()||null : null,
     statut: 'ouverte'
   });
-  btn.disabled = false;
-  if(res.error){ showErr('garde-err','Erreur : '+res.error.message); return; }
+  if(res.error){ toast('Erreur : '+res.error.message); return; }
   closeModal('m-new-garde');
   toast('Demande publiée ✓ Vos collègues peuvent y répondre');
   await loadGardes();
