@@ -181,6 +181,25 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .prog-fill{height:100%;background:var(--red);border-radius:3px;transition:width 0.4s}
 .presence-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .brevet-badge{background:#EDE9FE;color:#4C1D95;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+
+/* DRAWER */
+#drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.25s}
+#drawer-overlay.open{opacity:1;pointer-events:all}
+#drawer{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--bg);z-index:501;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.15);overflow:hidden}
+#drawer.open{transform:translateX(0)}
+#drawer-head{background:var(--red);padding:max(env(safe-area-inset-top),44px) 16px 16px;flex-shrink:0}
+#drawer-user{display:flex;align-items:center;gap:12px}
+#drawer-avatar{width:42px;height:42px;background:rgba(255,255,255,0.2);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#drawer-body{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none}
+.drawer-section-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;padding:12px 18px 4px}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;font-size:14px;color:var(--text);text-align:left;border-left:3px solid transparent;transition:background 0.1s;-webkit-tap-highlight-color:transparent}
+.drawer-item:active{background:var(--bg2)}
+.drawer-item.active{color:var(--red);font-weight:600;border-left-color:var(--red);background:var(--bg2)}
+.drawer-item i{font-size:20px;width:24px;flex-shrink:0;color:var(--text2)}
+.drawer-item.active i{color:var(--red)}
+.drawer-item.hidden{display:none}
+.drawer-sep{height:1px;background:var(--border);margin:6px 16px}
+#drawer-footer{padding:8px 0 max(env(safe-area-inset-bottom),12px);border-top:1px solid var(--border);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -234,7 +253,71 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 
 <!-- APPLI -->
 <div class="app" id="pg-app" style="display:none">
+
+  <!-- DRAWER OVERLAY -->
+  <div id="drawer-overlay"></div>
+
+  <!-- DRAWER LATERAL -->
+  <div id="drawer">
+    <div id="drawer-head">
+      <div id="drawer-user">
+        <div id="drawer-avatar">
+          <i class="ti ti-shield" style="color:#fff;font-size:20px"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="color:#fff;font-weight:700;font-size:15px" id="drawer-name">CSP LFB</div>
+          <div style="color:rgba(255,255,255,0.7);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="drawer-role">—</div>
+        </div>
+        <button id="btn-drawer-close" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;padding:4px">
+          <i class="ti ti-x" style="font-size:20px"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="drawer-body">
+      <div class="drawer-section-label">Modules</div>
+      <button class="drawer-item active" data-drawer-tab="sc-home">
+        <i class="ti ti-shield"></i><span>EPI</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-gardes" id="drawer-tab-gardes">
+        <i class="ti ti-calendar-event"></i><span>Gardes</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-amicale">
+        <i class="ti ti-heart"></i><span>Amicale</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-aps">
+        <i class="ti ti-run"></i><span>APS</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-jsp" id="drawer-tab-jsp" style="display:none">
+        <i class="ti ti-shield-half"></i><span>JSP</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-sdis" id="drawer-tab-sdis">
+        <i class="ti ti-building"></i><span>Portail SDIS</span>
+      </button>
+      <div class="drawer-sep"></div>
+      <div class="drawer-section-label">Compte</div>
+      <button class="drawer-item" data-drawer-tab="sc-profile">
+        <i class="ti ti-user-circle"></i><span>Mon profil</span>
+      </button>
+      <div class="drawer-sep" id="drawer-sep-admin" style="display:none"></div>
+      <div class="drawer-section-label" id="drawer-label-admin" style="display:none">Administration</div>
+      <button class="drawer-item" id="drawer-btn-switcher" style="display:none">
+        <i class="ti ti-switch-horizontal"></i><span>Changer de vue</span>
+      </button>
+    </div>
+
+    <div id="drawer-footer">
+      <button class="drawer-item" id="drawer-btn-logout" style="color:#DC2626">
+        <i class="ti ti-logout" style="color:#DC2626"></i><span>Se déconnecter</span>
+      </button>
+    </div>
+  </div>
+
+
   <div class="header">
+    <button id="btn-drawer-open" style="background:none;border:none;cursor:pointer;color:#fff;padding:4px 8px 4px 0;display:flex;align-items:center;-webkit-tap-highlight-color:transparent">
+      <i class="ti ti-menu-2" style="font-size:26px"></i>
+    </button>
     <div class="header-logo" style="height:30px;padding:2px 6px"><img id="logo-app" style="height:26px" src="" alt="SDIS 72"></div>
     <div class="header-info">
       <div class="header-title">CSP LFB</div>
@@ -840,7 +923,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <button class="tab" data-tab="sc-aps"><i class="ti ti-run"></i>APS</button>
     <button class="tab" data-tab="sc-sdis"><i class="ti ti-link"></i>SDIS</button>
     <button class="tab" id="tab-jsp" data-tab="sc-jsp" style="display:none"><i class="ti ti-shield-half"></i>JSP</button>
-    <button class="tab" id="tab-jsp" data-tab="sc-jsp" style="display:none"><i class="ti ti-shield-half"></i>JSP</button>
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
   </div>
 </div>
@@ -1440,6 +1522,7 @@ async function adminSim(role){
   } else {
     switchTab('sc-home');
   }
+  updateDrawer();
   checkStBarbe();
   // Afficher sous-nav EPI au démarrage
   var subnavInit = document.getElementById('epi-subnav');
@@ -4336,6 +4419,82 @@ function renderJspDocs(){
   }).join('')+'</div>';
 }
 
+
+// ══════════════════════════════════════════════════════════
+// DRAWER NAVIGATION
+// ══════════════════════════════════════════════════════════
+var MODULE_NAMES = {
+  'sc-home':'EPI','sc-history':'EPI','sc-catalog':'EPI','sc-stats':'EPI',
+  'sc-gardes':'Gardes','sc-amicale':'Amicale','sc-aps':'APS',
+  'sc-jsp':'JSP','sc-sdis':'Portail SDIS','sc-profile':'Mon profil'
+};
+
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function updateDrawer(){
+  if(!user) return;
+  var role = activeRole();
+  var isJsp = (role==='jsp'||role==='responsable_jsp');
+
+  // Infos utilisateur
+  var nameEl = document.getElementById('drawer-name');
+  var roleEl = document.getElementById('drawer-role');
+  if(nameEl){
+    var name = '';
+    if(user.prenom||user.nom) name = (user.grade?user.grade+' ':'')+[user.prenom,user.nom].filter(Boolean).join(' ');
+    nameEl.textContent = name || 'CSP LFB';
+  }
+  if(roleEl) roleEl.textContent = (ROLE_LABELS[role]||role)+(user.caserne?' · '+user.caserne:'');
+
+  // Modules JSP : masquer EPI/Gardes/SDIS
+  var tabGardes = document.getElementById('drawer-tab-gardes');
+  var tabJsp = document.getElementById('drawer-tab-jsp');
+  var tabSdis = document.getElementById('drawer-tab-sdis');
+  var drawerBtnEpi = document.querySelector('[data-drawer-tab="sc-home"]');
+
+  if(isJsp){
+    if(drawerBtnEpi) drawerBtnEpi.style.display='none';
+    if(tabGardes) tabGardes.style.display='none';
+    if(tabJsp) tabJsp.style.display='';
+    if(tabSdis) tabSdis.style.display='none';
+  } else {
+    if(drawerBtnEpi) drawerBtnEpi.style.display='';
+    if(tabGardes) tabGardes.style.display='';
+    if(tabJsp) tabJsp.style.display='none';
+    if(tabSdis) tabSdis.style.display='';
+  }
+
+  // Section admin
+  var isAdmin = (user.role==='admin'||user.role==='responsable_caserne'||user.role==='habillement');
+  var sepAdmin = document.getElementById('drawer-sep-admin');
+  var lblAdmin = document.getElementById('drawer-label-admin');
+  var btnSwitcher = document.getElementById('drawer-btn-switcher');
+  if(sepAdmin) sepAdmin.style.display = isAdmin&&!isJsp ? '' : 'none';
+  if(lblAdmin) lblAdmin.style.display = isAdmin&&!isJsp ? '' : 'none';
+  if(btnSwitcher) btnSwitcher.style.display = isAdmin&&!isJsp ? '' : 'none';
+}
+
+function setActiveDrawerTab(tabId){
+  document.querySelectorAll('[data-drawer-tab]').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.drawerTab === tabId ||
+      (tabId==='sc-history'&&btn.dataset.drawerTab==='sc-home') ||
+      (tabId==='sc-catalog'&&btn.dataset.drawerTab==='sc-home') ||
+      (tabId==='sc-stats'&&btn.dataset.drawerTab==='sc-home'));
+  });
+  // Mettre à jour le titre dans le header
+  var titleEl = document.querySelector('.header-title');
+  if(titleEl) titleEl.textContent = MODULE_NAMES[tabId]||'CSP LFB';
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
@@ -4508,6 +4667,33 @@ if(savedMat){
       renderJspDocs();
     });
   });
+
+    // Drawer events
+  var btnOpen = document.getElementById('btn-drawer-open');
+  if(btnOpen) btnOpen.addEventListener('click', openDrawer);
+  var btnClose = document.getElementById('btn-drawer-close');
+  if(btnClose) btnClose.addEventListener('click', closeDrawer);
+  var overlay = document.getElementById('drawer-overlay');
+  if(overlay) overlay.addEventListener('click', closeDrawer);
+
+  // Items du drawer
+  document.querySelectorAll('[data-drawer-tab]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      closeDrawer();
+      switchTab(btn.dataset.drawerTab);
+    });
+  });
+
+  // Switcher vue dans drawer
+  var drawerSwitcher = document.getElementById('drawer-btn-switcher');
+  if(drawerSwitcher) drawerSwitcher.addEventListener('click', function(){
+    closeDrawer();
+    openModal('m-switch');
+  });
+
+  // Logout depuis drawer
+  var drawerLogout = document.getElementById('drawer-btn-logout');
+  if(drawerLogout) drawerLogout.addEventListener('click', doLogout);
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
