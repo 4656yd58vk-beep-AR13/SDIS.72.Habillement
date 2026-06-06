@@ -204,8 +204,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <div style="position:relative"><input class="form-ctrl" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px"><button type="button" onclick="togglePw('l-pw',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div>
       </div>
       <button class="btn-p" id="btn-login"><i class="ti ti-login"></i><span id="btn-login-txt">Continuer</span></button>
-      <div style="height:10px"></div>
-      <button class="btn-s" id="btn-login-jsp" style="font-size:13px;color:var(--text2)"><i class="ti ti-shield-half" style="font-size:16px"></i>Espace JSP</button>
+
     </div>
   </div>
 </div>
@@ -526,6 +525,102 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
   </div>
 
+    <!-- MODULE JSP -->
+  <div class="screen" id="sc-jsp">
+    <!-- Sous-nav JSP -->
+    <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
+      <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
+        <button class="chip active" data-jsptab="jsp-home">🏠 Accueil</button>
+        <button class="chip" data-jsptab="jsp-cours">📚 Cours</button>
+        <button class="chip" data-jsptab="jsp-planning">📅 Planning</button>
+        <button class="chip" data-jsptab="jsp-docs">📁 Documents</button>
+        <button class="chip" data-jsptab="jsp-mon-profil">👤 Mon profil</button>
+      </div>
+    </div>
+
+    <!-- ACCUEIL JSP -->
+    <div id="jsp-home" class="jsp-panel">
+      <div class="section">
+        <div style="background:linear-gradient(135deg,var(--red),#8B1A1A);border-radius:12px;padding:16px;color:#fff;margin-bottom:16px">
+          <div style="font-size:12px;opacity:0.75;margin-bottom:4px;letter-spacing:1px;text-transform:uppercase">Bienvenue</div>
+          <div style="font-size:20px;font-weight:700" id="jsp-welcome-name">—</div>
+          <div style="font-size:13px;opacity:0.8;margin-top:4px" id="jsp-welcome-grade">—</div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="jsp-stat-presences" style="color:var(--green)">—</div><div class="stat-label">Présences</div></div>
+          <div class="stat-card"><div class="stat-num" id="jsp-stat-cours" style="color:var(--blue)">—</div><div class="stat-label">Cours suivis</div></div>
+        </div>
+        <div class="section-title">Prochaine séance</div>
+        <div id="jsp-next-seance"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
+        <div class="section-title" style="margin-top:14px">Mes brevets</div>
+        <div id="jsp-home-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
+      </div>
+    </div>
+
+    <!-- COURS JSP -->
+    <div id="jsp-cours" class="jsp-panel" style="display:none">
+      <div class="section">
+        <div class="section-title">Cours & Formations</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
+          <button class="chip active" data-jcfilter="all">Tous</button>
+          <button class="chip" data-jcfilter="secourisme">🚑 Secourisme</button>
+          <button class="chip" data-jcfilter="incendie">🔥 Incendie</button>
+          <button class="chip" data-jcfilter="sport">💪 Sport</button>
+          <button class="chip" data-jcfilter="citoyennete">🎖️ Citoyenneté</button>
+          <button class="chip" data-jcfilter="technique">🔧 Technique</button>
+          <button class="chip" data-jcfilter="autre">📋 Autre</button>
+        </div>
+        <div id="l-jsp-cours"><div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div></div>
+      </div>
+    </div>
+
+    <!-- PLANNING JSP -->
+    <div id="jsp-planning" class="jsp-panel" style="display:none">
+      <div class="section">
+        <div class="section-title">Planning des séances</div>
+        <div id="l-jsp-seances"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS JSP -->
+    <div id="jsp-docs" class="jsp-panel" style="display:none">
+      <div class="section">
+        <div class="section-title">Documents & Ressources</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
+          <button class="chip active" data-jdfilter="all">Tous</button>
+          <button class="chip" data-jdfilter="cours">📚 Cours</button>
+          <button class="chip" data-jdfilter="reglement">📜 Règlement</button>
+          <button class="chip" data-jdfilter="administratif">📋 Administratif</button>
+          <button class="chip" data-jdfilter="autre">📁 Autre</button>
+        </div>
+        <div id="l-jsp-docs"><div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div></div>
+      </div>
+    </div>
+
+    <!-- MON PROFIL JSP -->
+    <div id="jsp-mon-profil" class="jsp-panel" style="display:none">
+      <div class="section">
+        <div style="text-align:center;padding:16px 0 12px">
+          <div style="width:60px;height:60px;background:var(--red);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px">
+            <i class="ti ti-shield-half" style="color:#fff;font-size:28px"></i>
+          </div>
+          <div style="font-size:18px;font-weight:700" id="jsp-profil-name">—</div>
+          <div style="font-size:13px;color:var(--text2)" id="jsp-profil-grade">—</div>
+        </div>
+        <div class="info-grid">
+          <div class="ig-item"><label>Matricule</label><span id="jsp-profil-mat">—</span></div>
+          <div class="ig-item"><label>Section</label><span id="jsp-profil-section">—</span></div>
+          <div class="ig-item"><label>Équipe</label><span id="jsp-profil-equipe">—</span></div>
+          <div class="ig-item"><label>Entrée</label><span id="jsp-profil-entree">—</span></div>
+        </div>
+        <div class="section-title" style="margin-top:14px">Ma progression</div>
+        <div id="jsp-profil-prog"><div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div></div>
+        <div class="section-title" style="margin-top:14px">Mes brevets</div>
+        <div id="jsp-profil-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
+      </div>
+    </div>
+  </div>
+
     <!-- PROFIL -->
   <div class="screen" id="sc-profile">
     <div class="ph">
@@ -675,6 +770,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <button class="tab" data-tab="sc-amicale"><i class="ti ti-heart"></i>Amicale</button>
     <button class="tab" data-tab="sc-aps"><i class="ti ti-run"></i>APS</button>
     <button class="tab" data-tab="sc-sdis"><i class="ti ti-link"></i>SDIS</button>
+    <button class="tab" id="tab-jsp" data-tab="sc-jsp" style="display:none"><i class="ti ti-shield-half"></i>JSP</button>
     <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
   </div>
 </div>
@@ -1175,6 +1271,8 @@ async function initApp(){
   showView(role);
   initSuperAdmin();
   updateProfileHeader();
+  initJspUI();
+  if(role==='jsp' || role==='responsable_jsp') switchTab('sc-jsp');
   // Bouton St Barbe visible uniquement pour super admin
   var btnSB = document.getElementById('btn-stbarbe');
   var btnSBWrap = document.getElementById('btn-stbarbe-wrap');
@@ -1212,6 +1310,16 @@ function showView(role){
   ['v-sp','v-resp','v-hab','v-admin'].forEach(v=>{
     document.getElementById(v).style.display='none';
   });
+  // Gestion onglets JSP
+  var isJspRole = (role==='jsp' || role==='responsable_jsp');
+  var tabJsp = document.getElementById('tab-jsp');
+  if(tabJsp) tabJsp.style.display = isJspRole ? 'flex' : 'none';
+  ['sc-home','sc-gardes','sc-sdis'].forEach(function(tabId){
+    var btn = document.querySelector('[data-tab="'+tabId+'"]');
+    if(btn) btn.style.display = isJspRole ? 'none' : '';
+  });
+  // Si JSP, utiliser v-sp comme base (accès EPI désactivé visuellement)
+  if(isJspRole){ role='sp'; }
   const map={sp:'v-sp',responsable_caserne:'v-resp',habillement:'v-hab',admin:'v-admin'};
   const el=document.getElementById(map[role]||'v-sp');
   if(el) el.style.display='block';
@@ -1736,6 +1844,7 @@ function switchTab(tabId){
   if(subnav) subnav.style.display = 'none';
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
   if(tabId==='sc-gardes'){ loadGardes(); }
+  if(tabId==='sc-jsp'){ loadJspHome(); }
   if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
   if(tabId==='sc-aps'){ loadAps(); }
 }
@@ -3388,10 +3497,10 @@ function checkStBarbe(){
 
 
 // ══════════════════════════════════════════════════════════
-// MODULE JSP
 // ══════════════════════════════════════════════════════════
-var jspUser = null;
-var jspCours = [], jspSeances = [], jspDocs = [];
+// MODULE JSP (intégré dans l'app principale)
+// ══════════════════════════════════════════════════════════
+var jspCoursData = [], jspSeancesData = [], jspDocsData = [];
 var jspCoursFilter = 'all', jspDocsFilter = 'all';
 
 var JSP_CAT = {
@@ -3402,258 +3511,125 @@ var JSP_CAT = {
   technique:{lbl:'Technique',ico:'🔧'},
   autre:{lbl:'Autre',ico:'📋'}
 };
-var JSP_DOC_CAT = {cours:'📚 Cours',reglement:'📜 Règlement',administratif:'📋 Administratif',autre:'📁 Autre'};
-var JSP_GRADES = {JSP1:'JSP 1',JSP2:'JSP 2',JSP3:'JSP 3',JSP4:'JSP 4',Moniteur:'Moniteur'};
+var JSP_DOC_CAT = {cours:'📚',reglement:'📜',administratif:'📋',autre:'📁'};
+var JSP_GRADES = {JSP1:'JSP 1',JSP2:'JSP 2',JSP3:'JSP 3',JSP4:'JSP 4',Moniteur:'Moniteur',responsable_jsp:'Responsable JSP'};
 
-// ── CONNEXION JSP ────────────────────────────────────────
-function showJspLogin(){
-  showPage('pg-login-jsp');
-  document.getElementById('jsp-login-mat').value='';
-  document.getElementById('jsp-login-pw').value='';
-  document.getElementById('jsp-pw-grp').style.display='none';
-  document.getElementById('btn-jsp-login-txt').textContent='Continuer';
-  var err = document.getElementById('jsp-login-err');
-  if(err) err.style.display='none';
-}
+function isJsp(){ return user && (user.role==='jsp' || user.role==='responsable_jsp'); }
+function isRespJsp(){ return user && (user.role==='responsable_jsp' || user.role==='admin' || user.super_admin); }
 
-async function doJspLogin(){
-  var mat = document.getElementById('jsp-login-mat').value.trim();
-  var pwGrp = document.getElementById('jsp-pw-grp');
-  var btn = document.getElementById('btn-jsp-login');
-  var err = document.getElementById('jsp-login-err');
-  if(err) err.style.display='none';
-
-  if(pwGrp.style.display==='none'){
-    // Étape 1 : vérifier le matricule
-    if(!mat){ showErr('jsp-login-err','Matricule obligatoire'); return; }
-    var {data,error} = await db.from('jsp_utilisateurs').select('id,matricule').eq('matricule',mat).single();
-    if(error||!data){ showErr('jsp-login-err','Matricule introuvable'); return; }
-    pwGrp.style.display='block';
-    document.getElementById('btn-jsp-login-txt').textContent='Se connecter';
-    document.getElementById('jsp-login-pw').focus();
-    return;
+// Initialiser l'interface JSP selon le rôle
+function initJspUI(){
+  if(!user) return;
+  // Afficher/masquer onglet JSP dans tab-bar
+  var tabJsp = document.getElementById('tab-jsp');
+  if(tabJsp) tabJsp.style.display = isJsp() ? 'flex' : 'none';
+  // Remplir le profil JSP
+  if(isJsp()){
+    var wname = document.getElementById('jsp-welcome-name');
+    if(wname) wname.textContent = (user.prenom||'')+(user.nom?' '+user.nom:'') || 'Mat. '+user.matricule;
+    var wgrade = document.getElementById('jsp-welcome-grade');
+    if(wgrade) wgrade.textContent = JSP_GRADES[user.role]||user.role;
+    var pname = document.getElementById('jsp-profil-name');
+    if(pname) pname.textContent = (user.prenom||'')+(user.nom?' '+user.nom:'') || 'Mat. '+user.matricule;
+    var pgrade = document.getElementById('jsp-profil-grade');
+    if(pgrade) pgrade.textContent = JSP_GRADES[user.role]||user.role;
+    var pmat = document.getElementById('jsp-profil-mat');
+    if(pmat) pmat.textContent = user.matricule;
   }
-
-  // Étape 2 : vérifier le mot de passe
-  var pw = document.getElementById('jsp-login-pw').value;
-  if(!pw){ showErr('jsp-login-err','Mot de passe obligatoire'); return; }
-  btn.disabled=true;
-
-  var {data,error} = await db.from('jsp_utilisateurs')
-    .select('*')
-    .eq('matricule',mat)
-    .single();
-
-  if(error||!data){ showErr('jsp-login-err','Erreur de connexion'); btn.disabled=false; return; }
-
-  // Vérifier le hash bcrypt
-  var {data:check,error:checkErr} = await db.rpc('verify_password',{
-    input_password: pw,
-    hashed_password: data.mot_de_passe
-  });
-
-  if(checkErr||!check){ showErr('jsp-login-err','Mot de passe incorrect'); btn.disabled=false; return; }
-
-  jspUser = data;
-  btn.disabled=false;
-
-  if(data.premiere_connexion){
-    // Premier connexion → changer le mdp
-    openModal('m-jsp-changepw');
-    showPage('pg-jsp');
-    initJspApp();
-    return;
-  }
-
-  showPage('pg-jsp');
-  initJspApp();
 }
 
-async function saveJspPw(){
-  var p1 = document.getElementById('jsp-np1').value;
-  var p2 = document.getElementById('jsp-np2').value;
-  if(p1.length < 6){ showErr('jsp-pw-err','6 caractères minimum'); return; }
-  if(p1 !== p2){ showErr('jsp-pw-err','Les mots de passe ne correspondent pas'); return; }
-
-  var {data:hashed} = await db.rpc('hash_password',{password:p1});
-  if(!hashed){ toast('Erreur lors du hashage'); return; }
-
-  await db.from('jsp_utilisateurs').update({mot_de_passe:hashed,premiere_connexion:false}).eq('id',jspUser.id);
-  jspUser.premiere_connexion = false;
-  closeModal('m-jsp-changepw');
-  toast('Mot de passe mis à jour ✓');
-}
-
-// ── INIT JSP ─────────────────────────────────────────────
-async function initJspApp(){
-  if(!jspUser) return;
-  // Header
-  var sub = document.getElementById('jsp-h-sub');
-  if(sub) sub.textContent = (JSP_GRADES[jspUser.grade]||jspUser.grade)+' · '+jspUser.prenom+' '+jspUser.nom;
-  // Welcome
-  var wname = document.getElementById('jsp-welcome-name');
-  if(wname) wname.textContent = jspUser.prenom+' '+jspUser.nom;
-  var wgrade = document.getElementById('jsp-welcome-grade');
-  if(wgrade) wgrade.textContent = JSP_GRADES[jspUser.grade]||jspUser.grade;
-  // Profil
-  var pname = document.getElementById('jsp-profil-name');
-  if(pname) pname.textContent = jspUser.prenom+' '+jspUser.nom;
-  var pgrade = document.getElementById('jsp-profil-grade');
-  if(pgrade) pgrade.textContent = JSP_GRADES[jspUser.grade]||jspUser.grade;
-  var psec = document.getElementById('jsp-profil-section');
-  if(psec) psec.textContent = jspUser.section||'';
-  var pmat = document.getElementById('jsp-profil-mat');
-  if(pmat) pmat.textContent = jspUser.matricule;
-  var pentree = document.getElementById('jsp-profil-entree');
-  if(pentree) pentree.textContent = jspUser.date_entree ? new Date(jspUser.date_entree).toLocaleDateString('fr-FR') : '—';
-  var pequipe = document.getElementById('jsp-profil-equipe');
-  if(pequipe) pequipe.textContent = jspUser.equipe||'—';
-  var pddn = document.getElementById('jsp-profil-ddn');
-  if(pddn) pddn.textContent = jspUser.date_naissance ? new Date(jspUser.date_naissance).toLocaleDateString('fr-FR') : '—';
-
-  // Charger les données
-  await Promise.all([loadJspCours(), loadJspSeances(), loadJspDocs(), loadJspStats()]);
-}
-
-// ── NAVIGATION JSP ────────────────────────────────────────
+// Navigation sous-onglets JSP
 function switchJspTab(tabId){
-  document.querySelectorAll('.jsp-screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('[data-jsptab]').forEach(t=>t.classList.remove('active'));
-  var screen = document.getElementById(tabId);
-  if(screen) screen.classList.add('active');
-  var tab = document.querySelector('[data-jsptab="'+tabId+'"]');
-  if(tab) tab.classList.add('active');
+  document.querySelectorAll('.jsp-panel').forEach(p=>p.style.display='none');
+  document.querySelectorAll('[data-jsptab]').forEach(b=>b.classList.remove('active'));
+  var el = document.getElementById(tabId); if(el) el.style.display='block';
+  var btn = document.querySelector('[data-jsptab="'+tabId+'"]'); if(btn) btn.classList.add('active');
+  if(tabId==='jsp-home') loadJspHome();
+  if(tabId==='jsp-cours') loadJspCours();
+  if(tabId==='jsp-planning') loadJspSeances();
+  if(tabId==='jsp-docs') loadJspDocs();
+  if(tabId==='jsp-mon-profil') loadJspProfil();
 }
 
-// ── STATS JSP ─────────────────────────────────────────────
-async function loadJspStats(){
-  if(!jspUser) return;
-  // Présences
-  var {data:pres} = await db.from('jsp_presences').select('*').eq('jsp_id',jspUser.id).eq('present',true);
+// ── ACCUEIL JSP ───────────────────────────────────────────
+async function loadJspHome(){
+  if(!user) return;
+  // Stats présences
+  var {data:pres} = await db.from('jsp_presences').select('*').eq('utilisateur_id',activeUserId()).eq('present',true);
   var el = document.getElementById('jsp-stat-presences');
   if(el) el.textContent = (pres||[]).length;
-  // Cours suivis
-  var {data:prog} = await db.from('jsp_progression').select('*').eq('jsp_id',jspUser.id).neq('statut','non_commence');
+  // Stats cours
+  var {data:prog} = await db.from('jsp_progression').select('*').eq('utilisateur_id',activeUserId()).neq('statut','non_commence');
   var el2 = document.getElementById('jsp-stat-cours');
   if(el2) el2.textContent = (prog||[]).length;
-  // Brevets accueil
-  var {data:brev} = await db.from('jsp_brevets').select('*').eq('jsp_id',jspUser.id).order('date_obtention',{ascending:false});
-  var elb = document.getElementById('jsp-home-brevets');
-  if(elb){
-    if(!(brev&&brev.length)){ elb.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
-    else {
-      elb.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+
-        brev.map(function(b){ return '<span class="brevet-badge">🏅 '+b.intitule+'</span>'; }).join('')+'</div>';
-    }
-  }
-  // Progression profil
-  loadJspProgression();
-  // Brevets profil
-  var elb2 = document.getElementById('jsp-profil-brevets');
-  if(elb2){
-    if(!(brev&&brev.length)){ elb2.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
-    else {
-      elb2.innerHTML='<div class="card" style="padding:0 14px">'+
-        brev.map(function(b){
-          var d = b.date_obtention ? new Date(b.date_obtention).toLocaleDateString('fr-FR') : '—';
-          return '<div class="req-row"><div style="font-size:24px;width:40px;text-align:center">🏅</div>'+
-            '<div class="req-info"><div class="req-name">'+b.intitule+'</div>'+
-            '<div class="req-detail">'+(b.organisme||'')+' · '+d+'</div></div></div>';
-        }).join('')+'</div>';
-    }
-  }
-}
-
-async function loadJspProgression(){
-  var {data:prog} = await db.from('jsp_progression')
-    .select('*,cours:cours_id(titre,categorie)')
-    .eq('jsp_id',jspUser.id);
-  var el = document.getElementById('jsp-profil-prog');
-  if(!el) return;
-  if(!(prog&&prog.length)){ el.innerHTML='<div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div>'; return; }
-  var STATUS = {non_commence:{lbl:'Non commencé',pct:0},en_cours:{lbl:'En cours',pct:50},valide:{lbl:'Validé',pct:100}};
-  el.innerHTML='<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:12px">'+
-    prog.map(function(p){
-      var st = STATUS[p.statut]||{lbl:p.statut,pct:0};
-      var cat = p.cours ? JSP_CAT[p.cours.categorie]||{ico:'📋'} : {ico:'📋'};
-      return '<div>'+
-        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
-          '<div style="font-size:13px;font-weight:600">'+cat.ico+' '+(p.cours?p.cours.titre:'—')+'</div>'+
-          '<div style="font-size:11px;color:var(--text2)">'+st.lbl+(p.note!==null?' · '+p.note+'/20':'')+'</div>'+
-        '</div>'+
-        '<div class="prog-bar"><div class="prog-fill" style="width:'+st.pct+'%"></div></div>'+
+  // Prochaine séance
+  var now = new Date().toISOString().split('T')[0];
+  var {data:next} = await db.from('jsp_seances')
+    .select('*,cours:cours_id(titre)').gte('date_seance',now)
+    .eq('statut','planifiee').order('date_seance',{ascending:true}).limit(1);
+  var nsEl = document.getElementById('jsp-next-seance');
+  if(nsEl){
+    var n = next && next[0];
+    if(n){
+      var d = new Date(n.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      nsEl.innerHTML='<div class="card" style="padding:14px;background:linear-gradient(135deg,var(--red),#8B1A1A);color:#fff" id="jsp-nc">'+
+        '<div style="font-size:15px;font-weight:700">'+n.titre+'</div>'+
+        '<div style="font-size:12px;opacity:0.85;margin-top:4px">'+d+(n.heure_debut?' · '+n.heure_debut.slice(0,5):'')+'</div>'+
+        (n.lieu?'<div style="font-size:12px;opacity:0.7;margin-top:2px">📍 '+n.lieu+'</div>':'')+
       '</div>';
-    }).join('')+'</div>';
+      var nc = document.getElementById('jsp-nc');
+      if(nc){ var nid=n.id; nc.addEventListener('click',function(){ openJspSeanceDetail(nid); }); nc.style.cursor='pointer'; }
+    } else {
+      nsEl.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>';
+    }
+  }
+  // Brevets
+  var {data:brev} = await db.from('jsp_brevets').select('*').eq('utilisateur_id',activeUserId()).order('date_obtention',{ascending:false});
+  var bEl = document.getElementById('jsp-home-brevets');
+  if(bEl){
+    if(!(brev&&brev.length)){ bEl.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
+    else bEl.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+brev.map(b=>'<span class="brevet-badge">🏅 '+b.intitule+'</span>').join('')+'</div>';
+  }
 }
 
 // ── COURS JSP ─────────────────────────────────────────────
 async function loadJspCours(){
   var {data} = await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
-  jspCours = data||[];
+  jspCoursData = data||[];
   renderJspCours();
-  // Prochaine séance
-  var now = new Date().toISOString().split('T')[0];
-  var {data:next} = await db.from('jsp_seances')
-    .select('*,cours:cours_id(titre)')
-    .gte('date_seance',now)
-    .eq('statut','planifiee')
-    .order('date_seance',{ascending:true})
-    .limit(1)
-    .single();
-  var el = document.getElementById('jsp-next-seance');
-  if(el){
-    if(next){
-      var d = new Date(next.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-      el.innerHTML='<div class="card" style="padding:14px;background:linear-gradient(135deg,var(--red),#922B21);color:#fff;cursor:pointer" id="jsp-next-card">'+
-        '<div style="font-size:15px;font-weight:700">'+next.titre+'</div>'+
-        '<div style="font-size:12px;opacity:0.85;margin-top:4px">'+d+(next.heure_debut?' · '+next.heure_debut.slice(0,5):'')+'</div>'+
-        (next.lieu?'<div style="font-size:12px;opacity:0.7;margin-top:2px">📍 '+next.lieu+'</div>':'')+
-      '</div>';
-      var nextCard = document.getElementById('jsp-next-card');
-      if(nextCard) nextCard.addEventListener('click',function(){ openJspSeanceDetail(nextId); });
-    } else {
-      el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>';
-    }
-  }
 }
-
 function renderJspCours(){
-  var list = jspCoursFilter==='all' ? jspCours : jspCours.filter(c=>c.categorie===jspCoursFilter);
+  var list = jspCoursFilter==='all' ? jspCoursData : jspCoursData.filter(c=>c.categorie===jspCoursFilter);
   var el = document.getElementById('l-jsp-cours'); if(!el) return;
   if(!list.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
   el.innerHTML = list.map(function(c){
-    var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
+    var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie||'Autre'};
     return '<div class="req-row" data-jcid="'+c.id+'" style="cursor:pointer">'+
       '<div style="font-size:28px;width:44px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
       '<div class="req-info"><div class="req-name">'+c.titre+'</div>'+
       '<div class="req-detail">'+cat.lbl+(c.duree_minutes?' · '+c.duree_minutes+'min':'')+'</div></div>'+
       '<i class="ti ti-chevron-right" style="color:var(--text2)"></i></div>';
   }).join('');
-  el.querySelectorAll('[data-jcid]').forEach(function(r){
-    r.addEventListener('click',function(){ openJspCoursDetail(r.dataset.jcid); });
-  });
+  el.querySelectorAll('[data-jcid]').forEach(r=>r.addEventListener('click',()=>openJspCoursDetail(r.dataset.jcid)));
 }
 
 async function openJspCoursDetail(id){
-  var c = jspCours.find(x=>x.id===id); if(!c) return;
+  var c = jspCoursData.find(x=>x.id===id); if(!c) return;
   var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
   document.getElementById('jsp-cours-ico').textContent = cat.ico;
   document.getElementById('jsp-cours-titre').textContent = c.titre;
   document.getElementById('jsp-cours-cat').textContent = cat.lbl;
   document.getElementById('jsp-cours-cat2').textContent = cat.lbl;
   document.getElementById('jsp-cours-duree').textContent = c.duree_minutes ? c.duree_minutes+' min' : '—';
-  var objEl = document.getElementById('jsp-cours-objectifs');
-  if(objEl) objEl.textContent = c.objectifs||'';
-  var contEl = document.getElementById('jsp-cours-contenu');
-  if(contEl) contEl.textContent = c.contenu||'';
-  // Progression perso
-  var {data:prog} = await db.from('jsp_progression').select('*').eq('jsp_id',jspUser.id).eq('cours_id',id).single();
-  var progEl = document.getElementById('jsp-cours-prog');
-  if(progEl){
+  var oEl = document.getElementById('jsp-cours-objectifs'); if(oEl) oEl.textContent = c.objectifs||'';
+  var cEl = document.getElementById('jsp-cours-contenu'); if(cEl) cEl.textContent = c.contenu||'';
+  var {data:prog} = await db.from('jsp_progression').select('*').eq('utilisateur_id',activeUserId()).eq('cours_id',id).single();
+  var pEl = document.getElementById('jsp-cours-prog');
+  if(pEl){
     var STATUS = {non_commence:'Non commencé',en_cours:'En cours',valide:'✅ Validé'};
-    var st = prog ? STATUS[prog.statut]||prog.statut : 'Non commencé';
-    var note = prog && prog.note !== null ? ' · '+prog.note+'/20' : '';
-    progEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">Ma progression : <strong>'+st+note+'</strong></div>';
+    var st = prog ? (STATUS[prog.statut]||prog.statut) : 'Non commencé';
+    var note = prog&&prog.note!==null ? ' · '+prog.note+'/20' : '';
+    pEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">Ma progression : <strong>'+st+note+'</strong></div>';
   }
   openModal('m-jsp-cours');
 }
@@ -3662,18 +3638,17 @@ async function openJspCoursDetail(id){
 async function loadJspSeances(){
   var {data} = await db.from('jsp_seances')
     .select('*,cours:cours_id(titre,categorie)')
-    .eq('statut','planifiee')
+    .in('statut',['planifiee','terminee'])
     .order('date_seance',{ascending:true});
-  jspSeances = data||[];
+  jspSeancesData = data||[];
   renderJspSeances();
 }
-
 function renderJspSeances(){
   var el = document.getElementById('l-jsp-seances'); if(!el) return;
-  if(!jspSeances.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>'; return; }
+  if(!jspSeancesData.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>'; return; }
   var today = new Date().toISOString().split('T')[0];
   var grouped = {};
-  jspSeances.forEach(function(s){
+  jspSeancesData.forEach(function(s){
     var m = s.date_seance.slice(0,7);
     if(!grouped[m]) grouped[m]=[];
     grouped[m].push(s);
@@ -3686,7 +3661,7 @@ function renderJspSeances(){
       grouped[m].map(function(s){
         var d = new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
         var isPast = s.date_seance < today;
-        var cat = s.cours ? JSP_CAT[s.cours.categorie]||{ico:'📋'} : {ico:'📅'};
+        var cat = s.cours ? JSP_CAT[s.cours.categorie]||{ico:'📅'} : {ico:'📅'};
         return '<div class="req-row" data-jsid="'+s.id+'" style="cursor:pointer;opacity:'+(isPast?'0.5':'1')+'">'+
           '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
           '<div class="req-info"><div class="req-name">'+s.titre+'</div>'+
@@ -3696,33 +3671,29 @@ function renderJspSeances(){
         '</div>';
       }).join('')+'</div>';
   }).join('');
-  el.querySelectorAll('[data-jsid]').forEach(function(r){
-    r.addEventListener('click',function(){ openJspSeanceDetail(r.dataset.jsid); });
-  });
+  el.querySelectorAll('[data-jsid]').forEach(r=>r.addEventListener('click',()=>openJspSeanceDetail(r.dataset.jsid)));
 }
 
 async function openJspSeanceDetail(id){
-  var seance = jspSeances.find(x=>x.id===id);
-  if(!seance){
-    var {data} = await db.from('jsp_seances').select('*,cours:cours_id(titre,categorie)').eq('id',id).single();
-    seance = data;
+  var s = jspSeancesData.find(x=>x.id===id);
+  if(!s){
+    var {data} = await db.from('jsp_seances').select('*,cours:cours_id(titre)').eq('id',id).single();
+    s = data;
   }
-  if(!seance) return;
-  document.getElementById('jsp-seance-titre').textContent = seance.titre;
-  document.getElementById('jsp-seance-date').textContent = seance.date_seance ? new Date(seance.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
-  document.getElementById('jsp-seance-heure').textContent = seance.heure_debut ? seance.heure_debut.slice(0,5)+(seance.heure_fin?' → '+seance.heure_fin.slice(0,5):'') : '—';
-  document.getElementById('jsp-seance-lieu').textContent = seance.lieu||'—';
-  document.getElementById('jsp-seance-cours').textContent = seance.cours ? seance.cours.titre : '—';
-  var descEl = document.getElementById('jsp-seance-desc');
-  if(descEl) descEl.textContent = seance.description||'';
-  // Ma présence
-  var {data:pres} = await db.from('jsp_presences').select('*').eq('seance_id',id).eq('jsp_id',jspUser.id).single();
-  var presEl = document.getElementById('jsp-seance-presences');
-  if(presEl){
-    var isPresent = pres && pres.present;
-    presEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">'+
-      'Ma présence : <strong style="color:'+(isPresent?'var(--green)':'var(--text2)')+'">'+
-      (isPresent?'✅ Présent':'— Non enregistrée')+'</strong></div>';
+  if(!s) return;
+  document.getElementById('jsp-seance-titre').textContent = s.titre;
+  document.getElementById('jsp-seance-date').textContent = s.date_seance ? new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('jsp-seance-heure').textContent = s.heure_debut ? s.heure_debut.slice(0,5)+(s.heure_fin?' → '+s.heure_fin.slice(0,5):'') : '—';
+  document.getElementById('jsp-seance-lieu').textContent = s.lieu||'—';
+  document.getElementById('jsp-seance-cours').textContent = s.cours ? s.cours.titre : '—';
+  var dEl = document.getElementById('jsp-seance-desc'); if(dEl) dEl.textContent = s.description||'';
+  var {data:pres} = await db.from('jsp_presences').select('*').eq('seance_id',id).eq('utilisateur_id',activeUserId()).single();
+  var pEl = document.getElementById('jsp-seance-presences');
+  if(pEl){
+    var isP = pres&&pres.present;
+    pEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">'+
+      'Ma présence : <strong style="color:'+(isP?'var(--green)':'var(--text2)')+'">'+
+      (isP?'✅ Présent':'— Non enregistrée')+'</strong></div>';
   }
   openModal('m-jsp-seance');
 }
@@ -3730,33 +3701,64 @@ async function openJspSeanceDetail(id){
 // ── DOCUMENTS JSP ─────────────────────────────────────────
 async function loadJspDocs(){
   var {data} = await db.from('jsp_documents').select('*').order('created_at',{ascending:false});
-  jspDocs = data||[];
+  jspDocsData = data||[];
   renderJspDocs();
 }
-
 function renderJspDocs(){
-  var list = jspDocsFilter==='all' ? jspDocs : jspDocs.filter(d=>d.categorie===jspDocsFilter);
+  var list = jspDocsFilter==='all' ? jspDocsData : jspDocsData.filter(d=>d.categorie===jspDocsFilter);
   var el = document.getElementById('l-jsp-docs'); if(!el) return;
   if(!list.length){ el.innerHTML='<div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div>'; return; }
   el.innerHTML='<div class="card" style="padding:0 14px">'+list.map(function(d){
     var ico = JSP_DOC_CAT[d.categorie]||'📁';
     return '<a href="'+(d.fichier_url||'#')+'" target="_blank" class="req-row" style="text-decoration:none;color:inherit">'+
-      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+ico.split(' ')[0]+'</div>'+
+      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+ico+'</div>'+
       '<div class="req-info"><div class="req-name">'+d.titre+'</div>'+
       '<div class="req-detail">'+(d.description||'')+(d.fichier_nom?' · '+d.fichier_nom:'')+'</div></div>'+
       '<i class="ti ti-download" style="color:var(--text2)"></i></a>';
   }).join('')+'</div>';
 }
 
-// ── LOGOUT JSP ────────────────────────────────────────────
-function logoutJsp(){
-  jspUser = null;
-  jspCours=[]; jspSeances=[]; jspDocs=[];
-  showPage('pg-login');
+// ── PROFIL JSP ────────────────────────────────────────────
+async function loadJspProfil(){
+  if(!user) return;
+  var el = document.getElementById('jsp-profil-mat'); if(el) el.textContent = user.matricule;
+  var el2 = document.getElementById('jsp-profil-section'); if(el2) el2.textContent = user.caserne||'—';
+  // Progression
+  var {data:prog} = await db.from('jsp_progression')
+    .select('*,cours:cours_id(titre,categorie)').eq('utilisateur_id',activeUserId());
+  var pEl = document.getElementById('jsp-profil-prog');
+  if(pEl){
+    if(!(prog&&prog.length)){ pEl.innerHTML='<div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div>'; }
+    else {
+      var STATUS = {non_commence:{lbl:'Non commencé',pct:0},en_cours:{lbl:'En cours',pct:50},valide:{lbl:'Validé',pct:100}};
+      pEl.innerHTML='<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:12px">'+
+        prog.map(function(p){
+          var st = STATUS[p.statut]||{lbl:p.statut,pct:0};
+          var cat = p.cours ? JSP_CAT[p.cours.categorie]||{ico:'📋'} : {ico:'📋'};
+          return '<div>'+
+            '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
+              '<div style="font-size:13px;font-weight:600">'+cat.ico+' '+(p.cours?p.cours.titre:'—')+'</div>'+
+              '<div style="font-size:11px;color:var(--text2)">'+st.lbl+(p.note!==null?' · '+p.note+'/20':'')+'</div>'+
+            '</div>'+
+            '<div class="prog-bar"><div class="prog-fill" style="width:'+st.pct+'%"></div></div>'+
+          '</div>';
+        }).join('')+'</div>';
+    }
+  }
+  // Brevets
+  var {data:brev} = await db.from('jsp_brevets').select('*').eq('utilisateur_id',activeUserId()).order('date_obtention',{ascending:false});
+  var bEl = document.getElementById('jsp-profil-brevets');
+  if(bEl){
+    if(!(brev&&brev.length)){ bEl.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
+    else bEl.innerHTML='<div class="card" style="padding:0 14px">'+brev.map(function(b){
+      var d = b.date_obtention ? new Date(b.date_obtention).toLocaleDateString('fr-FR') : '—';
+      return '<div class="req-row"><div style="font-size:24px;width:40px;text-align:center">🏅</div>'+
+        '<div class="req-info"><div class="req-name">'+b.intitule+'</div>'+
+        '<div class="req-detail">'+(b.organisme||'')+' · '+d+'</div></div></div>';
+    }).join('')+'</div>';
+  }
 }
 
-
-// ══════════════════════════════════════════════════════════
 // GESTION JSP (SUPER ADMIN)
 // ══════════════════════════════════════════════════════════
 var jspAdminPanel = 'jspa-jsp';
@@ -3781,7 +3783,7 @@ async function openJspAdmin(){
 
 // ── LISTE DES JSP ─────────────────────────────────────────
 async function loadAllJsps(){
-  var {data} = await db.from('jsp_utilisateurs').select('*').order('nom');
+  var {data} = await db.from('utilisateurs').select('*').in('role',['jsp','responsable_jsp']).order('nom');
   allJsps = data||[];
   var el = document.getElementById('l-jspa-jsp'); if(!el) return;
   if(!allJsps.length){ el.innerHTML='<div class="empty"><i class="ti ti-shield-half"></i><p>Aucun JSP créé</p></div>'; return; }
@@ -3825,7 +3827,7 @@ async function resetJspPw(id, matricule){
   if(!confirm('Réinitialiser le mot de passe de '+matricule+' à "'+matricule+'2026" ?')) return;
   var {data:hashed} = await db.rpc('hash_password',{password: matricule+'2026'});
   if(!hashed){ toast('Erreur hashage'); return; }
-  await db.from('jsp_utilisateurs').update({mot_de_passe:hashed,premiere_connexion:true}).eq('id',id);
+  await db.from('utilisateurs').update({mot_de_passe:hashed,premiere_connexion:true}).eq('id',id);
   toast('Mot de passe réinitialisé ✓');
   closeModal('m-jsp-detail-admin');
 }
@@ -3835,30 +3837,28 @@ async function createJsp(){
   var prenom = document.getElementById('njsp-prenom').value.trim();
   var nom = document.getElementById('njsp-nom').value.trim();
   var mat = document.getElementById('njsp-mat').value.trim();
+  var grade = document.getElementById('njsp-grade').value;
   if(!prenom||!nom||!mat){ showErr('njsp-err','Prénom, nom et matricule obligatoires'); return; }
   // Vérifier doublon matricule
-  var {data:exist} = await db.from('jsp_utilisateurs').select('id').eq('matricule',mat).single();
+  var {data:exist} = await db.from('utilisateurs').select('id').eq('matricule',mat).single();
   if(exist){ showErr('njsp-err','Ce matricule existe déjà'); return; }
   // Hash mdp = matricule+2026
   var {data:hashed} = await db.rpc('hash_password',{password: mat+'2026'});
   if(!hashed){ showErr('njsp-err','Erreur lors de la création'); return; }
-  var res = await db.from('jsp_utilisateurs').insert({
+  var res = await db.from('utilisateurs').insert({
     matricule: mat,
     prenom, nom,
-    grade: document.getElementById('njsp-grade').value,
-    date_naissance: document.getElementById('njsp-ddn').value||null,
-    date_entree: document.getElementById('njsp-entree').value||null,
-    section: document.getElementById('njsp-section').value.trim()||null,
-    equipe: document.getElementById('njsp-equipe').value.trim()||null,
-    contact_parent_nom: document.getElementById('njsp-parent-nom').value.trim()||null,
-    contact_parent_tel: document.getElementById('njsp-parent-tel').value.trim()||null,
+    role: grade==='responsable_jsp' ? 'responsable_jsp' : 'jsp',
+    grade: grade,
+    caserne: document.getElementById('njsp-section').value.trim()||'JSP CSP LFB',
     mot_de_passe: hashed,
-    premiere_connexion: true
+    premiere_connexion: true,
+    notif_email: false,
+    notif_sms: false
   });
   if(res.error){ showErr('njsp-err','Erreur: '+res.error.message); return; }
   closeModal('m-new-jsp');
   toast('JSP '+prenom+' '+nom+' créé ✓');
-  // Réinitialiser le form
   ['njsp-prenom','njsp-nom','njsp-mat','njsp-ddn','njsp-entree','njsp-section','njsp-equipe','njsp-parent-nom','njsp-parent-tel'].forEach(function(id){
     var el = document.getElementById(id); if(el) el.value='';
   });
@@ -4096,7 +4096,26 @@ if(savedMat){
   var chatInput = document.getElementById('chat-input');
   if(chatInput) chatInput.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
 
-    // JSP Login
+    // JSP sous-nav
+  document.querySelectorAll('[data-jsptab]').forEach(function(btn){
+    btn.addEventListener('click',function(){ switchJspTab(btn.dataset.jsptab); });
+  });
+  document.querySelectorAll('[data-jcfilter]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      jspCoursFilter=btn.dataset.jcfilter;
+      document.querySelectorAll('[data-jcfilter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active'); renderJspCours();
+    });
+  });
+  document.querySelectorAll('[data-jdfilter]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      jspDocsFilter=btn.dataset.jdfilter;
+      document.querySelectorAll('[data-jdfilter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active'); renderJspDocs();
+    });
+  });
+
+  // JSP Login (ancien - nettoyage)
   var btnLoginJsp = document.getElementById('btn-login-jsp');
   if(btnLoginJsp) btnLoginJsp.addEventListener('click', showJspLogin);
   var btnJspLogin = document.getElementById('btn-jsp-login');
@@ -4707,119 +4726,7 @@ if(savedMat){
   </div>
 </div>
 
-<!-- APPLI JSP -->
-<div id="pg-jsp" style="display:none">
-  <div class="app">
-    <!-- Header JSP -->
-    <div class="header" style="background:var(--red)">
-      <div class="header-logo" style="height:30px;padding:2px 6px;background:rgba(255,255,255,0.15);border-radius:8px">
-        <i class="ti ti-shield-half" style="color:#fff;font-size:22px"></i>
-      </div>
-      <div class="header-info">
-        <div class="header-title" style="color:#fff">CSP LFB — JSP</div>
-        <div class="header-sub" style="color:rgba(255,255,255,0.75)" id="jsp-h-sub">—</div>
-      </div>
-      <button id="btn-jsp-logout" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;font-size:12px"><i class="ti ti-logout"></i></button>
-    </div>
 
-    <!-- Tab bar JSP -->
-    <div class="tab-bar">
-      <button class="tab active" data-jsptab="jsp-home"><i class="ti ti-home"></i>Accueil</button>
-      <button class="tab" data-jsptab="jsp-cours"><i class="ti ti-book"></i>Cours</button>
-      <button class="tab" data-jsptab="jsp-planning"><i class="ti ti-calendar"></i>Planning</button>
-      <button class="tab" data-jsptab="jsp-docs"><i class="ti ti-folder"></i>Documents</button>
-      <button class="tab" data-jsptab="jsp-profil"><i class="ti ti-user"></i>Profil</button>
-    </div>
-
-    <!-- ACCUEIL JSP -->
-    <div class="jsp-screen active" id="jsp-home">
-      <div class="section">
-        <div style="background:var(--red);border-radius:12px;padding:16px;color:#fff;margin-bottom:16px">
-          <div style="font-size:13px;opacity:0.8;margin-bottom:4px">Bienvenue</div>
-          <div style="font-size:20px;font-weight:700" id="jsp-welcome-name">—</div>
-          <div style="font-size:13px;opacity:0.8;margin-top:4px" id="jsp-welcome-grade">—</div>
-        </div>
-        <!-- Stats -->
-        <div class="stat-grid">
-          <div class="stat-card"><div class="stat-num" id="jsp-stat-presences" style="color:var(--green)">—</div><div class="stat-label">Présences</div></div>
-          <div class="stat-card"><div class="stat-num" id="jsp-stat-cours" style="color:var(--blue)">—</div><div class="stat-label">Cours suivis</div></div>
-        </div>
-        <!-- Prochaine séance -->
-        <div class="section-title">Prochaine séance</div>
-        <div id="jsp-next-seance"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
-        <!-- Brevets -->
-        <div class="section-title">Mes brevets</div>
-        <div id="jsp-home-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
-      </div>
-    </div>
-
-    <!-- COURS JSP -->
-    <div class="jsp-screen" id="jsp-cours">
-      <div class="section">
-        <div class="section-title">Cours & Formations</div>
-        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
-          <button class="chip active" data-jcfilter="all">Tous</button>
-          <button class="chip" data-jcfilter="secourisme">🚑 Secourisme</button>
-          <button class="chip" data-jcfilter="incendie">🔥 Incendie</button>
-          <button class="chip" data-jcfilter="sport">💪 Sport</button>
-          <button class="chip" data-jcfilter="citoyennete">🎖️ Citoyenneté</button>
-          <button class="chip" data-jcfilter="technique">🔧 Technique</button>
-          <button class="chip" data-jcfilter="autre">📋 Autre</button>
-        </div>
-        <div id="l-jsp-cours"><div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div></div>
-      </div>
-    </div>
-
-    <!-- PLANNING JSP -->
-    <div class="jsp-screen" id="jsp-planning">
-      <div class="section">
-        <div class="section-title">Planning des séances</div>
-        <div id="l-jsp-seances"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
-      </div>
-    </div>
-
-    <!-- DOCUMENTS JSP -->
-    <div class="jsp-screen" id="jsp-docs">
-      <div class="section">
-        <div class="section-title">Documents & Ressources</div>
-        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
-          <button class="chip active" data-jdfilter="all">Tous</button>
-          <button class="chip" data-jdfilter="cours">📚 Cours</button>
-          <button class="chip" data-jdfilter="reglement">📜 Règlement</button>
-          <button class="chip" data-jdfilter="administratif">📋 Administratif</button>
-          <button class="chip" data-jdfilter="autre">📁 Autre</button>
-        </div>
-        <div id="l-jsp-docs"><div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div></div>
-      </div>
-    </div>
-
-    <!-- PROFIL JSP -->
-    <div class="jsp-screen" id="jsp-profil">
-      <div class="section">
-        <div style="text-align:center;padding:20px 0 12px">
-          <div style="width:64px;height:64px;background:var(--red);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
-            <i class="ti ti-shield-half" style="color:#fff;font-size:32px"></i>
-          </div>
-          <div style="font-size:20px;font-weight:700" id="jsp-profil-name">—</div>
-          <div style="font-size:13px;color:var(--text2)" id="jsp-profil-grade">—</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:4px" id="jsp-profil-section">—</div>
-        </div>
-        <div class="info-grid">
-          <div class="ig-item"><label>Matricule</label><span id="jsp-profil-mat">—</span></div>
-          <div class="ig-item"><label>Entrée</label><span id="jsp-profil-entree">—</span></div>
-          <div class="ig-item"><label>Équipe</label><span id="jsp-profil-equipe">—</span></div>
-          <div class="ig-item"><label>Date naissance</label><span id="jsp-profil-ddn">—</span></div>
-        </div>
-        <div class="section-title" style="margin-top:16px">Ma progression</div>
-        <div id="jsp-profil-prog"><div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div></div>
-        <div class="section-title" style="margin-top:16px">Mes brevets</div>
-        <div id="jsp-profil-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
-        <div style="height:16px"></div>
-        <button class="btn-s" id="btn-jsp-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
-      </div>
-    </div>
-
-  </div>
 </div>
 
 <!-- MODAL DETAIL COURS JSP -->
@@ -4878,32 +4785,7 @@ if(savedMat){
   </div></div>
 </div>
 
-<!-- LOGIN JSP -->
-<div id="pg-login-jsp" style="display:none">
-  <div class="auth-screen">
-    <div style="text-align:center;padding:40px 24px 24px">
-      <div style="width:64px;height:64px;background:var(--red);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
-        <i class="ti ti-shield-half" style="color:#fff;font-size:32px"></i>
-      </div>
-      <div style="font-size:22px;font-weight:700;color:var(--text)">Espace JSP</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:4px">CSP LFB — Jeunes Sapeurs-Pompiers</div>
-    </div>
-    <div style="padding:0 24px 24px">
-      <div class="form-group">
-        <label class="form-label">Matricule JSP</label>
-        <input class="form-ctrl" type="text" id="jsp-login-mat" placeholder="Votre matricule" inputmode="numeric">
-      </div>
-      <div class="form-group" id="jsp-pw-grp" style="display:none">
-        <label class="form-label">Mot de passe</label>
-        <input class="form-ctrl" type="password" id="jsp-login-pw" placeholder="Mot de passe">
-      </div>
-      <div class="error-box" id="jsp-login-err" style="display:none"></div>
-      <button class="btn-p" id="btn-jsp-login"><i class="ti ti-arrow-right"></i><span id="btn-jsp-login-txt">Continuer</span></button>
-      <div style="height:10px"></div>
-      <button class="btn-s" id="btn-back-login" style="font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i>Retour</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- MODAL GESTION JSP ADMIN -->
 <div class="modal-overlay" id="m-jsp-admin">
