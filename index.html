@@ -158,6 +158,19 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 #sig-canvas{border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;touch-action:none;cursor:crosshair;display:block;width:100%}
 .sig-wrap{position:relative;margin-top:6px}
 .sig-clear{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.08);border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;color:var(--text)}
+
+#sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+#sb-overlay.open{display:flex}
+#sb-wrap{width:100%;max-width:400px;height:520px;background:#000;border-radius:4px;overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+#sb-canvas{position:absolute;inset:0;width:100%;height:100%}
+#sb-content{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0}
+#sb-helmet{width:170px;height:155px;filter:drop-shadow(0 0 30px rgba(192,57,43,0.7));animation:sbPulse 3s ease-in-out infinite}
+@keyframes sbPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(192,57,43,0.5))}50%{filter:drop-shadow(0 0 50px rgba(231,76,60,0.9))}}
+#sb-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:3px;text-align:center;margin-top:20px;animation:sbFadeUp 0.8s cubic-bezier(0.22,1,0.36,1) forwards 0.5s;opacity:0;text-transform:uppercase}
+#sb-sub{font-size:12px;color:#C0392B;text-align:center;margin-top:8px;animation:sbFadeUp 0.8s ease forwards 1s;opacity:0;letter-spacing:4px;text-transform:uppercase;font-weight:600}
+#sb-date{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;animation:sbFadeUp 0.8s ease forwards 1.4s;opacity:0;letter-spacing:2px}
+@keyframes sbFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+#sb-btn-close{position:absolute;bottom:24px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);border-radius:2px;padding:10px 32px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;z-index:20;-webkit-tap-highlight-color:transparent}
 </style>
 </head>
 <body>
@@ -609,6 +622,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
     <div class="section" style="padding-top:0">
       <button class="btn-s" onclick="openModal('m-pwa')" style="border-color:#C0392B;color:#C0392B"><i class="ti ti-device-mobile"></i>Installer l'application</button>
+      <div id="btn-stbarbe-wrap" style="display:none;height:8px"></div>
+      <button id="btn-stbarbe" class="btn-s" style="display:none;border-color:#FFD700;color:#B8860B"><i class="ti ti-sparkles"></i>🎆 Tester St Barbe</button>
       <div style="height:8px"></div>
       <button class="btn-s" id="btn-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
       <div style="height:9px"></div>
@@ -1146,6 +1161,14 @@ async function initApp(){
   showView(role);
   initSuperAdmin();
   updateProfileHeader();
+  // Bouton St Barbe visible uniquement pour super admin
+  var btnSB = document.getElementById('btn-stbarbe');
+  var btnSBWrap = document.getElementById('btn-stbarbe-wrap');
+  if(btnSB && user.super_admin){
+    btnSB.style.display='block';
+    if(btnSBWrap) btnSBWrap.style.display='block';
+    btnSB.onclick = showStBarbe;
+  }
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
   document.getElementById('sec-membres').style.display = showMembres?'block':'none';
@@ -1200,6 +1223,7 @@ async function adminSim(role){
   if(sw){ sw.innerHTML = '<i class="ti ti-corner-up-left" style="font-size:14px"></i>Admin'; sw.style.background='rgba(255,200,0,0.25)'; }
   await loadAll();
   switchTab('sc-home');
+  checkStBarbe();
   // Afficher sous-nav EPI au démarrage
   var subnavInit = document.getElementById('epi-subnav');
   if(subnavInit) subnavInit.style.display = 'block';
@@ -3260,6 +3284,88 @@ async function removeAmicaliste(id){
   loadAmicalistes();
 }
 
+
+// ST BARBE
+function showStBarbe(){
+  var overlay = document.getElementById('sb-overlay');
+  if(!overlay) return;
+  overlay.classList.add('open');
+  var canvas = document.getElementById('sb-canvas');
+  var wrap = document.getElementById('sb-wrap');
+  var ctx = canvas.getContext('2d');
+  canvas.width = wrap.offsetWidth;
+  canvas.height = wrap.offsetHeight;
+  var particles = [], rockets = [];
+  var colors = ['#FFD700','#FF6B6B','#FF4444','#FFA500','#FFFFFF','#FFE066','#FF8C00'];
+  function rand(a,b){return Math.random()*(b-a)+a;}
+  function createExplosion(x,y,color){
+    for(var i=0;i<55;i++){
+      var angle=(Math.PI*2/55)*i, speed=rand(1.5,5);
+      particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1,decay:rand(0.012,0.025),color,size:rand(2,4),trail:[]});
+    }
+  }
+  function launchRocket(){
+    rockets.push({x:rand(canvas.width*0.1,canvas.width*0.9),y:canvas.height,vy:rand(-12,-8),vx:rand(-1.5,1.5),targetY:rand(canvas.height*0.1,canvas.height*0.45),color:colors[Math.floor(rand(0,colors.length))],trail:[]});
+  }
+  var lastRocket=0,interval=800,sbRAF=null;
+  function animate(ts){
+    sbRAF = requestAnimationFrame(animate);
+    ctx.fillStyle='rgba(10,10,26,0.18)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(ts-lastRocket>interval){
+      launchRocket();
+      if(rockets.length<3)launchRocket();
+      lastRocket=ts; interval=rand(600,1200);
+    }
+    rockets.forEach(function(r,i){
+      r.trail.push({x:r.x,y:r.y});
+      if(r.trail.length>8)r.trail.shift();
+      r.x+=r.vx;r.y+=r.vy;r.vy+=0.15;
+      r.trail.forEach(function(pt,ti){
+        ctx.beginPath();ctx.arc(pt.x,pt.y,2.5,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,200,100,'+(ti/r.trail.length*0.5)+')';ctx.fill();
+      });
+      ctx.beginPath();ctx.arc(r.x,r.y,3,0,Math.PI*2);ctx.fillStyle=r.color;ctx.fill();
+      if(r.y<=r.targetY){
+        createExplosion(r.x,r.y,r.color);
+        var c2=colors[Math.floor(rand(0,colors.length))];
+        setTimeout(function(){createExplosion(r.x,r.y,c2);},80);
+        rockets.splice(i,1);
+      }
+    });
+    for(var i=particles.length-1;i>=0;i--){
+      var p=particles[i];
+      p.trail.push({x:p.x,y:p.y});if(p.trail.length>4)p.trail.shift();
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.06;p.vx*=0.99;p.life-=p.decay;
+      p.trail.forEach(function(pt,ti){
+        ctx.beginPath();ctx.arc(pt.x,pt.y,p.size*0.6,0,Math.PI*2);
+        ctx.fillStyle='rgba(255,200,100,'+(ti/p.trail.length*p.life*0.5)+')';ctx.fill();
+      });
+      ctx.globalAlpha=p.life;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fillStyle=p.color;ctx.fill();ctx.globalAlpha=1;
+      if(p.life<=0)particles.splice(i,1);
+    }
+  }
+  requestAnimationFrame(animate);
+  document.getElementById('sb-btn-close').onclick=function(){
+    overlay.classList.remove('open');
+    if(sbRAF) cancelAnimationFrame(sbRAF);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  };
+}
+
+function checkStBarbe(){
+  var now = new Date();
+  var isStBarbe = now.getMonth()===11 && now.getDate()===4;
+  if(isStBarbe){
+    var key = 'sb_shown_'+now.getFullYear();
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key,'1');
+      setTimeout(showStBarbe, 1500);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
@@ -3818,6 +3924,58 @@ if(savedMat){
     <div style="height:7px"></div>
     <button class="btn-s" onclick="closeModal('m-add-amicaliste')">Annuler</button>
   </div></div>
+</div>
+
+<!-- ST BARBE EASTER EGG -->
+<div id="sb-overlay">
+  <div id="sb-wrap">
+    <canvas id="sb-canvas"></canvas>
+    <div id="sb-content">
+      <svg id="sb-helmet" viewBox="0 0 170 155" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="hg2" cx="38%" cy="28%" r="65%">
+            <stop offset="0%" stop-color="#2d2d2d"/>
+            <stop offset="50%" stop-color="#1a1a1a"/>
+            <stop offset="100%" stop-color="#0a0a0a"/>
+          </radialGradient>
+          <radialGradient id="rg2" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+        <!-- Ombre -->
+        <ellipse cx="85" cy="145" rx="52" ry="7" fill="rgba(0,0,0,0.6)"/>
+        <!-- Corps casque F1 réaliste -->
+        <path d="M85 8 C50 8 24 36 22 68 C20 90 26 106 34 116 L136 116 C144 106 150 90 148 68 C146 36 120 8 85 8Z" fill="url(#hg2)"/>
+        <!-- Volume haut gauche -->
+        <path d="M85 10 C55 12 32 36 28 66 C26 80 30 96 38 108 L65 108 C56 92 52 74 56 58 C60 40 72 24 85 16Z" fill="#252525"/>
+        <!-- Bande centrale rouge sobre -->
+        <rect x="79" y="8" width="12" height="108" rx="2" fill="#8B1A1A"/>
+        <rect x="81" y="10" width="5" height="80" rx="1" fill="#C0392B" opacity="0.7"/>
+        <!-- Visière noire -->
+        <path d="M30 116 Q85 128 140 116 L140 130 Q85 146 30 130Z" fill="#0d0d0d"/>
+        <path d="M34 116 Q85 126 136 116 L136 128 Q85 140 34 128Z" fill="#161616"/>
+        <!-- Reflet visière fin -->
+        <path d="M38 117 Q75 123 115 120 L115 123 Q75 128 38 122Z" fill="rgba(255,255,255,0.06)"/>
+        <!-- Jugulaires -->
+        <path d="M34 128 Q24 140 30 148" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M136 128 Q146 140 140 148" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <!-- Reflet brillant gauche -->
+        <ellipse cx="55" cy="38" rx="14" ry="9" fill="url(#rg2)" transform="rotate(-25,55,38)"/>
+        <circle cx="50" cy="32" r="3" fill="rgba(255,255,255,0.2)">
+          <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Badge SDIS 72 discret -->
+        <rect x="68" y="56" width="34" height="22" rx="2" fill="#1a1a1a" stroke="#C0392B" stroke-width="0.5"/>
+        <text x="85" y="65" text-anchor="middle" font-size="6" font-weight="700" fill="#C0392B" font-family="sans-serif">SDIS 72</text>
+        <text x="85" y="74" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.4)" font-family="sans-serif">CSP LFB</text>
+      </svg>
+      <div id="sb-title">Sainte-Barbe</div>
+      <div id="sb-sub">Courage &amp; Dévouement</div>
+      <div id="sb-date">4 décembre · CSP LFB</div>
+    </div>
+    <button id="sb-btn-close">Fermer</button>
+  </div>
 </div>
 </body>
 </html>
