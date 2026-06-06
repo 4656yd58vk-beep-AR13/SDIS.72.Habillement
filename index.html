@@ -164,9 +164,11 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 #sb-wrap{width:100%;max-width:400px;height:520px;background:#000;border-radius:4px;overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
 #sb-canvas{position:absolute;inset:0;width:100%;height:100%}
 #sb-content{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;gap:0}
-#sb-helmet{width:170px;height:155px;filter:drop-shadow(0 0 30px rgba(192,57,43,0.7));animation:sbPulse 3s ease-in-out infinite}
-@keyframes sbPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(192,57,43,0.5))}50%{filter:drop-shadow(0 0 50px rgba(231,76,60,0.9))}}
-#sb-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:3px;text-align:center;margin-top:20px;animation:sbFadeUp 0.8s cubic-bezier(0.22,1,0.36,1) forwards 0.5s;opacity:0;text-transform:uppercase}
+#sb-helmet{width:240px;height:210px;animation:sbSpin 6s linear infinite;filter:drop-shadow(0 0 30px rgba(200,150,12,0.6))}
+@keyframes sbSpin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+@keyframes sbPulse{0%,100%{filter:drop-shadow(0 0 20px rgba(200,150,12,0.4))}50%{filter:drop-shadow(0 0 50px rgba(245,200,66,0.8))}}
+#sb-joyeux{font-size:14px;color:rgba(255,255,255,0.5);text-align:center;margin-top:20px;animation:sbFadeUp 0.8s ease forwards 0.3s;opacity:0;letter-spacing:4px;text-transform:uppercase;font-family:sans-serif}
+#sb-title{font-size:32px;font-weight:900;color:#fff;letter-spacing:3px;text-align:center;margin-top:4px;animation:sbFadeUp 0.8s cubic-bezier(0.22,1,0.36,1) forwards 0.5s;opacity:0;text-transform:uppercase}
 #sb-sub{font-size:12px;color:#C0392B;text-align:center;margin-top:8px;animation:sbFadeUp 0.8s ease forwards 1s;opacity:0;letter-spacing:4px;text-transform:uppercase;font-weight:600}
 #sb-date{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;animation:sbFadeUp 0.8s ease forwards 1.4s;opacity:0;letter-spacing:2px}
 @keyframes sbFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -3931,45 +3933,69 @@ if(savedMat){
   <div id="sb-wrap">
     <canvas id="sb-canvas"></canvas>
     <div id="sb-content">
-      <svg id="sb-helmet" viewBox="0 0 170 155" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="hg2" cx="38%" cy="28%" r="65%">
-            <stop offset="0%" stop-color="#2d2d2d"/>
-            <stop offset="50%" stop-color="#1a1a1a"/>
-            <stop offset="100%" stop-color="#0a0a0a"/>
-          </radialGradient>
-          <radialGradient id="rg2" cx="50%" cy="50%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-          </radialGradient>
-        </defs>
-        <!-- Ombre -->
-        <ellipse cx="85" cy="145" rx="52" ry="7" fill="rgba(0,0,0,0.6)"/>
-        <!-- Corps casque F1 réaliste -->
-        <path d="M85 8 C50 8 24 36 22 68 C20 90 26 106 34 116 L136 116 C144 106 150 90 148 68 C146 36 120 8 85 8Z" fill="url(#hg2)"/>
-        <!-- Volume haut gauche -->
-        <path d="M85 10 C55 12 32 36 28 66 C26 80 30 96 38 108 L65 108 C56 92 52 74 56 58 C60 40 72 24 85 16Z" fill="#252525"/>
-        <!-- Bande centrale rouge sobre -->
-        <rect x="79" y="8" width="12" height="108" rx="2" fill="#8B1A1A"/>
-        <rect x="81" y="10" width="5" height="80" rx="1" fill="#C0392B" opacity="0.7"/>
-        <!-- Visière noire -->
-        <path d="M30 116 Q85 128 140 116 L140 130 Q85 146 30 130Z" fill="#0d0d0d"/>
-        <path d="M34 116 Q85 126 136 116 L136 128 Q85 140 34 128Z" fill="#161616"/>
-        <!-- Reflet visière fin -->
-        <path d="M38 117 Q75 123 115 120 L115 123 Q75 128 38 122Z" fill="rgba(255,255,255,0.06)"/>
-        <!-- Jugulaires -->
-        <path d="M34 128 Q24 140 30 148" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <path d="M136 128 Q146 140 140 148" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <!-- Reflet brillant gauche -->
-        <ellipse cx="55" cy="38" rx="14" ry="9" fill="url(#rg2)" transform="rotate(-25,55,38)"/>
-        <circle cx="50" cy="32" r="3" fill="rgba(255,255,255,0.2)">
-          <animate attributeName="opacity" values="0.2;0.05;0.2" dur="3s" repeatCount="indefinite"/>
-        </circle>
-        <!-- Badge SDIS 72 discret -->
-        <rect x="68" y="56" width="34" height="22" rx="2" fill="#1a1a1a" stroke="#C0392B" stroke-width="0.5"/>
-        <text x="85" y="65" text-anchor="middle" font-size="6" font-weight="700" fill="#C0392B" font-family="sans-serif">SDIS 72</text>
-        <text x="85" y="74" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.4)" font-family="sans-serif">CSP LFB</text>
+      <div style="perspective:700px;width:240px;height:210px">
+      <svg id="sb-helmet" viewBox="0 0 240 210" xmlns="http://www.w3.org/2000/svg" style="width:240px;height:210px;animation:sbPulse 3s ease-in-out infinite">
+<defs>
+  <radialGradient id="ag" cx="38%" cy="28%" r="72%">
+    <stop offset="0%" stop-color="#f0f0f0"/><stop offset="30%" stop-color="#c8c8c8"/>
+    <stop offset="65%" stop-color="#888"/><stop offset="100%" stop-color="#2a2a2a"/>
+  </radialGradient>
+  <radialGradient id="ag2" cx="65%" cy="40%" r="55%">
+    <stop offset="0%" stop-color="#fff"/><stop offset="50%" stop-color="#bbb"/><stop offset="100%" stop-color="#444"/>
+  </radialGradient>
+  <radialGradient id="gg" cx="35%" cy="25%" r="70%">
+    <stop offset="0%" stop-color="#FFF5A0"/><stop offset="25%" stop-color="#F5C842"/>
+    <stop offset="55%" stop-color="#C8960C"/><stop offset="100%" stop-color="#5A3D00"/>
+  </radialGradient>
+  <radialGradient id="gg2" cx="62%" cy="38%" r="60%">
+    <stop offset="0%" stop-color="#FFE060"/><stop offset="45%" stop-color="#D4A017"/><stop offset="100%" stop-color="#7A5500"/>
+  </radialGradient>
+  <linearGradient id="cimg" x1="10%" y1="0%" x2="90%" y2="100%">
+    <stop offset="0%" stop-color="#FFF0A0"/><stop offset="25%" stop-color="#F5C842"/>
+    <stop offset="55%" stop-color="#C8960C"/><stop offset="100%" stop-color="#4A3000"/>
+  </linearGradient>
+  <linearGradient id="bordg" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" stop-color="#FFF0A0"/><stop offset="30%" stop-color="#D4A017"/>
+    <stop offset="70%" stop-color="#B8860B"/><stop offset="100%" stop-color="#6A4800"/>
+  </linearGradient>
+</defs>
+<ellipse cx="120" cy="204" rx="68" ry="7" fill="rgba(200,150,0,0.18)"/>
+<path d="M46 158 Q34 166 32 176 Q32 185 48 188 L192 188 Q208 185 208 176 Q206 166 194 158Z" fill="url(#ag)"/>
+<path d="M50 161 Q40 168 38 176 Q38 183 52 186 L188 186 Q202 183 202 176 Q200 168 190 161Z" fill="url(#ag2)"/>
+<path d="M52 162 Q120 170 188 162 L188 166 Q120 174 52 166Z" fill="rgba(255,255,255,0.18)"/>
+<path d="M120 12 C82 12 54 32 40 62 C28 88 30 114 40 134 C48 150 58 158 68 162 L172 162 C182 158 192 150 200 134 C210 114 212 88 200 62 C186 32 158 12 120 12Z" fill="url(#ag)"/>
+<path d="M120 14 C86 16 60 34 46 62 C34 86 36 112 46 132 L74 132 C64 114 60 94 64 76 C70 54 88 34 120 22Z" fill="rgba(255,255,255,0.18)"/>
+<ellipse cx="82" cy="52" rx="30" ry="18" fill="rgba(255,255,255,0.32)" transform="rotate(-22,82,52)"/>
+<ellipse cx="74" cy="44" rx="11" ry="7" fill="rgba(255,255,255,0.55)"><animate attributeName="opacity" values="0.55;0.15;0.55" dur="2.8s" repeatCount="indefinite"/></ellipse>
+<path d="M106 12 Q120 -2 134 12 L138 22 Q128 14 120 10 Q112 14 102 22Z" fill="url(#cimg)"/>
+<path d="M102 22 Q106 30 120 26 Q134 30 138 22 L140 40 Q128 32 120 28 Q112 32 100 40Z" fill="url(#cimg)"/>
+<path d="M100 40 L104 100 Q112 110 120 108 Q128 110 136 100 L140 40 Q128 48 120 44 Q112 48 100 40Z" fill="url(#cimg)"/>
+<path d="M108 22 Q116 18 122 22 L124 50 Q118 54 116 50Z" fill="rgba(255,255,255,0.35)"/>
+<ellipse cx="120" cy="10" rx="6" ry="4" fill="url(#gg)"/>
+<ellipse cx="119" cy="9" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.6)"/>
+<path d="M72 72 Q120 60 168 72 L172 118 Q120 132 68 118Z" fill="url(#gg)"/>
+<path d="M75 74 Q120 63 165 74 L168 116 Q120 128 72 116Z" fill="url(#gg2)"/>
+<path d="M78 76 Q108 68 148 74 L148 82 Q110 76 78 84Z" fill="rgba(255,255,255,0.25)"/>
+<path d="M80 86 C77 82 79 77 83 78 C81 82 83 85 80 86Z" fill="#7A5500" opacity="0.7"/>
+<path d="M84 82 C82 78 84 73 88 75 C86 79 87 83 84 82Z" fill="#7A5500" opacity="0.6"/>
+<path d="M160 86 C163 82 161 77 157 78 C159 82 157 85 160 86Z" fill="#7A5500" opacity="0.7"/>
+<path d="M156 82 C158 78 156 73 152 75 C154 79 153 83 156 82Z" fill="#7A5500" opacity="0.6"/>
+<text x="120" y="96" text-anchor="middle" font-size="7" font-weight="700" fill="#5A3D00" font-family="serif" letter-spacing="1.5">SAPEURS</text>
+<text x="120" y="107" text-anchor="middle" font-size="7" font-weight="700" fill="#5A3D00" font-family="serif" letter-spacing="1.5">POMPIERS</text>
+<path d="M28 132 Q120 150 212 132 L214 146 Q120 168 26 146Z" fill="url(#bordg)"/>
+<path d="M32 134 Q120 150 208 134 L210 144 Q120 162 30 144Z" fill="rgba(255,240,100,0.25)"/>
+<path d="M34 133 Q90 142 168 136 L168 140 Q90 148 34 140Z" fill="rgba(255,255,255,0.2)"/>
+<circle cx="38" cy="138" r="9" fill="url(#gg)"/><circle cx="38" cy="138" r="5.5" fill="url(#gg2)"/><circle cx="38" cy="138" r="2.5" fill="#FFF0A0"/>
+<circle cx="202" cy="138" r="9" fill="url(#gg)"/><circle cx="202" cy="138" r="5.5" fill="url(#gg2)"/><circle cx="202" cy="138" r="2.5" fill="#FFF0A0"/>
+<ellipse cx="34" cy="128" rx="11" ry="16" fill="url(#ag)"/>
+<ellipse cx="206" cy="128" rx="11" ry="16" fill="url(#ag2)"/>
+<path d="M40 152 Q28 165 30 176 Q34 184 46 182" stroke="#555" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M40 152 Q28 165 30 176 Q34 184 46 182" stroke="url(#ag)" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M200 152 Q212 165 210 176 Q206 184 194 182" stroke="#555" stroke-width="7" fill="none" stroke-linecap="round"/>
+<path d="M200 152 Q212 165 210 176 Q206 184 194 182" stroke="url(#ag2)" stroke-width="4" fill="none" stroke-linecap="round"/>
       </svg>
+      </div>
+      <div id="sb-joyeux">Joyeuse</div>
       <div id="sb-title">Sainte-Barbe</div>
       <div id="sb-sub">Courage &amp; Dévouement</div>
       <div id="sb-date">4 décembre · CSP LFB</div>
