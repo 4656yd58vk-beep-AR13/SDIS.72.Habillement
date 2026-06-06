@@ -526,7 +526,41 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
     </div>
     <div class="section" style="padding-top:0">
-      <div class="section-title">Mes coordonnées & notifications</div>
+      <div class="section-title">Mon identité</div>
+      <div class="card" style="padding:14px;margin-bottom:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+          <div class="form-group">
+            <label class="form-label">Prénom</label>
+            <input class="form-ctrl" id="p-prenom" type="text" placeholder="Jean">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nom</label>
+            <input class="form-ctrl" id="p-nom" type="text" placeholder="Dupont">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Grade</label>
+          <select class="form-ctrl" id="p-grade">
+            <option value="">— Non renseigné —</option>
+            <option value="Sapeur">Sapeur</option>
+            <option value="Caporal">Caporal</option>
+            <option value="Caporal-chef">Caporal-chef</option>
+            <option value="Sergent">Sergent</option>
+            <option value="Sergent-chef">Sergent-chef</option>
+            <option value="Adjudant">Adjudant</option>
+            <option value="Adjudant-chef">Adjudant-chef</option>
+            <option value="Lieutenant">Lieutenant</option>
+            <option value="Lieutenant hors classe">Lieutenant hors classe</option>
+            <option value="Capitaine">Capitaine</option>
+            <option value="Commandant">Commandant</option>
+            <option value="Lieutenant-colonel">Lieutenant-colonel</option>
+            <option value="Colonel">Colonel</option>
+          </select>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">Ces informations sont optionnelles et visibles par vos collègues.</div>
+      </div>
+
+      <div class="section-title" style="padding-top:4px">Coordonnées & notifications</div>
       <div class="card" style="padding:14px">
         <div class="form-group">
           <label class="form-label">Adresse email</label>
@@ -961,6 +995,17 @@ function defPw(mat){return mat+'2026';}
 function activeRole(){
   return simRole || (window.simulatedUser && window.simulatedUser.role) || user.role;
 }
+function updateProfileHeader(){
+  if(!user) return;
+  var matEl = document.getElementById('p-mat');
+  var roleEl = document.getElementById('p-role');
+  var display = '';
+  if(user.grade) display += user.grade + ' ';
+  if(user.prenom) display += user.prenom + ' ';
+  if(user.nom) display += user.nom;
+  if(matEl) matEl.textContent = (display.trim() || 'Mat. '+user.matricule);
+  if(roleEl) roleEl.textContent = (ROLE_LABELS[activeRole()]||activeRole()) + (user.caserne?' · '+user.caserne:'');
+}
 function activeUserId(){
   return (window.simulatedUser && window.simulatedUser.id) || user.id;
 }
@@ -1100,6 +1145,7 @@ async function initApp(){
   document.getElementById('p-caserne').textContent = user.caserne||'';
   showView(role);
   initSuperAdmin();
+  updateProfileHeader();
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
   document.getElementById('sec-membres').style.display = showMembres?'block':'none';
@@ -1848,6 +1894,9 @@ function loadProfilFields(){
 }
 
 async function saveProfilNotif(){
+  const prenom    = document.getElementById('p-prenom') ? document.getElementById('p-prenom').value.trim() : null;
+  const nom       = document.getElementById('p-nom') ? document.getElementById('p-nom').value.trim() : null;
+  const grade     = document.getElementById('p-grade') ? document.getElementById('p-grade').value : null;
   const email     = document.getElementById('p-email').value.trim();
   const telephone = document.getElementById('p-tel').value.trim();
   const notif_email = document.getElementById('p-notif-email').checked;
@@ -1864,8 +1913,19 @@ async function saveProfilNotif(){
   const btn = document.getElementById('btn-save-profil');
   btn.disabled = true;
   const {error} = await db.from('utilisateurs').update({
+    prenom: prenom||null, nom: nom||null, grade: grade||null,
     email, telephone, notif_email, notif_sms
   }).eq('id', user.id);
+  // Mettre à jour le cache local
+  if(!error){
+    user.prenom = prenom||null;
+    user.nom = nom||null;
+    user.grade = grade||null;
+    user.email = email;
+    user.telephone = telephone;
+    // Mettre à jour l'avatar dans le header
+    updateProfileHeader();
+  }
   btn.disabled = false;
 
   if(error){ toast('Erreur : '+error.message); return; }
@@ -2821,7 +2881,7 @@ function initAmicaleUI(){
 // ── ACTUS ─────────────────────────────────────────────────
 async function loadActus(){
   var res = await db.from('amicale_actus')
-    .select('*,auteur:auteur_id(matricule)')
+    .select('*,auteur:auteur_id(matricule,prenom,nom,grade)')
     .order('created_at',{ascending:false});
   var data = res.data||[];
   var el = document.getElementById('l-actus'); if(!el) return;
@@ -2832,7 +2892,7 @@ async function loadActus(){
     return '<div class="req-row" data-actuId="'+a.id+'" style="cursor:pointer">'+
       '<div style="font-size:26px;width:42px;text-align:center;flex-shrink:0">'+ico+'</div>'+
       '<div class="req-info"><div class="req-name">'+a.titre+'</div>'+
-      '<div class="req-detail">'+(a.auteur?'Mat. '+a.auteur.matricule:'')+' · '+d+'</div></div>'+
+      '<div class="req-detail">'+(a.auteur?(a.auteur.prenom&&a.auteur.nom?(a.auteur.grade?' '+a.auteur.grade:'')+(a.auteur.prenom?' '+a.auteur.prenom:'')+(a.auteur.nom?' '+a.auteur.nom:'').trim():'Mat. '+a.auteur.matricule):'')+' · '+d+'</div></div>'+
       (a.fichier_url?'<i class="ti ti-paperclip" style="color:var(--text2);font-size:16px"></i>':'')+'</div>';
   }).join('');
   el.querySelectorAll('[data-actuId]').forEach(function(r){
@@ -2845,7 +2905,7 @@ function openActuDetail(id, data){
   document.getElementById('actu-d-type-icon').textContent = AMI_TYPES[a.type]||'📰';
   document.getElementById('actu-d-titre').textContent = a.titre;
   var d = a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '';
-  document.getElementById('actu-d-meta').textContent = (a.auteur?'Mat. '+a.auteur.matricule:'')+' · '+d;
+  document.getElementById('actu-d-meta').textContent = (a.auteur?(a.auteur.prenom&&a.auteur.nom?(a.auteur.grade?' '+a.auteur.grade:'')+(a.auteur.prenom?' '+a.auteur.prenom:'')+(a.auteur.nom?' '+a.auteur.nom:'').trim():'Mat. '+a.auteur.matricule):'')+' · '+d;
   document.getElementById('actu-d-contenu').textContent = a.contenu||'';
   var fichierEl = document.getElementById('actu-d-fichier');
   if(a.fichier_url){
@@ -3042,7 +3102,7 @@ async function submitGroupe(){
 
 async function loadMessages(groupeId){
   var res = await db.from('amicale_messages')
-    .select('*,auteur:auteur_id(matricule)')
+    .select('*,auteur:auteur_id(matricule,prenom,nom)')
     .eq('groupe_id',groupeId)
     .order('created_at',{ascending:true})
     .limit(100);
@@ -3060,7 +3120,7 @@ function renderMessages(data){
     return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'">'+
       '<div style="max-width:80%;background:'+(isMe?'var(--red)':'var(--bg2)')+';color:'+(isMe?'#fff':'var(--text)')+';padding:8px 12px;border-radius:'+(isMe?'16px 16px 4px 16px':'16px 16px 16px 4px')+';font-size:14px;line-height:1.4">'+
       m.contenu+'</div>'+
-      '<div style="font-size:11px;color:var(--text2);margin-top:2px;padding:0 4px">'+(isMe?'':('Mat.'+(m.auteur?m.auteur.matricule:'?')+' · '))+d+'</div>'+
+      '<div style="font-size:11px;color:var(--text2);margin-top:2px;padding:0 4px">'+(isMe?'':(''+( m.auteur ? ((m.auteur.prenom||'')+(m.auteur.nom?' '+m.auteur.nom:'').trim() || 'Mat.'+m.auteur.matricule) : '?')+' · '))+d+'</div>'+
     '</div>';
   }).join('');
   el.scrollTop = el.scrollHeight;
@@ -3090,7 +3150,7 @@ async function sendMessage(){
 // ── MEMBRES AMICALE ───────────────────────────────────────
 async function loadAmicalistes(){
   var res = await db.from('utilisateurs')
-    .select('id,matricule,caserne,amicale_role')
+    .select('id,matricule,caserne,amicale_role,prenom,nom,grade,role')
     .order('matricule');
   var data = res.data||[];
   var el = document.getElementById('l-amicalistes'); if(!el) return;
@@ -3102,6 +3162,14 @@ async function loadAmicalistes(){
   var membres = data.filter(function(u){ return u.amicale_role==='membre'; });
   var autres = data.filter(function(u){ return !u.amicale_role; });
 
+  var myId = activeUserId();
+  function displayName(u){
+    var parts = [];
+    if(u.grade) parts.push(u.grade);
+    if(u.prenom) parts.push(u.prenom);
+    if(u.nom) parts.push(u.nom);
+    return parts.length ? parts.join(' ') : 'Mat. '+u.matricule;
+  }
   function renderGroup(title, list, color){
     if(!list.length) return '';
     return '<div class="section-title" style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);padding:10px 0 4px">'+title+'</div>'+
@@ -3109,12 +3177,14 @@ async function loadAmicalistes(){
     list.map(function(u){
       var isMembre = !!u.amicale_role;
       var isBureau = u.amicale_role==='admin';
+      var isSelf = u.id === myId;
+      var isAppAdmin = u.role === 'admin';
       return '<div class="req-row" style="gap:10px">'+
         '<div class="req-info">'+
-          '<div class="req-name">Mat. '+u.matricule+'</div>'+
-          '<div class="req-detail">'+(u.caserne||'')+'</div>'+
+          '<div class="req-name">'+displayName(u)+'</div>'+
+          '<div class="req-detail">Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'')+(isAppAdmin?' · <span style="color:var(--red)">Admin app</span>':'')+'</div>'+
         '</div>'+
-        (isAdmin ? 
+        (isAdmin && !isSelf ? 
           '<div style="display:flex;align-items:center;gap:8px">'+
             (isMembre ? 
               '<select data-uid="'+u.id+'" class="ami-role-sel" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);cursor:pointer">'+
@@ -3126,6 +3196,8 @@ async function loadAmicalistes(){
               '<button data-uid="'+u.id+'" class="btn-add-ami" style="background:none;border:1px solid var(--green);cursor:pointer;color:var(--green);border-radius:8px;padding:4px 10px;font-size:12px;font-family:inherit">+Ajouter</button>'
             )+
           '</div>'
+        : isSelf && isAdmin ?
+          '<span style="font-size:11px;color:var(--text2);padding:4px 8px">Vous</span>'
         :
           (isBureau ? '<span class="badge" style="background:#EDE9FE;color:#4C1D95;font-size:11px">Bureau</span>' : 
            isMembre ? '<span class="badge bp" style="font-size:11px">Membre</span>' : '')
