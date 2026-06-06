@@ -3091,23 +3091,77 @@ async function sendMessage(){
 async function loadAmicalistes(){
   var res = await db.from('utilisateurs')
     .select('id,matricule,caserne,amicale_role')
-    .not('amicale_role','is',null)
     .order('matricule');
   var data = res.data||[];
   var el = document.getElementById('l-amicalistes'); if(!el) return;
-  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun membre amicale</p></div>'; return; }
+  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></div>'; return; }
   var isAdmin = isAmiAdmin();
-  el.innerHTML = '<div class="card" style="padding:0 14px">'+data.map(function(u){
-    var role = u.amicale_role==='admin' ? '<span class="badge" style="background:#EDE9FE;color:#4C1D95;font-size:11px">Bureau</span>' : '<span class="badge bp" style="font-size:11px">Membre</span>';
-    return '<div class="req-row">'+
-      '<div class="req-info"><div class="req-name">Mat. '+u.matricule+'</div><div class="req-detail">'+(u.caserne||'')+'</div></div>'+
-      role+
-      (isAdmin?'<button data-uid='+JSON.stringify(u.id)+' class=\'btn-del-ami\' style=\'background:none;border:none;cursor:pointer;color:#DC2626;font-size:18px\'><i class=\'ti ti-x\'></i></button>':'')+
-    '</div>';
-  }).join('')+'</div>';
+
+  // Séparer membres bureau / membres / non-membres
+  var bureau = data.filter(function(u){ return u.amicale_role==='admin'; });
+  var membres = data.filter(function(u){ return u.amicale_role==='membre'; });
+  var autres = data.filter(function(u){ return !u.amicale_role; });
+
+  function renderGroup(title, list, color){
+    if(!list.length) return '';
+    return '<div class="section-title" style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);padding:10px 0 4px">'+title+'</div>'+
+    '<div class="card" style="padding:0 14px;margin-bottom:10px">'+
+    list.map(function(u){
+      var isMembre = !!u.amicale_role;
+      var isBureau = u.amicale_role==='admin';
+      return '<div class="req-row" style="gap:10px">'+
+        '<div class="req-info">'+
+          '<div class="req-name">Mat. '+u.matricule+'</div>'+
+          '<div class="req-detail">'+(u.caserne||'')+'</div>'+
+        '</div>'+
+        (isAdmin ? 
+          '<div style="display:flex;align-items:center;gap:8px">'+
+            (isMembre ? 
+              '<select data-uid="'+u.id+'" class="ami-role-sel" style="font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);cursor:pointer">'+
+                '<option value="membre"'+(u.amicale_role==='membre'?' selected':'')+'>Membre</option>'+
+                '<option value="admin"'+(u.amicale_role==='admin'?' selected':'')+'>Bureau</option>'+
+              '</select>'+
+              '<button data-uid="'+u.id+'" class="btn-del-ami" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:18px;line-height:1;padding:0" title="Retirer"><i class="ti ti-user-minus"></i></button>'
+            :
+              '<button data-uid="'+u.id+'" class="btn-add-ami" style="background:none;border:1px solid var(--green);cursor:pointer;color:var(--green);border-radius:8px;padding:4px 10px;font-size:12px;font-family:inherit">+Ajouter</button>'
+            )+
+          '</div>'
+        :
+          (isBureau ? '<span class="badge" style="background:#EDE9FE;color:#4C1D95;font-size:11px">Bureau</span>' : 
+           isMembre ? '<span class="badge bp" style="font-size:11px">Membre</span>' : '')
+        )+
+      '</div>';
+    }).join('')+'</div>';
+  }
+
+  el.innerHTML = renderGroup('Bureau', bureau, '#4C1D95') + 
+                 renderGroup('Membres', membres, '') + 
+                 renderGroup('Autres utilisateurs', autres, '');
+
+  // Events
   el.querySelectorAll('.btn-del-ami').forEach(function(btn){
     btn.addEventListener('click', function(){ removeAmicaliste(btn.dataset.uid); });
   });
+  el.querySelectorAll('.btn-add-ami').forEach(function(btn){
+    btn.addEventListener('click', function(){ addAmiDirect(btn.dataset.uid); });
+  });
+  el.querySelectorAll('.ami-role-sel').forEach(function(sel){
+    sel.addEventListener('change', function(){ updateAmiRole(sel.dataset.uid, sel.value); });
+  });
+}
+
+async function addAmiDirect(uid){
+  var res = await db.from('utilisateurs').update({amicale_role:'membre'}).eq('id',uid);
+  if(res.error){ toast('Erreur'); return; }
+  toast('Membre ajouté ✓');
+  loadAmicalistes();
+}
+
+async function updateAmiRole(uid, role){
+  var res = await db.from('utilisateurs').update({amicale_role:role}).eq('id',uid);
+  if(res.error){ toast('Erreur'); return; }
+  toast('Rôle mis à jour ✓');
+  loadAmicalistes();
 }
 
 async function addAmicaliste(){
