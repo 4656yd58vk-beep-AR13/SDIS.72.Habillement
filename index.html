@@ -367,7 +367,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="chip active" data-amitab="ami-actus">📰 Actus</button>
       <button class="chip" data-amitab="ami-events">🎉 Événements</button>
       <button class="chip" data-amitab="ami-groupes">💬 Groupes</button>
-      <button class="chip" data-amitab="ami-membres">👥 Membres</button>
+      <button class="chip" id="ami-tab-membres" data-amitab="ami-membres">👥 Membres</button>
     </div>
   </div>
 
@@ -2851,6 +2851,8 @@ function isAmicaliste(){
 }
 
 function switchAmiTab(tabId){
+  // Vérifier les droits
+  if(tabId==='ami-membres' && !isAmiAdmin()) return;
   amiTab = tabId;
   document.querySelectorAll('.ami-panel').forEach(function(p){ p.style.display='none'; });
   document.querySelectorAll('[data-amitab]').forEach(function(b){ b.classList.remove('active'); });
@@ -2866,16 +2868,14 @@ function switchAmiTab(tabId){
 
 function initAmicaleUI(){
   var isAdmin = isAmiAdmin();
-  var isMembre = isAmicaliste();
-  // Afficher boutons selon rôle
-  var btnActu = document.getElementById('btn-new-actu');
-  var btnEvent = document.getElementById('btn-new-event');
-  var btnGroupe = document.getElementById('btn-new-groupe');
-  var btnAmi = document.getElementById('btn-add-amicaliste');
-  if(btnActu) btnActu.style.display = isAdmin ? 'block' : 'none';
-  if(btnEvent) btnEvent.style.display = isAdmin ? 'block' : 'none';
-  if(btnGroupe) btnGroupe.style.display = isAdmin ? 'block' : 'none';
-  if(btnAmi) btnAmi.style.display = isAdmin ? 'block' : 'none';
+  // Afficher boutons selon rôle amicale
+  ['btn-new-actu','btn-new-event','btn-new-groupe','btn-add-amicaliste'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.style.display = isAdmin ? 'block' : 'none';
+  });
+  // Masquer onglet Membres aux non-amicalistes
+  var tabMembres = document.getElementById('ami-tab-membres');
+  if(tabMembres) tabMembres.style.display = isAdmin ? 'flex' : 'none';
 }
 
 // ── ACTUS ─────────────────────────────────────────────────
