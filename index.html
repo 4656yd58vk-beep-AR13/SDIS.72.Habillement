@@ -1732,7 +1732,7 @@ async function saveScannedEquipement(){
     stock:      parseInt(document.getElementById('sc-stock').value)||0,
     seuil_alerte: parseInt(document.getElementById('sc-seuil').value)||10
   });
-  btn.disabled = false;
+  if(btn) btn.disabled = false;
   if(error){showErr('sc-err','Erreur : '+error.message);return;}
   closeModal('m-scan-result');
   toast('Équipement créé avec succès ✓');
@@ -2220,7 +2220,7 @@ async function submitGarde(){
   if(!date||!type){ showErr('garde-err','La date et le type sont obligatoires'); return; }
 
   var btn = document.getElementById('btn-submit-garde');
-  btn.disabled = true;
+  if(btn) btn.disabled = true;
   var res = await db.from('gardes').insert({
     demandeur_id: user.id,
     date_garde: date,
