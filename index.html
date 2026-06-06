@@ -39,7 +39,7 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .header-right{display:flex;align-items:center;gap:8px}
 .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
 
-.screen{flex:1;overflow-y:auto;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
+.screen{flex:1;overflow-y:auto;padding-bottom:16px;display:none;-webkit-overflow-scrolling:touch}
 .screen.active{display:block}
 .section{padding:16px}
 .section-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px}
@@ -81,7 +81,7 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .form-ctrl:focus{outline:none;border-color:var(--red)}
 select.form-ctrl{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
 textarea.form-ctrl{resize:none;line-height:1.5}
-.tab-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:430px;max-width:100%;background:#fff;border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
+.tab-bar{display:none!important}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 11px;gap:3px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;font-weight:500;font-family:inherit}
 .tab i{font-size:23px}
 .tab.active{color:var(--red)}
@@ -262,7 +262,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <div id="drawer-head">
       <div id="drawer-user">
         <div id="drawer-avatar">
-          <i class="ti ti-shield" style="color:#fff;font-size:20px"></i>
+          <i class="ti ti-shield-half" style="color:#fff;font-size:20px"></i>
         </div>
         <div style="flex:1;min-width:0">
           <div style="color:#fff;font-weight:700;font-size:15px" id="drawer-name">CSP LFB</div>
@@ -315,8 +315,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 
 
   <div class="header">
-    <button id="btn-drawer-open" style="background:none;border:none;cursor:pointer;color:#fff;padding:4px 8px 4px 0;display:flex;align-items:center;-webkit-tap-highlight-color:transparent">
-      <i class="ti ti-menu-2" style="font-size:26px"></i>
+    <button id="btn-drawer-open" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;color:#fff;padding:8px 10px;display:flex;align-items:center;border-radius:10px;-webkit-tap-highlight-color:transparent;margin-right:6px">
+      <i class="ti ti-menu-2" style="font-size:22px"></i>
     </button>
     <div class="header-logo" style="height:30px;padding:2px 6px"><img id="logo-app" style="height:26px" src="" alt="SDIS 72"></div>
     <div class="header-info">
@@ -916,15 +916,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     </div>
   </div>
 
-  <div class="tab-bar">
-    <button class="tab active" data-tab="sc-home"><i class="ti ti-shield"></i>EPI</button>
-    <button class="tab" data-tab="sc-gardes"><i class="ti ti-calendar-event"></i>Gardes</button>
-    <button class="tab" data-tab="sc-amicale"><i class="ti ti-heart"></i>Amicale</button>
-    <button class="tab" data-tab="sc-aps"><i class="ti ti-run"></i>APS</button>
-    <button class="tab" data-tab="sc-sdis"><i class="ti ti-link"></i>SDIS</button>
-    <button class="tab" id="tab-jsp" data-tab="sc-jsp" style="display:none"><i class="ti ti-shield-half"></i>JSP</button>
-    <button class="tab" data-tab="sc-profile"><i class="ti ti-user-circle"></i>Profil</button>
-  </div>
+
 </div>
 
 <!-- MODAL NOUVELLE GARDE -->
@@ -1993,32 +1985,31 @@ function switchEpiTab(tabId){
 }
 
 function switchTab(tabId){
+  // Masquer tous les screens
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+
+  // Sous-nav EPI
+  var subnav = document.getElementById('epi-subnav');
+
   if(EPI_TABS.includes(tabId)){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    var epiMainTab = document.querySelector('.tab[data-tab="sc-home"]');
-    if(epiMainTab) epiMainTab.classList.add('active');
-    var subnav = document.getElementById('epi-subnav');
-    if(subnav) subnav.style.display = 'block';
-    ['sc-gardes','sc-amicale','sc-sdis','sc-profile'].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el) el.classList.remove('active');
-    });
+    if(subnav) subnav.style.display='block';
     switchEpiTab(tabId);
+    setActiveDrawerTab(tabId);
     return;
   }
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  var targetEl = document.getElementById(tabId);
-  if(targetEl) targetEl.classList.add('active');
-  var targetTab = document.querySelector('.tab[data-tab="'+tabId+'"]');
-  if(targetTab) targetTab.classList.add('active');
-  var subnav = document.getElementById('epi-subnav');
-  if(subnav) subnav.style.display = 'none';
-  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
+
+  if(subnav) subnav.style.display='none';
+
+  var el = document.getElementById(tabId);
+  if(el) el.classList.add('active');
+
+  setActiveDrawerTab(tabId);
+
+  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user&&user.role==='sp') loadDotations(); }
   if(tabId==='sc-gardes'){ loadGardes(); }
-  if(tabId==='sc-jsp'){ loadJspHome(); }
-  if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
   if(tabId==='sc-aps'){ loadAps(); }
+  if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
+  if(tabId==='sc-jsp'){ initJspScreen(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
