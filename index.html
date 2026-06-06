@@ -361,30 +361,61 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 
   <!-- AMICALE -->
   <div class="screen" id="sc-amicale">
-    <div class="section">
-      <div class="section-title">Amicale des sapeurs-pompiers</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">En cours de développement.</div>
-      <div class="card" style="padding:20px;text-align:center">
-        <div style="font-size:48px;margin-bottom:12px">❤️</div>
-        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px">Amicale CSP LFB</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Actualités, événements et entraide — bientôt !</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div class="req-row" style="opacity:0.5">
-            <div style="font-size:24px;width:42px;text-align:center">📰</div>
-            <div class="req-info"><div class="req-name">Actualités</div><div class="req-detail">Nouvelles de l'amicale</div></div>
-          </div>
-          <div class="req-row" style="opacity:0.5">
-            <div style="font-size:24px;width:42px;text-align:center">🎉</div>
-            <div class="req-info"><div class="req-name">Événements</div><div class="req-detail">Repas, sorties, activités</div></div>
-          </div>
-          <div class="req-row" style="opacity:0.5">
-            <div style="font-size:24px;width:42px;text-align:center">🤝</div>
-            <div class="req-info"><div class="req-name">Entraide</div><div class="req-detail">Petites annonces, services</div></div>
-          </div>
-        </div>
-      </div>
+  <!-- Sous-nav Amicale -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
+    <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
+      <button class="chip active" data-amitab="ami-actus">📰 Actus</button>
+      <button class="chip" data-amitab="ami-events">🎉 Événements</button>
+      <button class="chip" data-amitab="ami-groupes">💬 Groupes</button>
+      <button class="chip" data-amitab="ami-membres">👥 Membres</button>
     </div>
   </div>
+
+  <!-- ACTUS -->
+  <div id="ami-actus" class="ami-panel">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Actualités</div>
+        <button class="btn-p" id="btn-new-actu" style="display:none;width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Publier</button>
+      </div>
+      <div id="l-actus"><div class="empty"><i class="ti ti-news"></i><p>Aucune actualité</p></div></div>
+    </div>
+  </div>
+
+  <!-- ÉVÉNEMENTS -->
+  <div id="ami-events" class="ami-panel" style="display:none">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Événements</div>
+        <button class="btn-p" id="btn-new-event" style="display:none;width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Créer</button>
+      </div>
+      <div id="l-events"><div class="empty"><i class="ti ti-calendar"></i><p>Aucun événement</p></div></div>
+    </div>
+  </div>
+
+  <!-- GROUPES -->
+  <div id="ami-groupes" class="ami-panel" style="display:none">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Groupes de travail</div>
+        <button class="btn-p" id="btn-new-groupe" style="display:none;width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-plus"></i>Créer</button>
+      </div>
+      <div id="l-groupes"><div class="empty"><i class="ti ti-users"></i><p>Aucun groupe</p></div></div>
+    </div>
+  </div>
+
+  <!-- MEMBRES AMICALE -->
+  <div id="ami-membres" class="ami-panel" style="display:none">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Membres de l'amicale</div>
+        <button class="btn-p" id="btn-add-amicaliste" style="display:none;width:auto;padding:8px 14px;font-size:13px"><i class="ti ti-user-plus"></i>Ajouter</button>
+      </div>
+      <div id="l-amicalistes"><div class="empty"><i class="ti ti-users"></i><p>Aucun membre</p></div></div>
+    </div>
+  </div>
+
+</div>
 
 
   <!-- PORTAIL SDIS -->
@@ -1615,11 +1646,15 @@ function switchTab(tabId){
   if(subnav) subnav.style.display = 'none';
   if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user && user.role==='sp') loadDotations(); }
   if(tabId==='sc-gardes'){ loadGardes(); }
+  if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
   if(tabId==='sc-aps'){ loadAps(); }
 }
 
 function openModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  if(id==='m-groupe-chat' && chatSubscription){ chatSubscription.unsubscribe(); chatSubscription=null; }
+}
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -2739,6 +2774,363 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(function(){});
 }
 
+
+// ── AMICALE ───────────────────────────────────────────────
+var amiTab = 'ami-actus';
+var currentGroupeId = null;
+var chatSubscription = null;
+
+var AMI_TYPES = {actu:'📰',annonce:'📢',document:'📄'};
+var EV_TYPES  = {repas:'🍽️',sortie:'🚌',reunion:'📋',sport:'⚽',autre:'📅'};
+
+function isAmiAdmin(){
+  return user && (user.amicale_role === 'admin' || user.role === 'admin' || user.super_admin);
+}
+function isAmicaliste(){
+  return user && (user.amicale_role !== null || user.role === 'admin' || user.super_admin);
+}
+
+function switchAmiTab(tabId){
+  amiTab = tabId;
+  document.querySelectorAll('.ami-panel').forEach(function(p){ p.style.display='none'; });
+  document.querySelectorAll('[data-amitab]').forEach(function(b){ b.classList.remove('active'); });
+  var panel = document.getElementById(tabId);
+  if(panel) panel.style.display = 'block';
+  var btn = document.querySelector('[data-amitab="'+tabId+'"]');
+  if(btn) btn.classList.add('active');
+  if(tabId==='ami-actus') loadActus();
+  if(tabId==='ami-events') loadEvents();
+  if(tabId==='ami-groupes') loadGroupes();
+  if(tabId==='ami-membres') loadAmicalistes();
+}
+
+function initAmicaleUI(){
+  var isAdmin = isAmiAdmin();
+  var isMembre = isAmicaliste();
+  // Afficher boutons selon rôle
+  var btnActu = document.getElementById('btn-new-actu');
+  var btnEvent = document.getElementById('btn-new-event');
+  var btnGroupe = document.getElementById('btn-new-groupe');
+  var btnAmi = document.getElementById('btn-add-amicaliste');
+  if(btnActu) btnActu.style.display = isAdmin ? 'block' : 'none';
+  if(btnEvent) btnEvent.style.display = isAdmin ? 'block' : 'none';
+  if(btnGroupe) btnGroupe.style.display = isAdmin ? 'block' : 'none';
+  if(btnAmi) btnAmi.style.display = isAdmin ? 'block' : 'none';
+}
+
+// ── ACTUS ─────────────────────────────────────────────────
+async function loadActus(){
+  var res = await db.from('amicale_actus')
+    .select('*,auteur:auteur_id(matricule)')
+    .order('created_at',{ascending:false});
+  var data = res.data||[];
+  var el = document.getElementById('l-actus'); if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-news"></i><p>Aucune actualité</p></div>'; return; }
+  el.innerHTML = data.map(function(a){
+    var ico = AMI_TYPES[a.type]||'📰';
+    var d = a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}) : '';
+    return '<div class="req-row" data-actuId="'+a.id+'" style="cursor:pointer">'+
+      '<div style="font-size:26px;width:42px;text-align:center;flex-shrink:0">'+ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+a.titre+'</div>'+
+      '<div class="req-detail">'+(a.auteur?'Mat. '+a.auteur.matricule:'')+' · '+d+'</div></div>'+
+      (a.fichier_url?'<i class="ti ti-paperclip" style="color:var(--text2);font-size:16px"></i>':'')+'</div>';
+  }).join('');
+  el.querySelectorAll('[data-actuId]').forEach(function(r){
+    r.addEventListener('click',function(){ openActuDetail(r.dataset.actuid, data); });
+  });
+}
+
+function openActuDetail(id, data){
+  var a = data.find(function(x){return x.id===id;}); if(!a) return;
+  document.getElementById('actu-d-type-icon').textContent = AMI_TYPES[a.type]||'📰';
+  document.getElementById('actu-d-titre').textContent = a.titre;
+  var d = a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '';
+  document.getElementById('actu-d-meta').textContent = (a.auteur?'Mat. '+a.auteur.matricule:'')+' · '+d;
+  document.getElementById('actu-d-contenu').textContent = a.contenu||'';
+  var fichierEl = document.getElementById('actu-d-fichier');
+  if(a.fichier_url){
+    fichierEl.innerHTML = '<a href="'+a.fichier_url+'" target="_blank" class="btn-s" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><i class="ti ti-download"></i>'+(a.fichier_nom||'Voir le fichier')+'</a>';
+  } else { fichierEl.innerHTML=''; }
+  var actions = document.getElementById('actu-d-actions'); actions.innerHTML='';
+  if(isAmiAdmin()){
+    var btn = document.createElement('button'); btn.className='btn-s'; btn.style.color='#DC2626'; btn.style.borderColor='#DC2626';
+    btn.innerHTML='<i class="ti ti-trash"></i>Supprimer';
+    btn.onclick = function(){ deleteActu(id); };
+    actions.appendChild(btn);
+  }
+  openModal('m-detail-actu');
+}
+
+async function submitActu(){
+  var titre = document.getElementById('actu-titre').value.trim();
+  var type  = document.getElementById('actu-type').value;
+  var contenu = document.getElementById('actu-contenu').value.trim();
+  var fichierInput = document.getElementById('actu-fichier');
+  if(!titre){ toast('Titre obligatoire'); return; }
+  var fichier_url=null, fichier_nom=null;
+  if(fichierInput && fichierInput.files[0]){
+    var file = fichierInput.files[0];
+    var path = 'actus/'+Date.now()+'-'+file.name;
+    var up = await db.storage.from('amicale-files').upload(path, file);
+    if(!up.error){
+      var pub = db.storage.from('amicale-files').getPublicUrl(path);
+      fichier_url = pub.data.publicUrl;
+      fichier_nom = file.name;
+    }
+  }
+  var res = await db.from('amicale_actus').insert({
+    auteur_id:activeUserId(), titre, type, contenu:contenu||null, fichier_url, fichier_nom
+  });
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-new-actu');
+  document.getElementById('actu-titre').value='';
+  document.getElementById('actu-contenu').value='';
+  toast('Publication créée ✓');
+  loadActus();
+}
+
+async function deleteActu(id){
+  if(!confirm('Supprimer cette publication ?')) return;
+  await db.from('amicale_actus').delete().eq('id',id);
+  closeModal('m-detail-actu');
+  toast('Supprimé');
+  loadActus();
+}
+
+// ── ÉVÉNEMENTS ────────────────────────────────────────────
+async function loadEvents(){
+  var res = await db.from('amicale_evenements')
+    .select('*,createur:createur_id(matricule),amicale_inscriptions(id,utilisateur_id)')
+    .eq('statut','ouvert')
+    .order('date_evenement',{ascending:true});
+  var data = res.data||[];
+  var el = document.getElementById('l-events'); if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucun événement</p></div>'; return; }
+  var cid = activeUserId();
+  el.innerHTML = data.map(function(ev){
+    var ico = EV_TYPES[ev.type]||'📅';
+    var ins = ev.amicale_inscriptions ? ev.amicale_inscriptions.length : 0;
+    var isIns = ev.amicale_inscriptions && ev.amicale_inscriptions.some(function(i){return i.utilisateur_id===cid;});
+    var d = ev.date_evenement ? new Date(ev.date_evenement).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}) : '—';
+    return '<div class="req-row" data-evId="'+ev.id+'" style="cursor:pointer">'+
+      '<div style="font-size:26px;width:42px;text-align:center;flex-shrink:0">'+ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+ev.titre+'</div>'+
+      '<div class="req-detail">'+d+(ev.lieu?' · '+ev.lieu:'')+'</div>'+
+      '<div class="req-detail">'+ins+' inscrit'+(ins>1?'s':'')+(isIns?' · <span style="color:var(--green)">✓ Inscrit</span>':'')+'</div></div>'+
+      '<span class="badge bp" style="font-size:11px">'+ico+'</span></div>';
+  }).join('');
+  el.querySelectorAll('[data-evId]').forEach(function(r){
+    r.addEventListener('click',function(){ openEventDetail(r.dataset.evid, data); });
+  });
+}
+
+function openEventDetail(id, data){
+  var ev = data.find(function(x){return x.id===id;}); if(!ev) return;
+  var cid = activeUserId();
+  var ins = ev.amicale_inscriptions ? ev.amicale_inscriptions.length : 0;
+  var isIns = ev.amicale_inscriptions && ev.amicale_inscriptions.some(function(i){return i.utilisateur_id===cid;});
+  document.getElementById('ev-d-titre').textContent = (EV_TYPES[ev.type]||'📅')+' '+ev.titre;
+  document.getElementById('ev-d-date').textContent = ev.date_evenement ? new Date(ev.date_evenement).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('ev-d-heure').textContent = ev.heure_debut ? ev.heure_debut.slice(0,5) : '—';
+  document.getElementById('ev-d-lieu').textContent = ev.lieu||'—';
+  document.getElementById('ev-d-places').textContent = ins+(ev.places_max?'/'+ev.places_max+' places':' inscrit'+(ins>1?'s':''));
+  document.getElementById('ev-d-desc').textContent = ev.description||'';
+  document.getElementById('ev-d-inscrits').textContent = ins + ' participant'+(ins>1?'s':'');
+  var actions = document.getElementById('ev-d-actions'); actions.innerHTML='';
+  var complet = ev.places_max && ins >= ev.places_max;
+  if(!isIns && !complet){
+    var b=document.createElement('button'); b.className='btn-p'; b.innerHTML='<i class="ti ti-user-plus"></i>Je participe !';
+    b.onclick=function(){ inscrireEvent(id); }; actions.appendChild(b);
+  } else if(isIns){
+    var b2=document.createElement('button'); b2.className='btn-s'; b2.style.color='#DC2626'; b2.style.borderColor='#DC2626';
+    b2.innerHTML='<i class="ti ti-user-minus"></i>Me désinscrire';
+    b2.onclick=function(){ desinscrireEvent(id); }; actions.appendChild(b2);
+  } else {
+    var p=document.createElement('p'); p.style.cssText='text-align:center;color:var(--text2);font-size:13px';
+    p.textContent='Événement complet'; actions.appendChild(p);
+  }
+  if(isAmiAdmin()){
+    var bAnn=document.createElement('button'); bAnn.className='btn-s'; bAnn.style.color='#DC2626'; bAnn.style.borderColor='#DC2626';
+    bAnn.innerHTML='<i class="ti ti-trash"></i>Annuler l\'événement';
+    bAnn.onclick=function(){ annulerEvent(id); }; actions.appendChild(bAnn);
+  }
+  openModal('m-detail-event');
+}
+
+async function submitEvent(){
+  var titre = document.getElementById('ev-titre').value.trim();
+  var date  = document.getElementById('ev-date').value;
+  if(!titre||!date){ toast('Titre et date obligatoires'); return; }
+  var res = await db.from('amicale_evenements').insert({
+    createur_id:activeUserId(), titre,
+    type: document.getElementById('ev-type').value,
+    date_evenement: date,
+    heure_debut: document.getElementById('ev-debut').value||null,
+    lieu: document.getElementById('ev-lieu').value.trim()||null,
+    places_max: parseInt(document.getElementById('ev-places').value)||null,
+    description: document.getElementById('ev-desc').value.trim()||null,
+    statut:'ouvert'
+  });
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-new-event');
+  toast('Événement créé ✓');
+  loadEvents();
+}
+
+async function inscrireEvent(id){
+  var res = await db.from('amicale_inscriptions').insert({evenement_id:id, utilisateur_id:activeUserId()});
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-detail-event'); toast('Inscription confirmée ✓'); loadEvents();
+}
+async function desinscrireEvent(id){
+  await db.from('amicale_inscriptions').delete().eq('evenement_id',id).eq('utilisateur_id',activeUserId());
+  closeModal('m-detail-event'); toast('Désinscription effectuée'); loadEvents();
+}
+async function annulerEvent(id){
+  if(!confirm('Annuler cet événement ?')) return;
+  await db.from('amicale_evenements').update({statut:'annule'}).eq('id',id);
+  closeModal('m-detail-event'); toast('Événement annulé'); loadEvents();
+}
+
+// ── GROUPES ───────────────────────────────────────────────
+async function loadGroupes(){
+  var res = await db.from('amicale_groupes')
+    .select('*,createur:createur_id(matricule),amicale_groupe_membres(utilisateur_id)')
+    .order('created_at',{ascending:false});
+  var data = res.data||[];
+  var el = document.getElementById('l-groupes'); if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun groupe</p></div>'; return; }
+  el.innerHTML = data.map(function(g){
+    var membres = g.amicale_groupe_membres ? g.amicale_groupe_membres.length : 0;
+    var isMembre = g.amicale_groupe_membres && g.amicale_groupe_membres.some(function(m){return m.utilisateur_id===activeUserId();});
+    return '<div class="req-row" data-grId="'+g.id+'" style="cursor:pointer">'+
+      '<div style="font-size:26px;width:42px;text-align:center;flex-shrink:0">💬</div>'+
+      '<div class="req-info"><div class="req-name">'+g.nom+'</div>'+
+      '<div class="req-detail">'+(g.description||'')+'</div>'+
+      '<div class="req-detail">'+membres+' membre'+(membres>1?'s':'')+(isMembre?' · <span style="color:var(--green)">✓ Membre</span>':'')+'</div></div>'+
+      '<i class="ti ti-message" style="color:var(--text2);font-size:18px"></i></div>';
+  }).join('');
+  el.querySelectorAll('[data-grId]').forEach(function(r){
+    r.addEventListener('click',function(){ openGroupe(r.dataset.grid, data); });
+  });
+}
+
+async function openGroupe(id, data){
+  var g = data.find(function(x){return x.id===id;}); if(!g) return;
+  currentGroupeId = id;
+  document.getElementById('chat-titre').textContent = '💬 '+g.nom;
+  openModal('m-groupe-chat');
+  // Rejoindre si pas membre
+  var isMembre = g.amicale_groupe_membres && g.amicale_groupe_membres.some(function(m){return m.utilisateur_id===activeUserId();});
+  if(!isMembre){
+    await db.from('amicale_groupe_membres').insert({groupe_id:id, utilisateur_id:activeUserId()});
+  }
+  loadMessages(id);
+  subscribeMessages(id);
+}
+
+async function submitGroupe(){
+  var nom = document.getElementById('gr-nom').value.trim();
+  if(!nom){ toast('Nom obligatoire'); return; }
+  var res = await db.from('amicale_groupes').insert({
+    createur_id:activeUserId(), nom,
+    description: document.getElementById('gr-desc').value.trim()||null
+  });
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-new-groupe'); toast('Groupe créé ✓'); loadGroupes();
+}
+
+async function loadMessages(groupeId){
+  var res = await db.from('amicale_messages')
+    .select('*,auteur:auteur_id(matricule)')
+    .eq('groupe_id',groupeId)
+    .order('created_at',{ascending:true})
+    .limit(100);
+  var data = res.data||[];
+  renderMessages(data);
+}
+
+function renderMessages(data){
+  var el = document.getElementById('chat-messages'); if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty" style="margin:20px 0"><i class="ti ti-message"></i><p>Aucun message</p></div>'; return; }
+  var cid = activeUserId();
+  el.innerHTML = data.map(function(m){
+    var isMe = m.auteur_id === cid;
+    var d = m.created_at ? new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+    return '<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'">'+
+      '<div style="max-width:80%;background:'+(isMe?'var(--red)':'var(--bg2)')+';color:'+(isMe?'#fff':'var(--text)')+';padding:8px 12px;border-radius:'+(isMe?'16px 16px 4px 16px':'16px 16px 16px 4px')+';font-size:14px;line-height:1.4">'+
+      m.contenu+'</div>'+
+      '<div style="font-size:11px;color:var(--text2);margin-top:2px;padding:0 4px">'+(isMe?'':('Mat.'+(m.auteur?m.auteur.matricule:'?')+' · '))+d+'</div>'+
+    '</div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function subscribeMessages(groupeId){
+  if(chatSubscription) chatSubscription.unsubscribe();
+  chatSubscription = db.channel('amicale_messages_'+groupeId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'amicale_messages',filter:'groupe_id=eq.'+groupeId},
+      function(payload){
+        loadMessages(groupeId);
+      })
+    .subscribe();
+}
+
+async function sendMessage(){
+  var input = document.getElementById('chat-input');
+  var contenu = input ? input.value.trim() : '';
+  if(!contenu || !currentGroupeId) return;
+  input.value = '';
+  var res = await db.from('amicale_messages').insert({
+    groupe_id:currentGroupeId, auteur_id:activeUserId(), contenu
+  });
+  if(res.error){ toast('Erreur envoi'); input.value=contenu; return; }
+}
+
+// ── MEMBRES AMICALE ───────────────────────────────────────
+async function loadAmicalistes(){
+  var res = await db.from('utilisateurs')
+    .select('id,matricule,caserne,amicale_role')
+    .not('amicale_role','is',null)
+    .order('matricule');
+  var data = res.data||[];
+  var el = document.getElementById('l-amicalistes'); if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun membre amicale</p></div>'; return; }
+  var isAdmin = isAmiAdmin();
+  el.innerHTML = '<div class="card" style="padding:0 14px">'+data.map(function(u){
+    var role = u.amicale_role==='admin' ? '<span class="badge" style="background:#EDE9FE;color:#4C1D95;font-size:11px">Bureau</span>' : '<span class="badge bp" style="font-size:11px">Membre</span>';
+    return '<div class="req-row">'+
+      '<div class="req-info"><div class="req-name">Mat. '+u.matricule+'</div><div class="req-detail">'+(u.caserne||'')+'</div></div>'+
+      role+
+      (isAdmin?'<button data-uid='+JSON.stringify(u.id)+' class=\'btn-del-ami\' style=\'background:none;border:none;cursor:pointer;color:#DC2626;font-size:18px\'><i class=\'ti ti-x\'></i></button>':'')+
+    '</div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('.btn-del-ami').forEach(function(btn){
+    btn.addEventListener('click', function(){ removeAmicaliste(btn.dataset.uid); });
+  });
+}
+
+async function addAmicaliste(){
+  var mat = document.getElementById('ami-mat').value.trim();
+  var role = document.getElementById('ami-role-select').value;
+  if(!mat){ toast('Matricule obligatoire'); return; }
+  var {data,error} = await db.from('utilisateurs').select('id,matricule').eq('matricule',mat).single();
+  if(error||!data){ toast('Matricule introuvable'); return; }
+  var res = await db.from('utilisateurs').update({amicale_role:role}).eq('id',data.id);
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-add-amicaliste');
+  document.getElementById('ami-mat').value='';
+  toast('Mat. '+mat+' ajouté comme '+role+' ✓');
+  loadAmicalistes();
+}
+
+async function removeAmicaliste(id){
+  if(!confirm('Retirer ce membre de l\'amicale ?')) return;
+  await db.from('utilisateurs').update({amicale_role:null}).eq('id',id);
+  toast('Membre retiré');
+  loadAmicalistes();
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
@@ -2791,6 +3183,31 @@ if(savedMat){
       renderAps();
     });
   });
+
+    // Amicale sous-nav
+  document.querySelectorAll('[data-amitab]').forEach(function(btn){
+    btn.addEventListener('click', function(){ switchAmiTab(btn.dataset.amitab); });
+  });
+  var btnNewActu = document.getElementById('btn-new-actu');
+  if(btnNewActu) btnNewActu.addEventListener('click', function(){ openModal('m-new-actu'); });
+  var btnNewEvent = document.getElementById('btn-new-event');
+  if(btnNewEvent) btnNewEvent.addEventListener('click', function(){ openModal('m-new-event'); });
+  var btnNewGroupe = document.getElementById('btn-new-groupe');
+  if(btnNewGroupe) btnNewGroupe.addEventListener('click', function(){ openModal('m-new-groupe'); });
+  var btnAddAmi = document.getElementById('btn-add-amicaliste');
+  if(btnAddAmi) btnAddAmi.addEventListener('click', function(){ openModal('m-add-amicaliste'); });
+  // Recherche matricule en temps réel
+  var amiMatInput = document.getElementById('ami-mat');
+  if(amiMatInput) amiMatInput.addEventListener('input', async function(){
+    var mat = this.value.trim();
+    var res = document.getElementById('ami-mat-result');
+    if(mat.length < 4){ if(res) res.textContent=''; return; }
+    var {data} = await db.from('utilisateurs').select('matricule,caserne').eq('matricule',mat).single();
+    if(res) res.textContent = data ? '✅ '+data.matricule+' · '+(data.caserne||'') : '❌ Introuvable';
+  });
+  // Chat input entrée
+  var chatInput = document.getElementById('chat-input');
+  if(chatInput) chatInput.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
@@ -3099,6 +3516,178 @@ if(savedMat){
     </div>
 
     <button class="btn-s" onclick="closeModal('m-pwa')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVELLE ACTU -->
+<div class="modal-overlay" id="m-new-actu">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Publier une actualité</div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select class="form-ctrl" id="actu-type">
+        <option value="actu">📰 Actualité</option>
+        <option value="annonce">📢 Annonce</option>
+        <option value="document">📄 Document</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="actu-titre" placeholder="Titre de la publication">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contenu</label>
+      <textarea class="form-ctrl" id="actu-contenu" rows="4" placeholder="Contenu de la publication..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fichier / Photo (optionnel)</label>
+      <input class="form-ctrl" type="file" id="actu-fichier" accept="image/*,.pdf,.doc,.docx">
+      <div style="font-size:12px;color:var(--text2);margin-top:4px">Image, PDF ou document Word</div>
+    </div>
+    <button class="btn-p" onclick="submitActu()"><i class="ti ti-send"></i>Publier</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-actu')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DETAIL ACTU -->
+<div class="modal-overlay" id="m-detail-actu">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div id="actu-d-type-icon" style="font-size:28px"></div>
+      <div>
+        <div class="modal-title" id="actu-d-titre" style="margin-bottom:2px">—</div>
+        <div style="font-size:12px;color:var(--text2)" id="actu-d-meta">—</div>
+      </div>
+    </div>
+    <div id="actu-d-contenu" style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:14px;white-space:pre-wrap"></div>
+    <div id="actu-d-fichier" style="margin-bottom:14px"></div>
+    <div id="actu-d-actions"></div>
+    <button class="btn-s" onclick="closeModal('m-detail-actu')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVEL ÉVÉNEMENT -->
+<div class="modal-overlay" id="m-new-event">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un événement</div>
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="ev-titre" placeholder="Ex: Repas de l'amicale">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-ctrl" id="ev-type">
+          <option value="repas">🍽️ Repas</option>
+          <option value="sortie">🚌 Sortie</option>
+          <option value="reunion">📋 Réunion</option>
+          <option value="sport">⚽ Sport</option>
+          <option value="autre">📅 Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Places max</label>
+        <input class="form-ctrl" type="number" id="ev-places" placeholder="Illimité" min="1">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date *</label>
+        <input class="form-ctrl" type="date" id="ev-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="ev-debut">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lieu</label>
+      <input class="form-ctrl" type="text" id="ev-lieu" placeholder="Ex: Salle des fêtes">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-ctrl" id="ev-desc" rows="2" placeholder="Détails..."></textarea>
+    </div>
+    <button class="btn-p" onclick="submitEvent()"><i class="ti ti-send"></i>Créer l'événement</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-event')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DETAIL ÉVÉNEMENT -->
+<div class="modal-overlay" id="m-detail-event">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title" id="ev-d-titre">—</div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Date</label><span id="ev-d-date">—</span></div>
+      <div class="ig-item"><label>Horaire</label><span id="ev-d-heure">—</span></div>
+      <div class="ig-item"><label>Lieu</label><span id="ev-d-lieu">—</span></div>
+      <div class="ig-item"><label>Places</label><span id="ev-d-places">—</span></div>
+    </div>
+    <div id="ev-d-desc" style="font-size:13px;color:var(--text2);margin-bottom:14px"></div>
+    <div id="ev-d-inscrits" style="font-size:13px;font-weight:600;margin-bottom:12px"></div>
+    <div id="ev-d-actions" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-detail-event')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVEAU GROUPE -->
+<div class="modal-overlay" id="m-new-groupe">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un groupe</div>
+    <div class="form-group">
+      <label class="form-label">Nom du groupe *</label>
+      <input class="form-ctrl" type="text" id="gr-nom" placeholder="Ex: Organisation repas annuel">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-ctrl" id="gr-desc" rows="2" placeholder="Objectif du groupe..."></textarea>
+    </div>
+    <button class="btn-p" onclick="submitGroupe()"><i class="ti ti-users"></i>Créer le groupe</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-groupe')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL GROUPE CHAT -->
+<div class="modal-overlay" id="m-groupe-chat">
+  <div class="modal" style="height:85vh;display:flex;flex-direction:column">
+    <div class="modal-handle"></div>
+    <div class="modal-inner" style="flex:1;display:flex;flex-direction:column;padding-bottom:0;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="modal-title" id="chat-titre" style="margin-bottom:0">—</div>
+        <button class="btn-s" onclick="closeModal('m-groupe-chat')" style="width:auto;padding:6px 12px;font-size:12px">Fermer</button>
+      </div>
+      <div id="chat-messages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:8px;scrollbar-width:none"></div>
+      <div style="display:flex;gap:8px;padding:12px 0;border-top:1px solid var(--border);flex-shrink:0">
+        <input class="form-ctrl" type="text" id="chat-input" placeholder="Votre message..." style="flex:1;margin:0">
+        <button class="btn-p" onclick="sendMessage()" style="width:auto;padding:10px 16px;flex-shrink:0"><i class="ti ti-send"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJOUTER AMICALISTE -->
+<div class="modal-overlay" id="m-add-amicaliste">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Gérer les membres</div>
+    <div class="form-group">
+      <label class="form-label">Matricule *</label>
+      <input class="form-ctrl" type="text" id="ami-mat" placeholder="Ex: 103918">
+      <div id="ami-mat-result" style="font-size:13px;color:var(--text2);margin-top:6px"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Rôle dans l'amicale</label>
+      <select class="form-ctrl" id="ami-role-select">
+        <option value="membre">Membre</option>
+        <option value="admin">Bureau (admin)</option>
+      </select>
+    </div>
+    <button class="btn-p" onclick="addAmicaliste()"><i class="ti ti-user-plus"></i>Ajouter</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-add-amicaliste')">Annuler</button>
   </div></div>
 </div>
 </body>
