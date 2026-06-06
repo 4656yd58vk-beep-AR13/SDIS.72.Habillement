@@ -357,15 +357,25 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   <div class="screen" id="sc-amicale">
     <div class="section">
       <div class="section-title">Amicale des sapeurs-pompiers</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Retrouvez les actualités, événements et informations de votre amicale.</div>
-      <div id="l-amicale-actu">
-        <div class="empty"><i class="ti ti-news"></i><p>Aucune actualité pour le moment</p></div>
-      </div>
-    </div>
-    <div class="section" style="padding-top:0">
-      <div class="section-title">Événements à venir</div>
-      <div id="l-amicale-events">
-        <div class="empty"><i class="ti ti-calendar"></i><p>Aucun événement programmé</p></div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">En cours de développement.</div>
+      <div class="card" style="padding:20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:12px">❤️</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px">Amicale CSP LFB</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Actualités, événements et entraide — bientôt !</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="req-row" style="opacity:0.5">
+            <div style="font-size:24px;width:42px;text-align:center">📰</div>
+            <div class="req-info"><div class="req-name">Actualités</div><div class="req-detail">Nouvelles de l'amicale</div></div>
+          </div>
+          <div class="req-row" style="opacity:0.5">
+            <div style="font-size:24px;width:42px;text-align:center">🎉</div>
+            <div class="req-info"><div class="req-name">Événements</div><div class="req-detail">Repas, sorties, activités</div></div>
+          </div>
+          <div class="req-row" style="opacity:0.5">
+            <div style="font-size:24px;width:42px;text-align:center">🤝</div>
+            <div class="req-info"><div class="req-name">Entraide</div><div class="req-detail">Petites annonces, services</div></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2097,6 +2107,27 @@ async function loadGardes(){
   renderGardes();
 }
 
+function updateGardeBadge(){
+  var open = gardes.filter(function(g){return g.statut==='ouverte';}).length;
+  var tabGardes = document.querySelector('.tab[data-tab="sc-gardes"]');
+  if(tabGardes){
+    var existing = tabGardes.querySelector('.tab-badge');
+    if(open > 0){
+      if(!existing){
+        var badge = document.createElement('span');
+        badge.className = 'tab-badge';
+        badge.style.cssText = 'position:absolute;top:4px;right:12px;background:#DC2626;color:#fff;border-radius:10px;font-size:9px;font-weight:700;padding:1px 5px;min-width:14px;text-align:center';
+        tabGardes.style.position = 'relative';
+        tabGardes.appendChild(badge);
+        existing = badge;
+      }
+      existing.textContent = open;
+    } else if(existing){
+      existing.remove();
+    }
+  }
+}
+
 function renderGardes(){
   // Stats
   var open  = gardes.filter(function(g){return g.statut==='ouverte';}).length;
@@ -2498,7 +2529,7 @@ const APS_NIVEAUX = {tous:'Tous niveaux', intermediaire:'Intermédiaire', confir
 
 function openNewAps(){
   var d = document.getElementById('aps-date');
-  if(d) d.value = '';
+  if(d){ d.value = ''; d.min = new Date().toISOString().split('T')[0]; }
   var t = document.getElementById('aps-titre');
   if(t) t.value = '';
   var desc = document.getElementById('aps-desc');
@@ -2679,6 +2710,20 @@ var ZXING_URL = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.mi
 async function ensureChart(){ if(typeof Chart==='undefined') await loadScript(CHART_URL); }
 async function ensureXlsx(){  if(typeof XLSX==='undefined')  await loadScript(XLSX_URL); }
 async function ensureZxing(){ if(typeof ZXing==='undefined') await loadScript(ZXING_URL); }
+
+
+// Gestion session expirée
+async function checkSession(){
+  try {
+    var res = await db.from('utilisateurs').select('id').limit(1);
+    if(res.error && (res.error.code === 'PGRST301' || res.error.message.includes('JWT'))){
+      toast('Session expirée — reconnexion nécessaire');
+      setTimeout(function(){ doLogout(); }, 2000);
+    }
+  } catch(e){}
+}
+// Vérifier la session toutes les 30 minutes
+setInterval(checkSession, 30 * 60 * 1000);
 
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
