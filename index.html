@@ -2026,6 +2026,16 @@ function showHearts(){
 }
 
 function updateSwitcherActive(role){
+  const COLORS = {
+    admin: '#C0392B',
+    sp: '#fff',
+    responsable_caserne: '#D97706',
+    habillement: '#2563EB'
+  };
+  const TEXT = {
+    admin: '#fff', sp: '#1a1a1a',
+    responsable_caserne: '#fff', habillement: '#fff'
+  };
   const btns = {
     admin:  document.getElementById('sw-admin'),
     sp:     document.getElementById('sw-sp'),
@@ -2034,9 +2044,10 @@ function updateSwitcherActive(role){
   };
   Object.entries(btns).forEach(([r,btn])=>{
     if(!btn) return;
-    btn.style.fontWeight = r===role ? '700' : '';
-    btn.style.background = r===role ? 'var(--bg2)' : '';
-    btn.style.borderWidth = r===role ? '2px' : '';
+    btn.style.background = COLORS[r];
+    btn.style.color = TEXT[r];
+    btn.style.opacity = r===role ? '1' : '0.5';
+    btn.style.border = r==='sp' ? '2px solid #ddd' : 'none';
   });
 }
 
