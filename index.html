@@ -2591,7 +2591,7 @@ async function simulateUser(){
   if(res) res.textContent = 'Recherche...';
   
   var {data, error} = await db.from('utilisateurs')
-    .select('id,matricule,role,caserne')
+    .select('id,matricule,role,caserne,amicale_role,prenom,nom,grade')
     .eq('matricule', mat)
     .single();
   
@@ -3168,7 +3168,10 @@ async function loadAmicalistes(){
     if(u.grade) parts.push(u.grade);
     if(u.prenom) parts.push(u.prenom);
     if(u.nom) parts.push(u.nom);
-    return parts.length ? parts.join(' ') : 'Mat. '+u.matricule;
+    return parts.join(' ').trim();
+  }
+  function displaySub(u){
+    return 'Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'');
   }
   function renderGroup(title, list, color){
     if(!list.length) return '';
@@ -3181,8 +3184,8 @@ async function loadAmicalistes(){
       var isAppAdmin = u.role === 'admin';
       return '<div class="req-row" style="gap:10px">'+
         '<div class="req-info">'+
-          '<div class="req-name">'+displayName(u)+'</div>'+
-          '<div class="req-detail">Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'')+(isAppAdmin?' · <span style="color:var(--red)">Admin app</span>':'')+'</div>'+
+          '<div class="req-name">'+(displayName(u)||('Mat. '+u.matricule))+'</div>'+
+          '<div class="req-detail">'+displaySub(u)+(isAppAdmin?' · <span style=\'color:var(--red)\'>Admin app</span>':'')+'</div>'+
         '</div>'+
         (isAdmin && !isSelf ? 
           '<div style="display:flex;align-items:center;gap:8px">'+
