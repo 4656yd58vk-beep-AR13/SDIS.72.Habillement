@@ -299,6 +299,9 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="drawer-item" data-drawer-tab="sc-profile">
         <i class="ti ti-user-circle"></i><span>Mon profil</span>
       </button>
+      <button class="drawer-item" data-drawer-tab="sc-params">
+        <i class="ti ti-settings"></i><span>Paramètres</span>
+      </button>
       <div class="drawer-sep" id="drawer-sep-admin" style="display:none"></div>
       <div class="drawer-section-label" id="drawer-label-admin" style="display:none">Administration</div>
       <button class="drawer-item" id="drawer-btn-switcher" style="display:none">
@@ -775,28 +778,14 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <!-- PROFIL -->
   <div class="screen" id="sc-profile">
     <div class="ph">
-      <div class="av"><i class="ti ti-user"></i></div>
-      <div style="font-size:18px;font-weight:700;color:#fff" id="p-mat">—</div>
-      <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:3px" id="p-role">—</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px" id="p-caserne">—</div>
+      <div class="av" id="p-avatar"><i class="ti ti-user"></i></div>
+      <div style="font-size:20px;font-weight:700;color:#fff" id="p-mat">—</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:2px" id="p-role">—</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px" id="p-caserne">—</div>
     </div>
+
     <div class="section">
-      <div class="section-title">Statistiques</div>
-      <div class="card">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
-          <div><div style="font-size:22px;font-weight:700" id="ps-tot">—</div><div style="font-size:11px;color:var(--text2)">Total</div></div>
-          <div><div style="font-size:22px;font-weight:700;color:var(--green)" id="ps-ok">—</div><div style="font-size:11px;color:var(--text2)">Approuvées</div></div>
-          <div><div style="font-size:22px;font-weight:700;color:var(--amber)" id="ps-en">—</div><div style="font-size:11px;color:var(--text2)">En cours</div></div>
-        </div>
-      </div>
-    </div>
-    <div id="sec-membres" style="display:none" class="section" style="padding-top:0">
-      <div class="section-title">Membres</div>
-      <div class="card" style="padding:0 14px" id="l-membres"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
-      <div style="height:10px"></div>
-      <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
-    </div>
-    <div class="section" style="padding-top:0">
+      <!-- Identité -->
       <div class="section-title">Mon identité</div>
       <div class="card" style="padding:14px;margin-bottom:14px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
@@ -828,66 +817,150 @@ textarea.form-ctrl{resize:none;line-height:1.5}
             <option value="Colonel">Colonel</option>
           </select>
         </div>
-        <div style="font-size:12px;color:var(--text2)">Ces informations sont optionnelles et visibles par vos collègues.</div>
+        <div style="font-size:12px;color:var(--text2)">Optionnel · Visible par vos collègues</div>
       </div>
 
-      <div class="section-title" style="padding-top:4px">Coordonnées & notifications</div>
-      <div class="card" style="padding:14px">
+      <!-- Coordonnées -->
+      <div class="section-title">Coordonnées</div>
+      <div class="card" style="padding:14px;margin-bottom:14px">
         <div class="form-group">
-          <label class="form-label">Adresse email</label>
+          <label class="form-label">Email</label>
           <input class="form-ctrl" id="p-email" type="email" placeholder="prenom.nom@sdis72.fr">
         </div>
         <div class="form-group">
-          <label class="form-label">Numéro de téléphone</label>
+          <label class="form-label">Téléphone</label>
           <input class="form-ctrl" id="p-tel" type="tel" placeholder="06 12 34 56 78">
         </div>
-        <div style="height:4px"></div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">Recevoir des notifications pour :</div>
-        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer">
-          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
-            <input type="checkbox" id="p-notif-email" style="opacity:0;width:0;height:0;position:absolute">
-            <div id="toggle-email" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
-              <div id="thumb-email" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Notifications</label>
+          <div class="card" style="padding:0 14px;margin-top:6px">
+            <div class="req-row" style="padding:12px 0">
+              <div class="req-info"><div class="req-name">Email</div><div class="req-detail">Changements de statut</div></div>
+              <label class="toggle"><input type="checkbox" id="p-notif-email"><span class="slider"></span></label>
+            </div>
+            <div class="req-row" style="padding:12px 0">
+              <div class="req-info"><div class="req-name">SMS</div><div class="req-detail">Alertes importantes</div></div>
+              <label class="toggle"><input type="checkbox" id="p-notif-sms"><span class="slider"></span></label>
             </div>
           </div>
-          <div>
-            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par email</div>
-            <div style="font-size:12px;color:var(--text2)">Changements de statut de vos demandes</div>
-          </div>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer">
-          <div style="position:relative;width:44px;height:26px;flex-shrink:0">
-            <input type="checkbox" id="p-notif-sms" style="opacity:0;width:0;height:0;position:absolute">
-            <div id="toggle-sms" style="position:absolute;inset:0;border-radius:13px;background:var(--border);transition:background 0.2s;cursor:pointer">
-              <div id="thumb-sms" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:500;color:var(--text)">Notifications par SMS</div>
-            <div style="font-size:12px;color:var(--text2)">Alertes importantes sur votre téléphone</div>
-          </div>
-        </label>
+        </div>
+      </div>
+
+      <button class="btn-p" id="btn-save-profil"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+      <div style="height:10px"></div>
+
+      <!-- Dotations SP -->
+      <div id="sec-dot-sp">
+        <div class="section-title" style="margin-top:4px">Ma dotation & péremptions</div>
+        <div class="card" style="padding:0 14px" id="list-dotations">
+          <div class="empty"><i class="ti ti-package"></i><p>Aucune dotation</p></div>
+        </div>
         <div style="height:10px"></div>
-        <button class="btn-p" id="btn-save-profil"><i class="ti ti-device-floppy"></i>Enregistrer mes préférences</button>
       </div>
-    </div>
-    
-    <div class="section" style="padding-top:0" id="sec-dot-sp">
-      <div class="section-title">Ma dotation & péremptions</div>
-      <div class="card" style="padding:0 14px" id="list-dotations">
-        <div class="empty"><i class="ti ti-package"></i><p>Aucune dotation</p></div>
-      </div>
-    </div>
-    <div class="section" style="padding-top:0">
-      <button class="btn-s" onclick="openModal('m-pwa')" style="border-color:#C0392B;color:#C0392B"><i class="ti ti-device-mobile"></i>Installer l'application</button>
-      <div id="btn-stbarbe-wrap" style="display:none;height:8px"></div>
-      <button id="btn-stbarbe" class="btn-s" style="display:none;border-color:#FFD700;color:#B8860B"><i class="ti ti-sparkles"></i>🎆 Tester St Barbe</button>
-      <div id="btn-jsp-admin-wrap" style="display:none;height:8px"></div>
-      <button id="btn-jsp-admin" class="btn-s" style="display:none;border-color:#0EA5E9;color:#0369A1"><i class="ti ti-shield-half"></i>Gérer les JSP</button>
-      <div style="height:8px"></div>
+
+      <!-- Sécurité -->
+      <div class="section-title">Sécurité</div>
       <button class="btn-s" id="btn-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
-      <div style="height:9px"></div>
-      <button class="btn-s" id="btn-logout2" style="color:#DC2626;border-color:#DC2626"><i class="ti ti-logout"></i>Se déconnecter</button>
+    </div>
+  </div>
+
+  <!-- PARAMÈTRES -->
+  <div class="screen" id="sc-params">
+    <!-- Sous-nav paramètres -->
+    <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
+      <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
+        <button class="chip active" data-paramtab="param-general">⚙️ Général</button>
+        <button class="chip" data-paramtab="param-droits" id="param-tab-droits" style="display:none">🔐 Droits</button>
+        <button class="chip" data-paramtab="param-users" id="param-tab-users" style="display:none">👥 Utilisateurs</button>
+        <button class="chip" data-paramtab="param-jsp-admin" id="param-tab-jsp" style="display:none">🛡️ JSP</button>
+      </div>
+    </div>
+
+    <!-- Général -->
+    <div id="param-general" class="param-panel">
+      <div class="section">
+        <div class="section-title">Application</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row" style="cursor:pointer" onclick="openModal('m-pwa')">
+            <div style="font-size:24px;width:40px;text-align:center">📱</div>
+            <div class="req-info"><div class="req-name">Installer l'application</div><div class="req-detail">Ajouter à l'écran d'accueil</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="section-title">Super Admin</div>
+        <div class="card" style="padding:0 14px" id="param-sa-section" style="display:none">
+          <div class="req-row" style="cursor:pointer" id="param-btn-stbarbe">
+            <div style="font-size:24px;width:40px;text-align:center">🎆</div>
+            <div class="req-info"><div class="req-name">Tester St Barbe</div><div class="req-detail">Animation 4 décembre</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+          <div class="req-row" style="cursor:pointer" id="param-btn-simulate">
+            <div style="font-size:24px;width:40px;text-align:center">👁️</div>
+            <div class="req-info"><div class="req-name">Simuler un utilisateur</div><div class="req-detail">Voir l'app comme un autre</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+        </div>
+        <div style="height:14px"></div>
+        <div class="section-title">Session</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row" style="cursor:pointer" id="btn-logout2">
+            <div style="font-size:24px;width:40px;text-align:center">🚪</div>
+            <div class="req-info"><div class="req-name" style="color:#DC2626">Se déconnecter</div><div class="req-detail">Revenir à l'écran de connexion</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Droits (Super Admin) -->
+    <div id="param-droits" class="param-panel" style="display:none">
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="section-title" style="margin-bottom:0">Compétences & accès</div>
+          <input class="form-ctrl" type="text" id="droits-search" placeholder="🔍 Rechercher..." style="width:140px;font-size:12px;padding:6px 10px">
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Cochez les compétences de chaque utilisateur. Les changements sont enregistrés immédiatement.</div>
+        <div id="l-droits-table">
+          <div class="empty"><i class="ti ti-lock"></i><p>Chargement...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Utilisateurs (Admin/SuperAdmin) -->
+    <div id="param-users" class="param-panel" style="display:none">
+      <div class="section">
+        <div class="section-title">Membres enregistrés</div>
+        <div id="l-membres-admin"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+        <div id="sec-membres">
+          <div style="height:10px"></div>
+          <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSP Admin -->
+    <div id="param-jsp-admin" class="param-panel" style="display:none">
+      <div class="section">
+        <button class="btn-p" onclick="openJspAdmin()" style="margin-bottom:12px"><i class="ti ti-shield-half"></i>Gérer les JSP</button>
+        <div class="section-title">Fonctionnalités JSP</div>
+        <div class="card" style="padding:0 14px">
+          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
+            <div style="font-size:24px;width:40px;text-align:center">👤</div>
+            <div class="req-info"><div class="req-name">Créer un JSP</div><div class="req-detail">Ajouter un jeune sapeur-pompier</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
+            <div style="font-size:24px;width:40px;text-align:center">📚</div>
+            <div class="req-info"><div class="req-name">Gérer les cours</div><div class="req-detail">Créer et organiser les formations</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
+            <div style="font-size:24px;width:40px;text-align:center">📅</div>
+            <div class="req-info"><div class="req-name">Planning</div><div class="req-detail">Planifier les séances</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2004,7 +2077,8 @@ function switchTab(tabId){
 
   setActiveDrawerTab(tabId);
 
-  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user&&user.role==='sp') loadDotations(); }
+  if(tabId==='sc-profile'){ loadProfilFields(); initToggles(); if(user&&(user.role==='sp'||user.role==='jsp')) loadDotations(); }
+  if(tabId==='sc-params'){ initParams(); }
   if(tabId==='sc-gardes'){ loadGardes(); }
   if(tabId==='sc-aps'){ loadAps(); }
   if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
@@ -4416,7 +4490,7 @@ function renderJspDocs(){
 var MODULE_NAMES = {
   'sc-home':'EPI','sc-history':'EPI','sc-catalog':'EPI','sc-stats':'EPI',
   'sc-gardes':'Gardes','sc-amicale':'Amicale','sc-aps':'APS',
-  'sc-jsp':'JSP','sc-sdis':'Portail SDIS','sc-profile':'Mon profil'
+  'sc-jsp':'JSP','sc-sdis':'Portail SDIS','sc-profile':'Mon profil','sc-params':'Paramètres'
 };
 
 function openDrawer(){
@@ -4486,6 +4560,130 @@ function setActiveDrawerTab(tabId){
   // Titre dans le header
   var titleEl = document.getElementById('h-module-title');
   if(titleEl) titleEl.textContent = MODULE_NAMES[tabId]||'CSP LFB';
+}
+
+
+// ══════════════════════════════════════════════════════════
+// PARAMÈTRES & GESTION DES DROITS
+// ══════════════════════════════════════════════════════════
+var ACCES_LABELS = {
+  epi:              {lbl:'EPI',          ico:'🛡️',  desc:'Gestion des équipements'},
+  gardes:           {lbl:'Gardes',       ico:'📅',  desc:'Échanges de créneaux'},
+  aps:              {lbl:'APS',          ico:'🏃',  desc:'Séances sportives'},
+  amicale:          {lbl:'Amicale',      ico:'❤️',  desc:'Espace amicale'},
+  jsp:              {lbl:'JSP',          ico:'🛡️',  desc:'Module jeunes SP'},
+  sdis:             {lbl:'Portail SDIS', ico:'🔗',  desc:'Liens SDIS'},
+  amicale_bureau:   {lbl:'Bureau Amicale',ico:'⭐', desc:'Gerer amicale'},
+  jsp_responsable:  {lbl:'Resp. JSP',   ico:'🎓',  desc:'Gérer les JSP'},
+  habillement:      {lbl:'Habillement', ico:'👕',  desc:'Gestion des stocks'},
+  admin:            {lbl:'Admin',        ico:'⚙️',  desc:'Administration'},
+  super_admin:      {lbl:'Super Admin',  ico:'🔑',  desc:'Tous les droits'}
+};
+
+function initParams(){
+  if(!user) return;
+  var isSA = user.super_admin;
+  var isAdmin = user.role==='admin' || isSA;
+  var isJspResp = (user.acces&&user.acces.jsp_responsable) || isSA;
+  var isAmiAdmin = user.amicale_role==='admin' || isAdmin;
+
+  // Afficher les onglets pertinents
+  var tabDroits = document.getElementById('param-tab-droits');
+  var tabUsers = document.getElementById('param-tab-users');
+  var tabJsp = document.getElementById('param-tab-jsp');
+  if(tabDroits) tabDroits.style.display = isSA ? '' : 'none';
+  if(tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
+  if(tabJsp) tabJsp.style.display = (isJspResp||isSA) ? '' : 'none';
+
+  // Section super admin dans Général
+  var saSec = document.getElementById('param-sa-section');
+  if(saSec) saSec.style.display = isSA ? '' : 'none';
+
+  // Changer de vue
+  var hasSwitcher = (user.role==='admin'||user.role==='responsable_caserne'||user.role==='habillement');
+  var drawerSep = document.getElementById('drawer-sep-admin');
+  var drawerLbl = document.getElementById('drawer-label-admin');
+  var drawerSwitch = document.getElementById('drawer-btn-switcher');
+  if(drawerSep) drawerSep.style.display = hasSwitcher ? '' : 'none';
+  if(drawerLbl) drawerLbl.style.display = hasSwitcher ? '' : 'none';
+  if(drawerSwitch) drawerSwitch.style.display = hasSwitcher ? '' : 'none';
+
+  // Charger les membres si admin
+  if(isAdmin) loadMembresAdmin();
+}
+
+function switchParamTab(id){
+  document.querySelectorAll('.param-panel').forEach(p=>p.style.display='none');
+  document.querySelectorAll('[data-paramtab]').forEach(b=>b.classList.remove('active'));
+  var el=document.getElementById(id); if(el) el.style.display='block';
+  var btn=document.querySelector('[data-paramtab="'+id+'"]'); if(btn) btn.classList.add('active');
+  if(id==='param-droits') loadDroitsTable();
+  if(id==='param-users') loadMembresAdmin();
+}
+
+// ── TABLEAU DES DROITS ────────────────────────────────────
+var droitsData = [];
+async function loadDroitsTable(search=''){
+  var el = document.getElementById('l-droits-table'); if(!el) return;
+  el.innerHTML='<div class="empty"><i class="ti ti-loader"></i><p>Chargement...</p></div>';
+
+  var query = db.from('utilisateurs').select('id,matricule,prenom,nom,grade,caserne,role,acces,super_admin').order('matricule');
+  var {data} = await query;
+  droitsData = data||[];
+
+  var filtered = search ?
+    droitsData.filter(u=>(u.matricule||'').includes(search)||(u.nom||'').toLowerCase().includes(search.toLowerCase())||(u.prenom||'').toLowerCase().includes(search.toLowerCase())) :
+    droitsData;
+
+  if(!filtered.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></div>'; return; }
+
+  var COLS = ['epi','gardes','aps','amicale','jsp','sdis','amicale_bureau','jsp_responsable','habillement','admin','super_admin'];
+
+  el.innerHTML = filtered.map(function(u){
+    var acces = u.acces || {};
+    var name = [u.grade,u.prenom,u.nom].filter(Boolean).join(' ') || 'Mat. '+u.matricule;
+    var isSelf = u.id === user.id;
+
+    return '<div class="card" style="padding:14px;margin-bottom:10px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+        '<div>'+
+          '<div style="font-size:14px;font-weight:600">'+name+'</div>'+
+          '<div style="font-size:11px;color:var(--text2)">Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'')+(isSelf?' · <span style="color:var(--red)">Vous</span>':'')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+      COLS.map(function(key){
+        var cfg = ACCES_LABELS[key]||{lbl:key,ico:'',desc:''};
+        var checked = acces[key] ? 'checked' : '';
+        var disabled = (isSelf && key==='super_admin') ? 'disabled' : '';
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border-radius:8px;cursor:'+(disabled?'not-allowed':'pointer')+';opacity:'+(disabled?'0.5':'1')+'">'+
+          '<input type="checkbox" '+checked+' '+disabled+' data-uid="'+u.id+'" data-key="'+key+'" class="droit-cb" style="width:16px;height:16px;accent-color:var(--red);cursor:'+(disabled?'not-allowed':'pointer')+'">'+
+          '<span style="font-size:12px;line-height:1.3">'+cfg.ico+' '+cfg.lbl+'</span>'+
+        '</label>';
+      }).join('')+
+      '</div></div>';
+  }).join('');
+
+  // Events checkboxes - sauvegarde immédiate
+  el.querySelectorAll('.droit-cb').forEach(function(cb){
+    cb.addEventListener('change', async function(){
+      var uid = cb.dataset.uid;
+      var key = cb.dataset.key;
+      var val = cb.checked;
+      var u = droitsData.find(x=>x.id===uid); if(!u) return;
+      var acces = Object.assign({}, u.acces||{});
+      acces[key] = val;
+      u.acces = acces;
+      var res = await db.from('utilisateurs').update({acces:acces}).eq('id',uid);
+      if(res.error){ toast('Erreur: '+res.error.message); cb.checked=!val; return; }
+      // Feedback visuel
+      var label = cb.closest('label');
+      if(label){
+        label.style.background = val ? 'rgba(var(--red-rgb,192,57,43),0.1)' : 'var(--bg2)';
+        setTimeout(function(){ label.style.background='var(--bg2)'; }, 800);
+      }
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -4687,6 +4885,25 @@ if(savedMat){
   // Logout depuis drawer
   var drawerLogout = document.getElementById('drawer-btn-logout');
   if(drawerLogout) drawerLogout.addEventListener('click', doLogout);
+
+    // Paramètres sous-nav
+  document.querySelectorAll('[data-paramtab]').forEach(function(btn){
+    btn.addEventListener('click',function(){ switchParamTab(btn.dataset.paramtab); });
+  });
+  // St Barbe dans paramètres
+  var btnSBP = document.getElementById('param-btn-stbarbe');
+  if(btnSBP) btnSBP.addEventListener('click', showStBarbe);
+  // Simuler user dans paramètres
+  var btnSim = document.getElementById('param-btn-simulate');
+  if(btnSim) btnSim.addEventListener('click', function(){ openModal('m-superadmin'); });
+  // Logout depuis paramètres
+  var btnLogout2 = document.getElementById('btn-logout2');
+  if(btnLogout2) btnLogout2.addEventListener('click', doLogout);
+  // Recherche droits
+  var droitsSearch = document.getElementById('droits-search');
+  if(droitsSearch) droitsSearch.addEventListener('input', function(){
+    loadDroitsTable(this.value);
+  });
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
