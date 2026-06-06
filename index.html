@@ -2080,6 +2080,7 @@ const GARDE_STATUT_CFG = {
 
 async function loadGardes(){
   if(!user) return;
+  var effectiveUser = window.simulatedUser || user;
   var q = db.from('gardes')
     .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
     .order('date_garde', {ascending:true});
@@ -2113,7 +2114,8 @@ function renderGardes(){
     var sc = GARDE_STATUT_CFG[g.statut] || {lbl:g.statut,cls:'bp',emoji:'📋'};
     var typeLbl = GARDE_TYPE_LBL[g.type_garde] || g.type_garde;
     var dateStr = g.date_garde ? new Date(g.date_garde).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}) : '—';
-    var isMine = g.demandeur_id === user.id;
+    var currentId = (window.simulatedUser && window.simulatedUser.id) || user.id;
+    var isMine = g.demandeur_id === currentId;
     return '<div class="req-row" data-gid="'+g.id+'" style="cursor:pointer">' +
       '<div style="font-size:28px;width:42px;text-align:center;flex-shrink:0">'+sc.emoji+'</div>' +
       '<div class="req-info">' +
@@ -2148,7 +2150,8 @@ function openGardeDetail(id){
   var actions = document.getElementById('gd-actions');
   actions.innerHTML = '';
   var role = activeRole();
-  var isMine = g.demandeur_id === user.id;
+  var currentId2 = (window.simulatedUser && window.simulatedUser.id) || user.id;
+  var isMine = g.demandeur_id === currentId2;
 
   // SP peut proposer de reprendre une garde ouverte
   if(g.statut==='ouverte' && !isMine){
@@ -2234,7 +2237,7 @@ async function submitGarde(){
   var type = elType.value;
   if(!date){ toast('La date est obligatoire'); return; }
   var res = await db.from('gardes').insert({
-    demandeur_id: user.id,
+    demandeur_id: (window.simulatedUser && window.simulatedUser.id) || user.id,
     date_garde: date,
     type_garde: type,
     heure_debut: elDebut ? elDebut.value||null : null,
