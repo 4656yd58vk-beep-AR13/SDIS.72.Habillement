@@ -173,6 +173,14 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 #sb-date{font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;animation:sbFadeUp 0.8s ease forwards 1.4s;opacity:0;letter-spacing:2px}
 @keyframes sbFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 #sb-btn-close{position:absolute;bottom:24px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);border-radius:2px;padding:10px 32px;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:inherit;z-index:20;-webkit-tap-highlight-color:transparent}
+
+#pg-jsp{display:none}
+.jsp-screen{display:none;padding-bottom:80px}
+.jsp-screen.active{display:block}
+.prog-bar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;background:var(--red);border-radius:3px;transition:width 0.4s}
+.presence-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.brevet-badge{background:#EDE9FE;color:#4C1D95;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
 </style>
 </head>
 <body>
@@ -196,6 +204,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <div style="position:relative"><input class="form-ctrl" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px"><button type="button" onclick="togglePw('l-pw',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div>
       </div>
       <button class="btn-p" id="btn-login"><i class="ti ti-login"></i><span id="btn-login-txt">Continuer</span></button>
+      <div style="height:10px"></div>
+      <button class="btn-s" id="btn-login-jsp" style="font-size:13px;color:var(--text2)"><i class="ti ti-shield-half" style="font-size:16px"></i>Espace JSP</button>
     </div>
   </div>
 </div>
@@ -626,6 +636,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="btn-s" onclick="openModal('m-pwa')" style="border-color:#C0392B;color:#C0392B"><i class="ti ti-device-mobile"></i>Installer l'application</button>
       <div id="btn-stbarbe-wrap" style="display:none;height:8px"></div>
       <button id="btn-stbarbe" class="btn-s" style="display:none;border-color:#FFD700;color:#B8860B"><i class="ti ti-sparkles"></i>🎆 Tester St Barbe</button>
+      <div id="btn-jsp-admin-wrap" style="display:none;height:8px"></div>
+      <button id="btn-jsp-admin" class="btn-s" style="display:none;border-color:#0EA5E9;color:#0369A1"><i class="ti ti-shield-half"></i>Gérer les JSP</button>
       <div style="height:8px"></div>
       <button class="btn-s" id="btn-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
       <div style="height:9px"></div>
@@ -1170,6 +1182,12 @@ async function initApp(){
     btnSB.style.display='block';
     if(btnSBWrap) btnSBWrap.style.display='block';
     btnSB.onclick = showStBarbe;
+  }
+  var btnJA = document.getElementById('btn-jsp-admin');
+  var btnJAWrap = document.getElementById('btn-jsp-admin-wrap');
+  if(btnJA && (user.super_admin || user.jsp_role==='responsable')){
+    btnJA.style.display='block';
+    if(btnJAWrap) btnJAWrap.style.display='block';
   }
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
@@ -3368,6 +3386,638 @@ function checkStBarbe(){
   }
 }
 
+
+// ══════════════════════════════════════════════════════════
+// MODULE JSP
+// ══════════════════════════════════════════════════════════
+var jspUser = null;
+var jspCours = [], jspSeances = [], jspDocs = [];
+var jspCoursFilter = 'all', jspDocsFilter = 'all';
+
+var JSP_CAT = {
+  secourisme:{lbl:'Secourisme',ico:'🚑'},
+  incendie:{lbl:'Incendie',ico:'🔥'},
+  sport:{lbl:'Sport',ico:'💪'},
+  citoyennete:{lbl:'Citoyenneté',ico:'🎖️'},
+  technique:{lbl:'Technique',ico:'🔧'},
+  autre:{lbl:'Autre',ico:'📋'}
+};
+var JSP_DOC_CAT = {cours:'📚 Cours',reglement:'📜 Règlement',administratif:'📋 Administratif',autre:'📁 Autre'};
+var JSP_GRADES = {JSP1:'JSP 1',JSP2:'JSP 2',JSP3:'JSP 3',JSP4:'JSP 4',Moniteur:'Moniteur'};
+
+// ── CONNEXION JSP ────────────────────────────────────────
+function showJspLogin(){
+  showPage('pg-login-jsp');
+  document.getElementById('jsp-login-mat').value='';
+  document.getElementById('jsp-login-pw').value='';
+  document.getElementById('jsp-pw-grp').style.display='none';
+  document.getElementById('btn-jsp-login-txt').textContent='Continuer';
+  var err = document.getElementById('jsp-login-err');
+  if(err) err.style.display='none';
+}
+
+async function doJspLogin(){
+  var mat = document.getElementById('jsp-login-mat').value.trim();
+  var pwGrp = document.getElementById('jsp-pw-grp');
+  var btn = document.getElementById('btn-jsp-login');
+  var err = document.getElementById('jsp-login-err');
+  if(err) err.style.display='none';
+
+  if(pwGrp.style.display==='none'){
+    // Étape 1 : vérifier le matricule
+    if(!mat){ showErr('jsp-login-err','Matricule obligatoire'); return; }
+    var {data,error} = await db.from('jsp_utilisateurs').select('id,matricule').eq('matricule',mat).single();
+    if(error||!data){ showErr('jsp-login-err','Matricule introuvable'); return; }
+    pwGrp.style.display='block';
+    document.getElementById('btn-jsp-login-txt').textContent='Se connecter';
+    document.getElementById('jsp-login-pw').focus();
+    return;
+  }
+
+  // Étape 2 : vérifier le mot de passe
+  var pw = document.getElementById('jsp-login-pw').value;
+  if(!pw){ showErr('jsp-login-err','Mot de passe obligatoire'); return; }
+  btn.disabled=true;
+
+  var {data,error} = await db.from('jsp_utilisateurs')
+    .select('*')
+    .eq('matricule',mat)
+    .single();
+
+  if(error||!data){ showErr('jsp-login-err','Erreur de connexion'); btn.disabled=false; return; }
+
+  // Vérifier le hash bcrypt
+  var {data:check,error:checkErr} = await db.rpc('verify_password',{
+    input_password: pw,
+    hashed_password: data.mot_de_passe
+  });
+
+  if(checkErr||!check){ showErr('jsp-login-err','Mot de passe incorrect'); btn.disabled=false; return; }
+
+  jspUser = data;
+  btn.disabled=false;
+
+  if(data.premiere_connexion){
+    // Premier connexion → changer le mdp
+    openModal('m-jsp-changepw');
+    showPage('pg-jsp');
+    initJspApp();
+    return;
+  }
+
+  showPage('pg-jsp');
+  initJspApp();
+}
+
+async function saveJspPw(){
+  var p1 = document.getElementById('jsp-np1').value;
+  var p2 = document.getElementById('jsp-np2').value;
+  if(p1.length < 6){ showErr('jsp-pw-err','6 caractères minimum'); return; }
+  if(p1 !== p2){ showErr('jsp-pw-err','Les mots de passe ne correspondent pas'); return; }
+
+  var {data:hashed} = await db.rpc('hash_password',{password:p1});
+  if(!hashed){ toast('Erreur lors du hashage'); return; }
+
+  await db.from('jsp_utilisateurs').update({mot_de_passe:hashed,premiere_connexion:false}).eq('id',jspUser.id);
+  jspUser.premiere_connexion = false;
+  closeModal('m-jsp-changepw');
+  toast('Mot de passe mis à jour ✓');
+}
+
+// ── INIT JSP ─────────────────────────────────────────────
+async function initJspApp(){
+  if(!jspUser) return;
+  // Header
+  var sub = document.getElementById('jsp-h-sub');
+  if(sub) sub.textContent = (JSP_GRADES[jspUser.grade]||jspUser.grade)+' · '+jspUser.prenom+' '+jspUser.nom;
+  // Welcome
+  var wname = document.getElementById('jsp-welcome-name');
+  if(wname) wname.textContent = jspUser.prenom+' '+jspUser.nom;
+  var wgrade = document.getElementById('jsp-welcome-grade');
+  if(wgrade) wgrade.textContent = JSP_GRADES[jspUser.grade]||jspUser.grade;
+  // Profil
+  var pname = document.getElementById('jsp-profil-name');
+  if(pname) pname.textContent = jspUser.prenom+' '+jspUser.nom;
+  var pgrade = document.getElementById('jsp-profil-grade');
+  if(pgrade) pgrade.textContent = JSP_GRADES[jspUser.grade]||jspUser.grade;
+  var psec = document.getElementById('jsp-profil-section');
+  if(psec) psec.textContent = jspUser.section||'';
+  var pmat = document.getElementById('jsp-profil-mat');
+  if(pmat) pmat.textContent = jspUser.matricule;
+  var pentree = document.getElementById('jsp-profil-entree');
+  if(pentree) pentree.textContent = jspUser.date_entree ? new Date(jspUser.date_entree).toLocaleDateString('fr-FR') : '—';
+  var pequipe = document.getElementById('jsp-profil-equipe');
+  if(pequipe) pequipe.textContent = jspUser.equipe||'—';
+  var pddn = document.getElementById('jsp-profil-ddn');
+  if(pddn) pddn.textContent = jspUser.date_naissance ? new Date(jspUser.date_naissance).toLocaleDateString('fr-FR') : '—';
+
+  // Charger les données
+  await Promise.all([loadJspCours(), loadJspSeances(), loadJspDocs(), loadJspStats()]);
+}
+
+// ── NAVIGATION JSP ────────────────────────────────────────
+function switchJspTab(tabId){
+  document.querySelectorAll('.jsp-screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('[data-jsptab]').forEach(t=>t.classList.remove('active'));
+  var screen = document.getElementById(tabId);
+  if(screen) screen.classList.add('active');
+  var tab = document.querySelector('[data-jsptab="'+tabId+'"]');
+  if(tab) tab.classList.add('active');
+}
+
+// ── STATS JSP ─────────────────────────────────────────────
+async function loadJspStats(){
+  if(!jspUser) return;
+  // Présences
+  var {data:pres} = await db.from('jsp_presences').select('*').eq('jsp_id',jspUser.id).eq('present',true);
+  var el = document.getElementById('jsp-stat-presences');
+  if(el) el.textContent = (pres||[]).length;
+  // Cours suivis
+  var {data:prog} = await db.from('jsp_progression').select('*').eq('jsp_id',jspUser.id).neq('statut','non_commence');
+  var el2 = document.getElementById('jsp-stat-cours');
+  if(el2) el2.textContent = (prog||[]).length;
+  // Brevets accueil
+  var {data:brev} = await db.from('jsp_brevets').select('*').eq('jsp_id',jspUser.id).order('date_obtention',{ascending:false});
+  var elb = document.getElementById('jsp-home-brevets');
+  if(elb){
+    if(!(brev&&brev.length)){ elb.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
+    else {
+      elb.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+        brev.map(function(b){ return '<span class="brevet-badge">🏅 '+b.intitule+'</span>'; }).join('')+'</div>';
+    }
+  }
+  // Progression profil
+  loadJspProgression();
+  // Brevets profil
+  var elb2 = document.getElementById('jsp-profil-brevets');
+  if(elb2){
+    if(!(brev&&brev.length)){ elb2.innerHTML='<div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div>'; }
+    else {
+      elb2.innerHTML='<div class="card" style="padding:0 14px">'+
+        brev.map(function(b){
+          var d = b.date_obtention ? new Date(b.date_obtention).toLocaleDateString('fr-FR') : '—';
+          return '<div class="req-row"><div style="font-size:24px;width:40px;text-align:center">🏅</div>'+
+            '<div class="req-info"><div class="req-name">'+b.intitule+'</div>'+
+            '<div class="req-detail">'+(b.organisme||'')+' · '+d+'</div></div></div>';
+        }).join('')+'</div>';
+    }
+  }
+}
+
+async function loadJspProgression(){
+  var {data:prog} = await db.from('jsp_progression')
+    .select('*,cours:cours_id(titre,categorie)')
+    .eq('jsp_id',jspUser.id);
+  var el = document.getElementById('jsp-profil-prog');
+  if(!el) return;
+  if(!(prog&&prog.length)){ el.innerHTML='<div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div>'; return; }
+  var STATUS = {non_commence:{lbl:'Non commencé',pct:0},en_cours:{lbl:'En cours',pct:50},valide:{lbl:'Validé',pct:100}};
+  el.innerHTML='<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:12px">'+
+    prog.map(function(p){
+      var st = STATUS[p.statut]||{lbl:p.statut,pct:0};
+      var cat = p.cours ? JSP_CAT[p.cours.categorie]||{ico:'📋'} : {ico:'📋'};
+      return '<div>'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">'+
+          '<div style="font-size:13px;font-weight:600">'+cat.ico+' '+(p.cours?p.cours.titre:'—')+'</div>'+
+          '<div style="font-size:11px;color:var(--text2)">'+st.lbl+(p.note!==null?' · '+p.note+'/20':'')+'</div>'+
+        '</div>'+
+        '<div class="prog-bar"><div class="prog-fill" style="width:'+st.pct+'%"></div></div>'+
+      '</div>';
+    }).join('')+'</div>';
+}
+
+// ── COURS JSP ─────────────────────────────────────────────
+async function loadJspCours(){
+  var {data} = await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
+  jspCours = data||[];
+  renderJspCours();
+  // Prochaine séance
+  var now = new Date().toISOString().split('T')[0];
+  var {data:next} = await db.from('jsp_seances')
+    .select('*,cours:cours_id(titre)')
+    .gte('date_seance',now)
+    .eq('statut','planifiee')
+    .order('date_seance',{ascending:true})
+    .limit(1)
+    .single();
+  var el = document.getElementById('jsp-next-seance');
+  if(el){
+    if(next){
+      var d = new Date(next.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      el.innerHTML='<div class="card" style="padding:14px;background:linear-gradient(135deg,var(--red),#922B21);color:#fff;cursor:pointer" id="jsp-next-card">'+
+        '<div style="font-size:15px;font-weight:700">'+next.titre+'</div>'+
+        '<div style="font-size:12px;opacity:0.85;margin-top:4px">'+d+(next.heure_debut?' · '+next.heure_debut.slice(0,5):'')+'</div>'+
+        (next.lieu?'<div style="font-size:12px;opacity:0.7;margin-top:2px">📍 '+next.lieu+'</div>':'')+
+      '</div>';
+      var nextCard = document.getElementById('jsp-next-card');
+      if(nextCard) nextCard.addEventListener('click',function(){ openJspSeanceDetail(nextId); });
+    } else {
+      el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>';
+    }
+  }
+}
+
+function renderJspCours(){
+  var list = jspCoursFilter==='all' ? jspCours : jspCours.filter(c=>c.categorie===jspCoursFilter);
+  var el = document.getElementById('l-jsp-cours'); if(!el) return;
+  if(!list.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
+  el.innerHTML = list.map(function(c){
+    var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
+    return '<div class="req-row" data-jcid="'+c.id+'" style="cursor:pointer">'+
+      '<div style="font-size:28px;width:44px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+c.titre+'</div>'+
+      '<div class="req-detail">'+cat.lbl+(c.duree_minutes?' · '+c.duree_minutes+'min':'')+'</div></div>'+
+      '<i class="ti ti-chevron-right" style="color:var(--text2)"></i></div>';
+  }).join('');
+  el.querySelectorAll('[data-jcid]').forEach(function(r){
+    r.addEventListener('click',function(){ openJspCoursDetail(r.dataset.jcid); });
+  });
+}
+
+async function openJspCoursDetail(id){
+  var c = jspCours.find(x=>x.id===id); if(!c) return;
+  var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
+  document.getElementById('jsp-cours-ico').textContent = cat.ico;
+  document.getElementById('jsp-cours-titre').textContent = c.titre;
+  document.getElementById('jsp-cours-cat').textContent = cat.lbl;
+  document.getElementById('jsp-cours-cat2').textContent = cat.lbl;
+  document.getElementById('jsp-cours-duree').textContent = c.duree_minutes ? c.duree_minutes+' min' : '—';
+  var objEl = document.getElementById('jsp-cours-objectifs');
+  if(objEl) objEl.textContent = c.objectifs||'';
+  var contEl = document.getElementById('jsp-cours-contenu');
+  if(contEl) contEl.textContent = c.contenu||'';
+  // Progression perso
+  var {data:prog} = await db.from('jsp_progression').select('*').eq('jsp_id',jspUser.id).eq('cours_id',id).single();
+  var progEl = document.getElementById('jsp-cours-prog');
+  if(progEl){
+    var STATUS = {non_commence:'Non commencé',en_cours:'En cours',valide:'✅ Validé'};
+    var st = prog ? STATUS[prog.statut]||prog.statut : 'Non commencé';
+    var note = prog && prog.note !== null ? ' · '+prog.note+'/20' : '';
+    progEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">Ma progression : <strong>'+st+note+'</strong></div>';
+  }
+  openModal('m-jsp-cours');
+}
+
+// ── SÉANCES JSP ───────────────────────────────────────────
+async function loadJspSeances(){
+  var {data} = await db.from('jsp_seances')
+    .select('*,cours:cours_id(titre,categorie)')
+    .eq('statut','planifiee')
+    .order('date_seance',{ascending:true});
+  jspSeances = data||[];
+  renderJspSeances();
+}
+
+function renderJspSeances(){
+  var el = document.getElementById('l-jsp-seances'); if(!el) return;
+  if(!jspSeances.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div>'; return; }
+  var today = new Date().toISOString().split('T')[0];
+  var grouped = {};
+  jspSeances.forEach(function(s){
+    var m = s.date_seance.slice(0,7);
+    if(!grouped[m]) grouped[m]=[];
+    grouped[m].push(s);
+  });
+  el.innerHTML = Object.keys(grouped).map(function(m){
+    var label = new Date(m+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+    label = label.charAt(0).toUpperCase()+label.slice(1);
+    return '<div class="section-title" style="margin-top:8px">'+label+'</div>'+
+      '<div class="card" style="padding:0 14px">'+
+      grouped[m].map(function(s){
+        var d = new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+        var isPast = s.date_seance < today;
+        var cat = s.cours ? JSP_CAT[s.cours.categorie]||{ico:'📋'} : {ico:'📅'};
+        return '<div class="req-row" data-jsid="'+s.id+'" style="cursor:pointer;opacity:'+(isPast?'0.5':'1')+'">'+
+          '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
+          '<div class="req-info"><div class="req-name">'+s.titre+'</div>'+
+          '<div class="req-detail">'+d+(s.heure_debut?' · '+s.heure_debut.slice(0,5):'')+(s.lieu?' · '+s.lieu:'')+'</div></div>'+
+          (isPast?'<span class="badge" style="background:var(--bg2);color:var(--text2);font-size:10px">Passée</span>':
+           '<i class="ti ti-chevron-right" style="color:var(--text2)"></i>')+
+        '</div>';
+      }).join('')+'</div>';
+  }).join('');
+  el.querySelectorAll('[data-jsid]').forEach(function(r){
+    r.addEventListener('click',function(){ openJspSeanceDetail(r.dataset.jsid); });
+  });
+}
+
+async function openJspSeanceDetail(id){
+  var seance = jspSeances.find(x=>x.id===id);
+  if(!seance){
+    var {data} = await db.from('jsp_seances').select('*,cours:cours_id(titre,categorie)').eq('id',id).single();
+    seance = data;
+  }
+  if(!seance) return;
+  document.getElementById('jsp-seance-titre').textContent = seance.titre;
+  document.getElementById('jsp-seance-date').textContent = seance.date_seance ? new Date(seance.date_seance).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('jsp-seance-heure').textContent = seance.heure_debut ? seance.heure_debut.slice(0,5)+(seance.heure_fin?' → '+seance.heure_fin.slice(0,5):'') : '—';
+  document.getElementById('jsp-seance-lieu').textContent = seance.lieu||'—';
+  document.getElementById('jsp-seance-cours').textContent = seance.cours ? seance.cours.titre : '—';
+  var descEl = document.getElementById('jsp-seance-desc');
+  if(descEl) descEl.textContent = seance.description||'';
+  // Ma présence
+  var {data:pres} = await db.from('jsp_presences').select('*').eq('seance_id',id).eq('jsp_id',jspUser.id).single();
+  var presEl = document.getElementById('jsp-seance-presences');
+  if(presEl){
+    var isPresent = pres && pres.present;
+    presEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">'+
+      'Ma présence : <strong style="color:'+(isPresent?'var(--green)':'var(--text2)')+'">'+
+      (isPresent?'✅ Présent':'— Non enregistrée')+'</strong></div>';
+  }
+  openModal('m-jsp-seance');
+}
+
+// ── DOCUMENTS JSP ─────────────────────────────────────────
+async function loadJspDocs(){
+  var {data} = await db.from('jsp_documents').select('*').order('created_at',{ascending:false});
+  jspDocs = data||[];
+  renderJspDocs();
+}
+
+function renderJspDocs(){
+  var list = jspDocsFilter==='all' ? jspDocs : jspDocs.filter(d=>d.categorie===jspDocsFilter);
+  var el = document.getElementById('l-jsp-docs'); if(!el) return;
+  if(!list.length){ el.innerHTML='<div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+list.map(function(d){
+    var ico = JSP_DOC_CAT[d.categorie]||'📁';
+    return '<a href="'+(d.fichier_url||'#')+'" target="_blank" class="req-row" style="text-decoration:none;color:inherit">'+
+      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+ico.split(' ')[0]+'</div>'+
+      '<div class="req-info"><div class="req-name">'+d.titre+'</div>'+
+      '<div class="req-detail">'+(d.description||'')+(d.fichier_nom?' · '+d.fichier_nom:'')+'</div></div>'+
+      '<i class="ti ti-download" style="color:var(--text2)"></i></a>';
+  }).join('')+'</div>';
+}
+
+// ── LOGOUT JSP ────────────────────────────────────────────
+function logoutJsp(){
+  jspUser = null;
+  jspCours=[]; jspSeances=[]; jspDocs=[];
+  showPage('pg-login');
+}
+
+
+// ══════════════════════════════════════════════════════════
+// GESTION JSP (SUPER ADMIN)
+// ══════════════════════════════════════════════════════════
+var jspAdminPanel = 'jspa-jsp';
+var allJsps = [], allJspCours = [], allJspSeances = [], allJspDocs2 = [];
+
+function switchJspaPanel(id){
+  jspAdminPanel = id;
+  document.querySelectorAll('.jspa-panel').forEach(p=>p.style.display='none');
+  document.querySelectorAll('[data-jspadmin]').forEach(b=>b.classList.remove('active'));
+  var el = document.getElementById(id); if(el) el.style.display='block';
+  var btn = document.querySelector('[data-jspadmin="'+id+'"]'); if(btn) btn.classList.add('active');
+  if(id==='jspa-jsp') loadAllJsps();
+  if(id==='jspa-cours') loadAllJspCours();
+  if(id==='jspa-seances') loadAllJspSeances();
+  if(id==='jspa-docs') loadAllJspDocs();
+}
+
+async function openJspAdmin(){
+  openModal('m-jsp-admin');
+  switchJspaPanel('jspa-jsp');
+}
+
+// ── LISTE DES JSP ─────────────────────────────────────────
+async function loadAllJsps(){
+  var {data} = await db.from('jsp_utilisateurs').select('*').order('nom');
+  allJsps = data||[];
+  var el = document.getElementById('l-jspa-jsp'); if(!el) return;
+  if(!allJsps.length){ el.innerHTML='<div class="empty"><i class="ti ti-shield-half"></i><p>Aucun JSP créé</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+allJsps.map(function(j){
+    return '<div class="req-row" data-jspid="'+j.id+'" style="cursor:pointer">'+
+      '<div style="width:36px;height:36px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-shield-half" style="color:#fff;font-size:16px"></i></div>'+
+      '<div class="req-info"><div class="req-name">'+j.prenom+' '+j.nom+'</div>'+
+      '<div class="req-detail">Mat. '+j.matricule+' · '+(JSP_GRADES[j.grade]||j.grade)+(j.section?' · '+j.section:'')+'</div></div>'+
+      '<i class="ti ti-chevron-right" style="color:var(--text2)"></i></div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-jspid]').forEach(function(r){
+    r.addEventListener('click',function(){ openJspDetailAdmin(r.dataset.jspid); });
+  });
+}
+
+async function openJspDetailAdmin(id){
+  var j = allJsps.find(x=>x.id===id); if(!j) return;
+  document.getElementById('jad-name').textContent = j.prenom+' '+j.nom;
+  document.getElementById('jad-grade').textContent = JSP_GRADES[j.grade]||j.grade;
+  document.getElementById('jad-mat').textContent = j.matricule;
+  document.getElementById('jad-ddn').textContent = j.date_naissance ? new Date(j.date_naissance).toLocaleDateString('fr-FR') : '—';
+  document.getElementById('jad-section').textContent = j.section||'—';
+  document.getElementById('jad-equipe').textContent = j.equipe||'—';
+  document.getElementById('jad-parent').textContent = (j.contact_parent_nom||'—')+(j.contact_parent_tel?' · '+j.contact_parent_tel:'');
+  document.getElementById('jad-entree').textContent = j.date_entree ? new Date(j.date_entree).toLocaleDateString('fr-FR') : '—';
+  // Présences
+  var {data:pres} = await db.from('jsp_presences').select('*,seance:seance_id(titre,date_seance)').eq('jsp_id',id).eq('present',true);
+  var presEl = document.getElementById('jad-presences');
+  if(presEl){
+    var nb = (pres||[]).length;
+    presEl.innerHTML='<div style="background:var(--bg2);padding:10px;border-radius:8px;font-size:13px">'+
+      '✅ <strong>'+nb+' présence'+(nb>1?'s':'')+'</strong> enregistrée'+(nb>1?'s':'')+'</div>';
+  }
+  // Reset mdp
+  var btnReset = document.getElementById('jad-reset-pw');
+  if(btnReset) btnReset.onclick = function(){ resetJspPw(id, j.matricule); };
+  openModal('m-jsp-detail-admin');
+}
+
+async function resetJspPw(id, matricule){
+  if(!confirm('Réinitialiser le mot de passe de '+matricule+' à "'+matricule+'2026" ?')) return;
+  var {data:hashed} = await db.rpc('hash_password',{password: matricule+'2026'});
+  if(!hashed){ toast('Erreur hashage'); return; }
+  await db.from('jsp_utilisateurs').update({mot_de_passe:hashed,premiere_connexion:true}).eq('id',id);
+  toast('Mot de passe réinitialisé ✓');
+  closeModal('m-jsp-detail-admin');
+}
+
+// ── CRÉER JSP ─────────────────────────────────────────────
+async function createJsp(){
+  var prenom = document.getElementById('njsp-prenom').value.trim();
+  var nom = document.getElementById('njsp-nom').value.trim();
+  var mat = document.getElementById('njsp-mat').value.trim();
+  if(!prenom||!nom||!mat){ showErr('njsp-err','Prénom, nom et matricule obligatoires'); return; }
+  // Vérifier doublon matricule
+  var {data:exist} = await db.from('jsp_utilisateurs').select('id').eq('matricule',mat).single();
+  if(exist){ showErr('njsp-err','Ce matricule existe déjà'); return; }
+  // Hash mdp = matricule+2026
+  var {data:hashed} = await db.rpc('hash_password',{password: mat+'2026'});
+  if(!hashed){ showErr('njsp-err','Erreur lors de la création'); return; }
+  var res = await db.from('jsp_utilisateurs').insert({
+    matricule: mat,
+    prenom, nom,
+    grade: document.getElementById('njsp-grade').value,
+    date_naissance: document.getElementById('njsp-ddn').value||null,
+    date_entree: document.getElementById('njsp-entree').value||null,
+    section: document.getElementById('njsp-section').value.trim()||null,
+    equipe: document.getElementById('njsp-equipe').value.trim()||null,
+    contact_parent_nom: document.getElementById('njsp-parent-nom').value.trim()||null,
+    contact_parent_tel: document.getElementById('njsp-parent-tel').value.trim()||null,
+    mot_de_passe: hashed,
+    premiere_connexion: true
+  });
+  if(res.error){ showErr('njsp-err','Erreur: '+res.error.message); return; }
+  closeModal('m-new-jsp');
+  toast('JSP '+prenom+' '+nom+' créé ✓');
+  // Réinitialiser le form
+  ['njsp-prenom','njsp-nom','njsp-mat','njsp-ddn','njsp-entree','njsp-section','njsp-equipe','njsp-parent-nom','njsp-parent-tel'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value='';
+  });
+  loadAllJsps();
+}
+
+// ── COURS JSP ADMIN ───────────────────────────────────────
+async function loadAllJspCours(){
+  var {data} = await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
+  allJspCours = data||[];
+  var el = document.getElementById('l-jspa-cours'); if(!el) return;
+  if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+allJspCours.map(function(c){
+    var cat = JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
+    return '<div class="req-row">'+
+      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+c.titre+'</div>'+
+      '<div class="req-detail">'+cat.lbl+(c.duree_minutes?' · '+c.duree_minutes+'min':'')+'</div></div>'+
+      '<button data-delcours="'+c.id+'" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:16px;padding:0"><i class="ti ti-trash"></i></button>'+
+    '</div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-delcours]').forEach(function(btn){
+    btn.addEventListener('click',function(){ deleteJspCours(btn.dataset.delcours); });
+  });
+  // Mettre à jour le select séances
+  var sel = document.getElementById('njs-cours');
+  if(sel){
+    sel.innerHTML='<option value="">— Aucun —</option>'+
+      allJspCours.map(c=>'<option value="'+c.id+'">'+c.titre+'</option>').join('');
+  }
+}
+
+async function createJspCours(){
+  var titre = document.getElementById('njc-titre').value.trim();
+  if(!titre){ toast('Titre obligatoire'); return; }
+  var res = await db.from('jsp_cours').insert({
+    titre, createur_id: user.id,
+    categorie: document.getElementById('njc-cat').value,
+    duree_minutes: parseInt(document.getElementById('njc-duree').value)||null,
+    objectifs: document.getElementById('njc-objectifs').value.trim()||null,
+    contenu: document.getElementById('njc-contenu').value.trim()||null,
+  });
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-new-jsp-cours');
+  toast('Cours créé ✓');
+  loadAllJspCours();
+  // Recharger dans l'espace JSP si connecté
+  if(jspUser) loadJspCours();
+}
+
+async function deleteJspCours(id){
+  if(!confirm('Supprimer ce cours ?')) return;
+  await db.from('jsp_cours').delete().eq('id',id);
+  toast('Cours supprimé');
+  loadAllJspCours();
+}
+
+// ── SÉANCES JSP ADMIN ─────────────────────────────────────
+async function loadAllJspSeances(){
+  var {data} = await db.from('jsp_seances')
+    .select('*,cours:cours_id(titre)')
+    .order('date_seance',{ascending:false});
+  allJspSeances = data||[];
+  var el = document.getElementById('l-jspa-seances'); if(!el) return;
+  if(!allJspSeances.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+allJspSeances.map(function(s){
+    var d = s.date_seance ? new Date(s.date_seance).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}) : '—';
+    var statut = s.statut==='annulee' ? '<span class="badge br" style="font-size:10px">Annulée</span>' : s.statut==='terminee' ? '<span class="badge ba" style="font-size:10px">Terminée</span>' : '';
+    return '<div class="req-row">'+
+      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">📅</div>'+
+      '<div class="req-info"><div class="req-name">'+s.titre+'</div>'+
+      '<div class="req-detail">'+d+(s.heure_debut?' · '+s.heure_debut.slice(0,5):'')+(s.cours?' · '+s.cours.titre:'')+'</div></div>'+
+      statut+
+      '<button data-delseance="'+s.id+'" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:16px;padding:0;margin-left:6px"><i class="ti ti-trash"></i></button>'+
+    '</div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-delseance]').forEach(function(btn){
+    btn.addEventListener('click',function(){ deleteJspSeance(btn.dataset.delseance); });
+  });
+}
+
+async function createJspSeance(){
+  var titre = document.getElementById('njs-titre').value.trim();
+  var date = document.getElementById('njs-date').value;
+  if(!titre||!date){ toast('Titre et date obligatoires'); return; }
+  var res = await db.from('jsp_seances').insert({
+    titre, date_seance: date, createur_id: user.id,
+    cours_id: document.getElementById('njs-cours').value||null,
+    heure_debut: document.getElementById('njs-debut').value||null,
+    heure_fin: document.getElementById('njs-fin').value||null,
+    lieu: document.getElementById('njs-lieu').value.trim()||null,
+    description: document.getElementById('njs-desc').value.trim()||null,
+    statut:'planifiee'
+  });
+  if(res.error){ toast('Erreur: '+res.error.message); return; }
+  closeModal('m-new-jsp-seance');
+  toast('Séance planifiée ✓');
+  loadAllJspSeances();
+  if(jspUser) loadJspSeances();
+}
+
+async function deleteJspSeance(id){
+  if(!confirm('Supprimer cette séance ?')) return;
+  await db.from('jsp_seances').delete().eq('id',id);
+  toast('Séance supprimée');
+  loadAllJspSeances();
+}
+
+// ── DOCUMENTS JSP ADMIN ───────────────────────────────────
+async function loadAllJspDocs(){
+  var {data} = await db.from('jsp_documents').select('*').order('created_at',{ascending:false});
+  allJspDocs2 = data||[];
+  var el = document.getElementById('l-jspa-docs'); if(!el) return;
+  if(!allJspDocs2.length){ el.innerHTML='<div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+allJspDocs2.map(function(d){
+    var ico = (JSP_DOC_CAT[d.categorie]||'📁').split(' ')[0];
+    return '<div class="req-row">'+
+      '<div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+d.titre+'</div>'+
+      '<div class="req-detail">'+(d.description||'')+(d.fichier_nom?' · '+d.fichier_nom:'')+'</div></div>'+
+      '<button data-deldoc="'+d.id+'" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:16px;padding:0"><i class="ti ti-trash"></i></button>'+
+    '</div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-deldoc]').forEach(function(btn){
+    btn.addEventListener('click',function(){ deleteJspDoc(btn.dataset.deldoc); });
+  });
+}
+
+async function createJspDoc(){
+  var titre = document.getElementById('njd-titre').value.trim();
+  var fichierInput = document.getElementById('njd-fichier');
+  if(!titre){ showErr('njd-err','Titre obligatoire'); return; }
+  if(!fichierInput||!fichierInput.files[0]){ showErr('njd-err','Fichier obligatoire'); return; }
+  var file = fichierInput.files[0];
+  var path = 'docs/'+Date.now()+'-'+file.name;
+  var up = await db.storage.from('jsp-files').upload(path,file);
+  if(up.error){ showErr('njd-err','Erreur upload: '+up.error.message); return; }
+  var pub = db.storage.from('jsp-files').getPublicUrl(path);
+  var res = await db.from('jsp_documents').insert({
+    titre, createur_id: user.id,
+    categorie: document.getElementById('njd-cat').value,
+    description: document.getElementById('njd-desc').value.trim()||null,
+    fichier_url: pub.data.publicUrl,
+    fichier_nom: file.name
+  });
+  if(res.error){ showErr('njd-err','Erreur: '+res.error.message); return; }
+  closeModal('m-new-jsp-doc');
+  toast('Document publié ✓');
+  loadAllJspDocs();
+  if(jspUser) loadJspDocs();
+}
+
+async function deleteJspDoc(id){
+  if(!confirm('Supprimer ce document ?')) return;
+  await db.from('jsp_documents').delete().eq('id',id);
+  toast('Document supprimé');
+  loadAllJspDocs();
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
@@ -3445,6 +4095,59 @@ if(savedMat){
   // Chat input entrée
   var chatInput = document.getElementById('chat-input');
   if(chatInput) chatInput.addEventListener('keydown', function(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+    // JSP Login
+  var btnLoginJsp = document.getElementById('btn-login-jsp');
+  if(btnLoginJsp) btnLoginJsp.addEventListener('click', showJspLogin);
+  var btnJspLogin = document.getElementById('btn-jsp-login');
+  if(btnJspLogin) btnJspLogin.addEventListener('click', doJspLogin);
+  var btnBackLogin = document.getElementById('btn-back-login');
+  if(btnBackLogin) btnBackLogin.addEventListener('click', function(){ showPage('pg-login'); });
+  // Enter sur les champs JSP
+  var jspMat = document.getElementById('jsp-login-mat');
+  if(jspMat) jspMat.addEventListener('keydown',function(e){if(e.key==='Enter') doJspLogin();});
+  var jspPw = document.getElementById('jsp-login-pw');
+  if(jspPw) jspPw.addEventListener('keydown',function(e){if(e.key==='Enter') doJspLogin();});
+
+  // JSP Tabs
+  document.querySelectorAll('[data-jsptab]').forEach(function(btn){
+    btn.addEventListener('click',function(){ switchJspTab(btn.dataset.jsptab); });
+  });
+
+  // JSP Logout
+  var btnJspLogout = document.getElementById('btn-jsp-logout');
+  if(btnJspLogout) btnJspLogout.addEventListener('click', logoutJsp);
+
+  // JSP Cours filtres
+  document.querySelectorAll('[data-jcfilter]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      jspCoursFilter=btn.dataset.jcfilter;
+      document.querySelectorAll('[data-jcfilter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderJspCours();
+    });
+  });
+
+  // JSP Docs filtres
+  document.querySelectorAll('[data-jdfilter]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      jspDocsFilter=btn.dataset.jdfilter;
+      document.querySelectorAll('[data-jdfilter]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderJspDocs();
+    });
+  });
+
+  // JSP Changement mdp
+  var btnJspCpw = document.getElementById('btn-jsp-changepw');
+  if(btnJspCpw) btnJspCpw.addEventListener('click',function(){ openModal('m-jsp-changepw'); });
+
+    // JSP Admin
+  var btnJspAdmin = document.getElementById('btn-jsp-admin');
+  if(btnJspAdmin) btnJspAdmin.addEventListener('click', openJspAdmin);
+  document.querySelectorAll('[data-jspadmin]').forEach(function(btn){
+    btn.addEventListener('click',function(){ switchJspaPanel(btn.dataset.jspadmin); });
+  });
 
     document.getElementById('btn-logout').addEventListener('click', doLogout);
   document.getElementById('btn-logout2').addEventListener('click', doLogout);
@@ -4002,6 +4705,457 @@ if(savedMat){
     </div>
     <button id="sb-btn-close">Fermer</button>
   </div>
+</div>
+
+<!-- APPLI JSP -->
+<div id="pg-jsp" style="display:none">
+  <div class="app">
+    <!-- Header JSP -->
+    <div class="header" style="background:var(--red)">
+      <div class="header-logo" style="height:30px;padding:2px 6px;background:rgba(255,255,255,0.15);border-radius:8px">
+        <i class="ti ti-shield-half" style="color:#fff;font-size:22px"></i>
+      </div>
+      <div class="header-info">
+        <div class="header-title" style="color:#fff">CSP LFB — JSP</div>
+        <div class="header-sub" style="color:rgba(255,255,255,0.75)" id="jsp-h-sub">—</div>
+      </div>
+      <button id="btn-jsp-logout" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;font-size:12px"><i class="ti ti-logout"></i></button>
+    </div>
+
+    <!-- Tab bar JSP -->
+    <div class="tab-bar">
+      <button class="tab active" data-jsptab="jsp-home"><i class="ti ti-home"></i>Accueil</button>
+      <button class="tab" data-jsptab="jsp-cours"><i class="ti ti-book"></i>Cours</button>
+      <button class="tab" data-jsptab="jsp-planning"><i class="ti ti-calendar"></i>Planning</button>
+      <button class="tab" data-jsptab="jsp-docs"><i class="ti ti-folder"></i>Documents</button>
+      <button class="tab" data-jsptab="jsp-profil"><i class="ti ti-user"></i>Profil</button>
+    </div>
+
+    <!-- ACCUEIL JSP -->
+    <div class="jsp-screen active" id="jsp-home">
+      <div class="section">
+        <div style="background:var(--red);border-radius:12px;padding:16px;color:#fff;margin-bottom:16px">
+          <div style="font-size:13px;opacity:0.8;margin-bottom:4px">Bienvenue</div>
+          <div style="font-size:20px;font-weight:700" id="jsp-welcome-name">—</div>
+          <div style="font-size:13px;opacity:0.8;margin-top:4px" id="jsp-welcome-grade">—</div>
+        </div>
+        <!-- Stats -->
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="jsp-stat-presences" style="color:var(--green)">—</div><div class="stat-label">Présences</div></div>
+          <div class="stat-card"><div class="stat-num" id="jsp-stat-cours" style="color:var(--blue)">—</div><div class="stat-label">Cours suivis</div></div>
+        </div>
+        <!-- Prochaine séance -->
+        <div class="section-title">Prochaine séance</div>
+        <div id="jsp-next-seance"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
+        <!-- Brevets -->
+        <div class="section-title">Mes brevets</div>
+        <div id="jsp-home-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
+      </div>
+    </div>
+
+    <!-- COURS JSP -->
+    <div class="jsp-screen" id="jsp-cours">
+      <div class="section">
+        <div class="section-title">Cours & Formations</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
+          <button class="chip active" data-jcfilter="all">Tous</button>
+          <button class="chip" data-jcfilter="secourisme">🚑 Secourisme</button>
+          <button class="chip" data-jcfilter="incendie">🔥 Incendie</button>
+          <button class="chip" data-jcfilter="sport">💪 Sport</button>
+          <button class="chip" data-jcfilter="citoyennete">🎖️ Citoyenneté</button>
+          <button class="chip" data-jcfilter="technique">🔧 Technique</button>
+          <button class="chip" data-jcfilter="autre">📋 Autre</button>
+        </div>
+        <div id="l-jsp-cours"><div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div></div>
+      </div>
+    </div>
+
+    <!-- PLANNING JSP -->
+    <div class="jsp-screen" id="jsp-planning">
+      <div class="section">
+        <div class="section-title">Planning des séances</div>
+        <div id="l-jsp-seances"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance planifiée</p></div></div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS JSP -->
+    <div class="jsp-screen" id="jsp-docs">
+      <div class="section">
+        <div class="section-title">Documents & Ressources</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px;margin-bottom:12px">
+          <button class="chip active" data-jdfilter="all">Tous</button>
+          <button class="chip" data-jdfilter="cours">📚 Cours</button>
+          <button class="chip" data-jdfilter="reglement">📜 Règlement</button>
+          <button class="chip" data-jdfilter="administratif">📋 Administratif</button>
+          <button class="chip" data-jdfilter="autre">📁 Autre</button>
+        </div>
+        <div id="l-jsp-docs"><div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div></div>
+      </div>
+    </div>
+
+    <!-- PROFIL JSP -->
+    <div class="jsp-screen" id="jsp-profil">
+      <div class="section">
+        <div style="text-align:center;padding:20px 0 12px">
+          <div style="width:64px;height:64px;background:var(--red);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+            <i class="ti ti-shield-half" style="color:#fff;font-size:32px"></i>
+          </div>
+          <div style="font-size:20px;font-weight:700" id="jsp-profil-name">—</div>
+          <div style="font-size:13px;color:var(--text2)" id="jsp-profil-grade">—</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:4px" id="jsp-profil-section">—</div>
+        </div>
+        <div class="info-grid">
+          <div class="ig-item"><label>Matricule</label><span id="jsp-profil-mat">—</span></div>
+          <div class="ig-item"><label>Entrée</label><span id="jsp-profil-entree">—</span></div>
+          <div class="ig-item"><label>Équipe</label><span id="jsp-profil-equipe">—</span></div>
+          <div class="ig-item"><label>Date naissance</label><span id="jsp-profil-ddn">—</span></div>
+        </div>
+        <div class="section-title" style="margin-top:16px">Ma progression</div>
+        <div id="jsp-profil-prog"><div class="empty"><i class="ti ti-chart-bar"></i><p>Aucune progression</p></div></div>
+        <div class="section-title" style="margin-top:16px">Mes brevets</div>
+        <div id="jsp-profil-brevets"><div class="empty"><i class="ti ti-award"></i><p>Aucun brevet</p></div></div>
+        <div style="height:16px"></div>
+        <button class="btn-s" id="btn-jsp-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETAIL COURS JSP -->
+<div class="modal-overlay" id="m-jsp-cours">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div id="jsp-cours-ico" style="font-size:32px"></div>
+      <div>
+        <div class="modal-title" id="jsp-cours-titre" style="margin-bottom:2px">—</div>
+        <div style="font-size:12px;color:var(--text2)" id="jsp-cours-cat">—</div>
+      </div>
+    </div>
+    <div class="info-grid" style="margin-bottom:12px">
+      <div class="ig-item"><label>Durée</label><span id="jsp-cours-duree">—</span></div>
+      <div class="ig-item"><label>Catégorie</label><span id="jsp-cours-cat2">—</span></div>
+    </div>
+    <div id="jsp-cours-objectifs" style="font-size:13px;color:var(--text2);margin-bottom:10px"></div>
+    <div id="jsp-cours-contenu" style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:14px;white-space:pre-wrap"></div>
+    <div id="jsp-cours-prog" style="margin-bottom:14px"></div>
+    <button class="btn-s" onclick="closeModal('m-jsp-cours')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL DETAIL SEANCE JSP -->
+<div class="modal-overlay" id="m-jsp-seance">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title" id="jsp-seance-titre">—</div>
+    <div class="info-grid" style="margin-bottom:12px">
+      <div class="ig-item"><label>Date</label><span id="jsp-seance-date">—</span></div>
+      <div class="ig-item"><label>Horaires</label><span id="jsp-seance-heure">—</span></div>
+      <div class="ig-item"><label>Lieu</label><span id="jsp-seance-lieu">—</span></div>
+      <div class="ig-item"><label>Cours lié</label><span id="jsp-seance-cours">—</span></div>
+    </div>
+    <div id="jsp-seance-desc" style="font-size:13px;color:var(--text2);margin-bottom:14px"></div>
+    <div id="jsp-seance-presences" style="margin-bottom:14px"></div>
+    <button class="btn-s" onclick="closeModal('m-jsp-seance')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL CHANGER MDP JSP -->
+<div class="modal-overlay" id="m-jsp-changepw">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Changer mon mot de passe</div>
+    <div class="form-group">
+      <label class="form-label">Nouveau mot de passe *</label>
+      <input class="form-ctrl" type="password" id="jsp-np1" placeholder="Min. 6 caractères">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirmer *</label>
+      <input class="form-ctrl" type="password" id="jsp-np2" placeholder="Répéter le mot de passe">
+    </div>
+    <div class="error-box" id="jsp-pw-err" style="display:none"></div>
+    <button class="btn-p" onclick="saveJspPw()"><i class="ti ti-check"></i>Enregistrer</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-jsp-changepw')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- LOGIN JSP -->
+<div id="pg-login-jsp" style="display:none">
+  <div class="auth-screen">
+    <div style="text-align:center;padding:40px 24px 24px">
+      <div style="width:64px;height:64px;background:var(--red);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px">
+        <i class="ti ti-shield-half" style="color:#fff;font-size:32px"></i>
+      </div>
+      <div style="font-size:22px;font-weight:700;color:var(--text)">Espace JSP</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">CSP LFB — Jeunes Sapeurs-Pompiers</div>
+    </div>
+    <div style="padding:0 24px 24px">
+      <div class="form-group">
+        <label class="form-label">Matricule JSP</label>
+        <input class="form-ctrl" type="text" id="jsp-login-mat" placeholder="Votre matricule" inputmode="numeric">
+      </div>
+      <div class="form-group" id="jsp-pw-grp" style="display:none">
+        <label class="form-label">Mot de passe</label>
+        <input class="form-ctrl" type="password" id="jsp-login-pw" placeholder="Mot de passe">
+      </div>
+      <div class="error-box" id="jsp-login-err" style="display:none"></div>
+      <button class="btn-p" id="btn-jsp-login"><i class="ti ti-arrow-right"></i><span id="btn-jsp-login-txt">Continuer</span></button>
+      <div style="height:10px"></div>
+      <button class="btn-s" id="btn-back-login" style="font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i>Retour</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GESTION JSP ADMIN -->
+<div class="modal-overlay" id="m-jsp-admin">
+  <div class="modal" style="max-height:90vh"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">🛡️ Gestion JSP</div>
+
+    <!-- Sous-nav -->
+    <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:14px">
+      <button class="chip active" data-jspadmin="jspa-jsp">👤 JSP</button>
+      <button class="chip" data-jspadmin="jspa-cours">📚 Cours</button>
+      <button class="chip" data-jspadmin="jspa-seances">📅 Séances</button>
+      <button class="chip" data-jspadmin="jspa-docs">📁 Documents</button>
+    </div>
+
+    <!-- Panel JSP -->
+    <div id="jspa-jsp" class="jspa-panel">
+      <button class="btn-p" onclick="openModal('m-new-jsp')" style="margin-bottom:12px"><i class="ti ti-plus"></i>Créer un JSP</button>
+      <div id="l-jspa-jsp"><div class="empty"><i class="ti ti-shield-half"></i><p>Aucun JSP</p></div></div>
+    </div>
+
+    <!-- Panel Cours -->
+    <div id="jspa-cours" class="jspa-panel" style="display:none">
+      <button class="btn-p" onclick="openModal('m-new-jsp-cours')" style="margin-bottom:12px"><i class="ti ti-plus"></i>Créer un cours</button>
+      <div id="l-jspa-cours"><div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div></div>
+    </div>
+
+    <!-- Panel Séances -->
+    <div id="jspa-seances" class="jspa-panel" style="display:none">
+      <button class="btn-p" onclick="openModal('m-new-jsp-seance')" style="margin-bottom:12px"><i class="ti ti-plus"></i>Planifier une séance</button>
+      <div id="l-jspa-seances"><div class="empty"><i class="ti ti-calendar"></i><p>Aucune séance</p></div></div>
+    </div>
+
+    <!-- Panel Documents -->
+    <div id="jspa-docs" class="jspa-panel" style="display:none">
+      <button class="btn-p" onclick="openModal('m-new-jsp-doc')" style="margin-bottom:12px"><i class="ti ti-plus"></i>Ajouter un document</button>
+      <div id="l-jspa-docs"><div class="empty"><i class="ti ti-folder"></i><p>Aucun document</p></div></div>
+    </div>
+
+    <div style="height:8px"></div>
+    <button class="btn-s" onclick="closeModal('m-jsp-admin')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVEAU JSP -->
+<div class="modal-overlay" id="m-new-jsp">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un JSP</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Prénom *</label>
+        <input class="form-ctrl" type="text" id="njsp-prenom" placeholder="Jean">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom *</label>
+        <input class="form-ctrl" type="text" id="njsp-nom" placeholder="Dupont">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Matricule *</label>
+        <input class="form-ctrl" type="text" id="njsp-mat" placeholder="JSP001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Grade</label>
+        <select class="form-ctrl" id="njsp-grade">
+          <option value="JSP1">JSP 1</option>
+          <option value="JSP2">JSP 2</option>
+          <option value="JSP3">JSP 3</option>
+          <option value="JSP4">JSP 4</option>
+          <option value="Moniteur">Moniteur</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date naissance</label>
+        <input class="form-ctrl" type="date" id="njsp-ddn">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date entrée</label>
+        <input class="form-ctrl" type="date" id="njsp-entree">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Section</label>
+        <input class="form-ctrl" type="text" id="njsp-section" placeholder="Section A">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Équipe</label>
+        <input class="form-ctrl" type="text" id="njsp-equipe" placeholder="Équipe 1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact parent (nom)</label>
+      <input class="form-ctrl" type="text" id="njsp-parent-nom" placeholder="Nom du parent">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact parent (tél)</label>
+      <input class="form-ctrl" type="tel" id="njsp-parent-tel" placeholder="06 12 34 56 78">
+    </div>
+    <div style="background:var(--bg2);border-radius:8px;padding:10px;font-size:12px;color:var(--text2);margin-bottom:12px">
+      <i class="ti ti-info-circle" style="color:var(--red)"></i>
+      Mot de passe provisoire : <strong>matricule + 2026</strong>
+    </div>
+    <div class="error-box" id="njsp-err" style="display:none"></div>
+    <button class="btn-p" onclick="createJsp()"><i class="ti ti-user-plus"></i>Créer le JSP</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-jsp')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVEAU COURS JSP -->
+<div class="modal-overlay" id="m-new-jsp-cours">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Créer un cours</div>
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="njc-titre" placeholder="Ex: Gestes de premiers secours">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Catégorie</label>
+        <select class="form-ctrl" id="njc-cat">
+          <option value="secourisme">🚑 Secourisme</option>
+          <option value="incendie">🔥 Incendie</option>
+          <option value="sport">💪 Sport</option>
+          <option value="citoyennete">🎖️ Citoyenneté</option>
+          <option value="technique">🔧 Technique</option>
+          <option value="autre">📋 Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Durée (min)</label>
+        <input class="form-ctrl" type="number" id="njc-duree" placeholder="60" min="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Objectifs</label>
+      <textarea class="form-ctrl" id="njc-objectifs" rows="2" placeholder="Objectifs pédagogiques..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contenu / Points abordés</label>
+      <textarea class="form-ctrl" id="njc-contenu" rows="4" placeholder="Détail des sujets abordés..."></textarea>
+    </div>
+    <button class="btn-p" onclick="createJspCours()"><i class="ti ti-book"></i>Créer le cours</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-jsp-cours')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVELLE SEANCE JSP -->
+<div class="modal-overlay" id="m-new-jsp-seance">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Planifier une séance</div>
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="njs-titre" placeholder="Ex: Séance secourisme #3">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Date *</label>
+        <input class="form-ctrl" type="date" id="njs-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cours lié</label>
+        <select class="form-ctrl" id="njs-cours">
+          <option value="">— Aucun —</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <div class="form-group">
+        <label class="form-label">Heure début</label>
+        <input class="form-ctrl" type="time" id="njs-debut" value="09:00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heure fin</label>
+        <input class="form-ctrl" type="time" id="njs-fin" value="12:00">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Lieu</label>
+      <input class="form-ctrl" type="text" id="njs-lieu" placeholder="Ex: Caserne CSP LFB">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-ctrl" id="njs-desc" rows="2" placeholder="Détails de la séance..."></textarea>
+    </div>
+    <button class="btn-p" onclick="createJspSeance()"><i class="ti ti-calendar-plus"></i>Planifier</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-jsp-seance')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL NOUVEAU DOCUMENT JSP -->
+<div class="modal-overlay" id="m-new-jsp-doc">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">Ajouter un document</div>
+    <div class="form-group">
+      <label class="form-label">Titre *</label>
+      <input class="form-ctrl" type="text" id="njd-titre" placeholder="Ex: Fiche secourisme PSC1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Catégorie</label>
+      <select class="form-ctrl" id="njd-cat">
+        <option value="cours">📚 Cours</option>
+        <option value="reglement">📜 Règlement</option>
+        <option value="administratif">📋 Administratif</option>
+        <option value="autre">📁 Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-ctrl" id="njd-desc" rows="2" placeholder="Description du document..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fichier *</label>
+      <input class="form-ctrl" type="file" id="njd-fichier" accept=".pdf,.doc,.docx,.ppt,.pptx,image/*">
+    </div>
+    <div class="error-box" id="njd-err" style="display:none"></div>
+    <button class="btn-p" onclick="createJspDoc()"><i class="ti ti-upload"></i>Publier</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-new-jsp-doc')">Annuler</button>
+  </div></div>
+</div>
+
+<!-- MODAL DETAIL JSP (admin) -->
+<div class="modal-overlay" id="m-jsp-detail-admin">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:44px;height:44px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i class="ti ti-shield-half" style="color:#fff;font-size:22px"></i>
+      </div>
+      <div>
+        <div class="modal-title" id="jad-name" style="margin-bottom:2px">—</div>
+        <div style="font-size:12px;color:var(--text2)" id="jad-grade">—</div>
+      </div>
+    </div>
+    <div class="info-grid" style="margin-bottom:14px">
+      <div class="ig-item"><label>Matricule</label><span id="jad-mat">—</span></div>
+      <div class="ig-item"><label>Date naissance</label><span id="jad-ddn">—</span></div>
+      <div class="ig-item"><label>Section</label><span id="jad-section">—</span></div>
+      <div class="ig-item"><label>Équipe</label><span id="jad-equipe">—</span></div>
+      <div class="ig-item"><label>Contact parent</label><span id="jad-parent">—</span></div>
+      <div class="ig-item"><label>Entrée</label><span id="jad-entree">—</span></div>
+    </div>
+    <div id="jad-presences" style="margin-bottom:12px"></div>
+    <button class="btn-s" id="jad-reset-pw" style="font-size:13px"><i class="ti ti-key"></i>Réinitialiser MDP</button>
+    <div style="height:7px"></div>
+    <button class="btn-s" onclick="closeModal('m-jsp-detail-admin')">Fermer</button>
+  </div></div>
 </div>
 </body>
 </html>
