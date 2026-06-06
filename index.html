@@ -2,6 +2,12 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CSP LFB">
+<meta name="theme-color" content="#C0392B">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -537,6 +543,8 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </div>
     </div>
     <div class="section" style="padding-top:0">
+      <button class="btn-s" onclick="openModal('m-pwa')" style="border-color:#C0392B;color:#C0392B"><i class="ti ti-device-mobile"></i>Installer l'application</button>
+      <div style="height:8px"></div>
       <button class="btn-s" id="btn-changepw"><i class="ti ti-lock"></i>Changer mon mot de passe</button>
       <div style="height:9px"></div>
       <button class="btn-s" id="btn-logout2" style="color:#DC2626;border-color:#DC2626"><i class="ti ti-logout"></i>Se déconnecter</button>
@@ -2725,6 +2733,12 @@ async function checkSession(){
 // Vérifier la session toutes les 30 minutes
 setInterval(checkSession, 30 * 60 * 1000);
 
+
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
@@ -3038,6 +3052,53 @@ if(savedMat){
     <div id="aps-d-actions" style="display:flex;flex-direction:column;gap:8px"></div>
     <div style="height:7px"></div>
     <button class="btn-s" onclick="closeModal('m-detail-aps')">Fermer</button>
+  </div></div>
+</div>
+
+<!-- MODAL INSTALLER L'APP -->
+<div class="modal-overlay" id="m-pwa">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-inner">
+    <div class="modal-title">📱 Installer l'application</div>
+    <div class="modal-sub">Accédez à CSP LFB depuis votre écran d'accueil</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin:16px 0">
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="width:36px;height:36px;background:#C0392B;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:#fff;font-weight:700;font-size:16px">1</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Appuyez sur Partager</div>
+          <div style="font-size:13px;color:var(--text2)">Bouton <strong>⬆️</strong> en bas de Safari</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="width:36px;height:36px;background:#C0392B;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:#fff;font-weight:700;font-size:16px">2</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Sur l'écran d'accueil</div>
+          <div style="font-size:13px;color:var(--text2)">Défilez vers le bas dans le menu partage</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <div style="width:36px;height:36px;background:#C0392B;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="color:#fff;font-weight:700;font-size:16px">3</span>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px">Appuyez sur Ajouter</div>
+          <div style="font-size:13px;color:var(--text2)">L'icône CSP LFB apparaît sur votre écran</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);margin-bottom:16px">
+      <i class="ti ti-info-circle" style="color:var(--red)"></i>
+      L'application fonctionnera <strong>sans barre Safari</strong> et s'ouvrira directement en plein écran.
+    </div>
+
+    <button class="btn-s" onclick="closeModal('m-pwa')">Fermer</button>
   </div></div>
 </div>
 </body>
