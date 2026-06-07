@@ -1511,25 +1511,7 @@ async function initApp(){
 }
 
 function showView(role){
-  var isJsp = (role==='jsp' || role==='responsable_jsp');
-
-  // Masquer/afficher les onglets selon le rôle
-  var tabsToHide = isJsp ? ['sc-home','sc-gardes','sc-sdis'] : ['sc-jsp'];
-  var tabsToShow = isJsp ? ['sc-jsp'] : [];
-
-  // Masquer onglets non pertinents
-  ['sc-home','sc-gardes','sc-sdis','sc-jsp'].forEach(function(tabId){
-    var btn = document.querySelector('[data-tab="'+tabId+'"]');
-    if(btn){
-      if(tabsToHide.includes(tabId)) btn.style.display='none';
-      else if(tabsToShow.includes(tabId)) btn.style.display='';
-      else btn.style.display='';
-    }
-  });
-
-  // Afficher/masquer onglet JSP
-  var tabJsp = document.getElementById('tab-jsp');
-  if(tabJsp) tabJsp.style.display = isJsp ? '' : 'none';
+  var isJsp = (role==='jsp'||role==='responsable_jsp');
 
   // Vues EPI
   ['v-sp','v-resp','v-hab','v-admin'].forEach(function(v){
@@ -4520,20 +4502,15 @@ function updateDrawer(){
   var tabSdis = document.getElementById('drawer-tab-sdis');
   var drawerBtnEpi = document.querySelector('[data-drawer-tab="sc-home"]');
 
-  // JSP : visible si accès jsp OU super admin OU rôle jsp
+  // Modules visibles selon rôle et compétences
   var hasJsp = isSuperAdmin || isAdmin || isJsp || (user.acces && user.acces.jsp);
+  var hasEpi = !isJsp;
+  var hasGardes = !isJsp;
+  var hasSdis = !isJsp;
 
-  if(isJsp){
-    // Rôle JSP : masquer EPI/Gardes/SDIS
-    if(drawerBtnEpi) drawerBtnEpi.style.display='none';
-    if(tabGardes) tabGardes.style.display='none';
-    if(tabSdis) tabSdis.style.display='none';
-  } else {
-    if(drawerBtnEpi) drawerBtnEpi.style.display='';
-    if(tabGardes) tabGardes.style.display='';
-    if(tabSdis) tabSdis.style.display='';
-  }
-  // JSP toujours visible si droits
+  if(drawerBtnEpi) drawerBtnEpi.style.display = hasEpi ? '' : 'none';
+  if(tabGardes) tabGardes.style.display = hasGardes ? '' : 'none';
+  if(tabSdis) tabSdis.style.display = hasSdis ? '' : 'none';
   if(tabJsp) tabJsp.style.display = hasJsp ? '' : 'none';
 
   // Section admin (changer de vue)
