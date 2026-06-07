@@ -1481,8 +1481,8 @@ function doLogout(){
     document.getElementById('l-mat').value='';
   }
   document.getElementById('l-pw').value='';
-  document.getElementById('pw-grp').style.display='none';
-  document.getElementById('btn-login-txt').textContent='Continuer';
+  var _pwg=document.getElementById('pw-grp'); if(_pwg) _pwg.style.display='none';
+  var _blt=document.getElementById('btn-login-txt'); if(_blt) _blt.textContent='Continuer';
   hideErr('login-err');
   showPage('pg-login');
 }
@@ -1824,9 +1824,12 @@ function renderCatalog(q){
 }
 
 function renderProfile(){
-  document.getElementById('ps-tot').textContent=demandes.length;
-  document.getElementById('ps-ok').textContent=demandes.filter(d=>['approuve_habillement','expedie'].includes(d.statut)).length;
-  document.getElementById('ps-en').textContent=demandes.filter(d=>['en_attente','valide_responsable'].includes(d.statut)).length;
+  var psTot = document.getElementById('ps-tot');
+  var psOk  = document.getElementById('ps-ok');
+  var psEn  = document.getElementById('ps-en');
+  if(psTot) psTot.textContent = demandes.length;
+  if(psOk)  psOk.textContent  = demandes.filter(d=>['approuve_habillement','expedie'].includes(d.statut)).length;
+  if(psEn)  psEn.textContent  = demandes.filter(d=>['en_attente','valide_responsable'].includes(d.statut)).length;
   renderMembres();
 }
 
