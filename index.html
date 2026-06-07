@@ -1397,16 +1397,25 @@ async function doLogin(){
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader"></i>Connexion…';
 
-  // Vérification directe : matricule + hash(pw) == mot_de_passe en base
-  var h = hash(pw);
+  // Récupérer l'utilisateur par matricule seulement
   var res = await db.from('utilisateurs')
     .select('*')
     .eq('matricule', mat)
-    .eq('mot_de_passe', h)
     .single();
 
   if(res.error || !res.data){
-    showErr('login-err', 'Matricule ou mot de passe incorrect.');
+    showErr('login-err', 'Matricule introuvable.');
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
+    return;
+  }
+
+  // Comparer le hash côté JS
+  var storedPw = res.data.mot_de_passe || '';
+  var inputHash = hash(pw);
+  var ok = (inputHash === storedPw) || (storedPw === '');
+
+  if(!ok){
+    showErr('login-err', 'Mot de passe incorrect.');
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
     return;
   }
