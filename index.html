@@ -1454,20 +1454,6 @@ async function doFirstLogin(){
   initApp();
 }
 
-async function saveNewPw(){
-  const p1=document.getElementById('np-1').value;
-  const p2=document.getElementById('np-2').value;
-  if(p1.length<6){showErr('newpw-err','Minimum 6 caractères.');return;}
-  if(p1!==p2){showErr('newpw-err','Les mots de passe ne correspondent pas.');return;}
-  const btn=document.getElementById('btn-newpw');
-  btn.disabled=true;
-  const {error}=await db.from('utilisateurs').update({mot_de_passe:hash(p1),premiere_connexion:false}).eq('id',user.id);
-  btn.disabled=false;
-  if(error){showErr('newpw-err','Erreur : '+error.message);return;}
-  user.mot_de_passe=hash(p1); user.premiere_connexion=false;
-  toast('Mot de passe créé ✓');
-  showPage('pg-app'); initApp();
-}
 
 function doLogout(){
   user=null; simRole=null; loginStep=1; loginUserData=null;
@@ -4831,7 +4817,7 @@ if(savedMat){
   document.getElementById('l-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
   // Nouveau mot de passe
-  document.getElementById('btn-newpw').addEventListener('click', saveNewPw);
+  // btn-newpw supprimé
 
   // Logout
   // Super admin
