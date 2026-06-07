@@ -1386,42 +1386,48 @@ async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
   const pw  = document.getElementById('l-pw').value;
   const btn = document.getElementById('btn-login');
+  const errEl = document.getElementById('login-err');
   if(!mat){ showErr('login-err','Matricule obligatoire.'); return; }
   if(!pw){  showErr('login-err','Mot de passe obligatoire.'); return; }
-  document.getElementById('login-err').style.display='none';
-  btn.disabled=true;
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Connexion…';
 
   try {
-    // Appel RPC avec la fonction login_utilisateur (crypt côté Postgres)
-    const resp = await fetch('https://qbvzdaagagwyszuoftkf.supabase.co/rest/v1/rpc/login_utilisateur', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs'
-      },
-      body: JSON.stringify({ p_matricule: mat, p_password: pw })
+    // Étape 1 : récupérer l'utilisateur
+    const {data, error} = await db
+      .from('utilisateurs')
+      .select('*')
+      .eq('matricule', mat)
+      .single();
+
+    if(error || !data){
+      showErr('login-err', 'Matricule introuvable.');
+      btn.disabled = false; btn.textContent = 'Se connecter';
+      return;
+    }
+
+    // Étape 2 : vérifier le mot de passe avec la fonction SQL
+    const {data: ok, error: verifyErr} = await db.rpc('verify_password', {
+      input_password: pw,
+      hashed_password: data.mot_de_passe
     });
-    const result = await resp.json();
-    if(!resp.ok || !result || (Array.isArray(result) && result.length===0)){
-      showErr('login-err','Matricule ou mot de passe incorrect.');
-      btn.disabled=false;
+
+    if(verifyErr || !ok){
+      showErr('login-err', 'Mot de passe incorrect.');
+      btn.disabled = false; btn.textContent = 'Se connecter';
       return;
     }
-    // result peut être un tableau ou un objet direct
-    const userData = Array.isArray(result) ? result[0] : result;
-    if(!userData || !userData.matricule){
-      showErr('login-err','Erreur lors de la connexion. Réessayez.');
-      btn.disabled=false;
-      return;
-    }
-    user = userData;
-    btn.disabled=false;
+
+    // Succès
+    user = data;
+    btn.disabled = false; btn.textContent = 'Se connecter';
     localStorage.setItem('sdis_mat', mat);
     await initApp();
+
   } catch(e) {
-    showErr('login-err','Erreur de connexion. Réessayez.');
-    btn.disabled=false;
+    showErr('login-err', 'Erreur réseau. Réessayez.');
+    btn.disabled = false; btn.textContent = 'Se connecter';
   }
 }
 
