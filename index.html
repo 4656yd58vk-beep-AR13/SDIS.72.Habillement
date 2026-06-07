@@ -1397,6 +1397,7 @@ async function doLogin(){
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader"></i>Connexion…';
 
+  // Récupérer l'utilisateur
   var res = await db.from('utilisateurs').select('*').eq('matricule', mat).single();
   if(res.error || !res.data){
     showErr('login-err', 'Matricule introuvable.');
@@ -1404,18 +1405,34 @@ async function doLogin(){
     return;
   }
 
-  var rpc = await db.rpc('verify_password', {
-    input_password: pw,
-    hashed_password: res.data.mot_de_passe
-  });
+  var data = res.data;
+  var storedPw = data.mot_de_passe || '';
 
-  if(rpc.error || rpc.data !== true){
+  // Vérification : essayer d'abord verify_password (bcrypt), sinon hash JS local
+  var ok = false;
+
+  // Tentative 1 : verify_password RPC (bcrypt)
+  if(storedPw.startsWith('$2')) {
+    var rpc = await db.rpc('verify_password', {
+      input_password: pw,
+      hashed_password: storedPw
+    });
+    ok = (rpc.data === true);
+  }
+
+  // Tentative 2 : hash JS local (ancien système)
+  if(!ok && hash(pw) === storedPw) ok = true;
+
+  // Tentative 3 : comparaison directe (comptes test sans mdp)
+  if(!ok && storedPw === '') ok = true;
+
+  if(!ok){
     showErr('login-err', 'Mot de passe incorrect.');
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
     return;
   }
 
-  user = res.data;
+  user = data;
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
   localStorage.setItem('sdis_mat', mat);
   await initApp();
