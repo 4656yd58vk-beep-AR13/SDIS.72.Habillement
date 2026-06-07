@@ -2964,10 +2964,17 @@ async function saveDotation(){
   }
 }
 
+var rtChannel = null;
 function subscribeRT(){
-  db.channel('rt').on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async()=>await loadAll())
-    .on('postgres_changes',{event:'*',schema:'public',table:'equipements'},async()=>await loadAll())
-    .subscribe();
+  if(rtChannel){
+    try { db.removeChannel(rtChannel); } catch(e){}
+    rtChannel = null;
+  }
+  var ch = db.channel('rt-main');
+  ch.on('postgres_changes',{event:'*',schema:'public',table:'demandes'},async function(){ await loadAll(); });
+  ch.on('postgres_changes',{event:'*',schema:'public',table:'equipements'},async function(){ await loadAll(); });
+  ch.subscribe();
+  rtChannel = ch;
 }
 
 
