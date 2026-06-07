@@ -1408,10 +1408,17 @@ async function doLogin(){
       btn.disabled=false;
       return;
     }
-    user = Array.isArray(result) ? result[0] : result;
+    // result peut être un tableau ou un objet direct
+    const userData = Array.isArray(result) ? result[0] : result;
+    if(!userData || !userData.matricule){
+      showErr('login-err','Erreur lors de la connexion. Réessayez.');
+      btn.disabled=false;
+      return;
+    }
+    user = userData;
     btn.disabled=false;
     localStorage.setItem('sdis_mat', mat);
-    initApp();
+    await initApp();
   } catch(e) {
     showErr('login-err','Erreur de connexion. Réessayez.');
     btn.disabled=false;
