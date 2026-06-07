@@ -4520,18 +4520,21 @@ function updateDrawer(){
   var tabSdis = document.getElementById('drawer-tab-sdis');
   var drawerBtnEpi = document.querySelector('[data-drawer-tab="sc-home"]');
 
+  // JSP : visible si accès jsp OU super admin OU rôle jsp
+  var hasJsp = isSuperAdmin || isJsp || (user.acces && user.acces.jsp);
+
   if(isJsp){
+    // Rôle JSP : masquer EPI/Gardes/SDIS
     if(drawerBtnEpi) drawerBtnEpi.style.display='none';
     if(tabGardes) tabGardes.style.display='none';
-    if(tabJsp) tabJsp.style.display='';
     if(tabSdis) tabSdis.style.display='none';
   } else {
     if(drawerBtnEpi) drawerBtnEpi.style.display='';
     if(tabGardes) tabGardes.style.display='';
-    // Super admin voit toujours le module JSP
-    if(tabJsp) tabJsp.style.display = isSuperAdmin ? '' : 'none';
     if(tabSdis) tabSdis.style.display='';
   }
+  // JSP toujours visible si droits
+  if(tabJsp) tabJsp.style.display = hasJsp ? '' : 'none';
 
   // Section admin (changer de vue)
   var hasAdminViews = (user.role==='admin'||user.role==='responsable_caserne'||user.role==='habillement');
