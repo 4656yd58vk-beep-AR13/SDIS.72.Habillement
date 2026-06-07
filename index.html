@@ -1399,32 +1399,29 @@ async function doLogin(){
   btn.innerHTML = '<i class="ti ti-loader"></i>Connexion…';
 
   // 1. Récupérer l'utilisateur
-  var res1 = await db.from('utilisateurs').select('*').eq('matricule', mat).single();
-  if(res1.error || !res1.data){
+  var res = await db.from('utilisateurs').select('*').eq('matricule', mat).single();
+  if(res.error || !res.data){
     showErr('login-err', 'Matricule introuvable.');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
     return;
   }
-  var data = res1.data;
 
   // 2. Vérifier le mot de passe
-  var res2 = await db.rpc('verify_password', {
+  var rpc = await db.rpc('verify_password', {
     input_password: pw,
-    hashed_password: data.mot_de_passe
+    hashed_password: res.data.mot_de_passe
   });
 
-  if(res2.error || !res2.data){
-    showErr('login-err', 'Mot de passe incorrect.');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
+  // Afficher exactement ce que retourne la RPC pour diagnostiquer
+  if(rpc.error || rpc.data !== true){
+    showErr('login-err', 'Erreur: data=' + JSON.stringify(rpc.data) + ' / err=' + (rpc.error ? rpc.error.message : 'null'));
+    btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
     return;
   }
 
   // 3. Succès
-  user = data;
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
+  user = res.data;
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
   localStorage.setItem('sdis_mat', mat);
   await initApp();
 }
