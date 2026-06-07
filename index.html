@@ -1305,7 +1305,12 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <script>
 const SUPA_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs';
-const db = supabase.createClient(SUPA_URL, SUPA_KEY);
+let db;
+try {
+  db = supabase.createClient(SUPA_URL, SUPA_KEY);
+} catch(e) {
+  console.error('Supabase init error:', e);
+}
 
 const ADMIN_MAT = '400557';
 
@@ -1426,7 +1431,7 @@ async function doLogin(){
     await initApp();
 
   } catch(e) {
-    showErr('login-err', 'Erreur réseau. Réessayez.');
+    showErr('login-err', 'Erreur: ' + (e && e.message ? e.message : String(e)));
     btn.disabled = false; btn.textContent = 'Se connecter';
   }
 }
