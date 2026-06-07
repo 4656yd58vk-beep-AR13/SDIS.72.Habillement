@@ -629,6 +629,11 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </div>
     </div>
 
+    <!-- Bouton admin JSP (resp + SA) -->
+    <div id="jsp-admin-bar" style="display:none;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
+      <button class="btn-p" onclick="openJspAdmin()" style="width:100%;padding:10px"><i class="ti ti-settings"></i>Gérer les JSP, cours et séances</button>
+    </div>
+
     <!-- ACCUEIL JSP -->
     <div id="jsp-home" class="jsp-panel">
       <div class="section">
@@ -878,7 +883,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
         <button class="chip active" data-paramtab="param-general">⚙️ Général</button>
         <button class="chip" data-paramtab="param-droits" id="param-tab-droits" style="display:none">🔐 Droits</button>
         <button class="chip" data-paramtab="param-users" id="param-tab-users" style="display:none">👥 Utilisateurs</button>
-        <button class="chip" data-paramtab="param-jsp-admin" id="param-tab-jsp" style="display:none">🛡️ JSP</button>
+
       </div>
     </div>
 
@@ -944,30 +949,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </div>
     </div>
 
-    <!-- JSP Admin -->
-    <div id="param-jsp-admin" class="param-panel" style="display:none">
-      <div class="section">
-        <button class="btn-p" onclick="openJspAdmin()" style="margin-bottom:12px"><i class="ti ti-shield-half"></i>Gérer les JSP</button>
-        <div class="section-title">Fonctionnalités JSP</div>
-        <div class="card" style="padding:0 14px">
-          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
-            <div style="font-size:24px;width:40px;text-align:center">👤</div>
-            <div class="req-info"><div class="req-name">Créer un JSP</div><div class="req-detail">Ajouter un jeune sapeur-pompier</div></div>
-            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
-          </div>
-          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
-            <div style="font-size:24px;width:40px;text-align:center">📚</div>
-            <div class="req-info"><div class="req-name">Gérer les cours</div><div class="req-detail">Créer et organiser les formations</div></div>
-            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
-          </div>
-          <div class="req-row" style="cursor:pointer" onclick="openJspAdmin()">
-            <div style="font-size:24px;width:40px;text-align:center">📅</div>
-            <div class="req-info"><div class="req-name">Planning</div><div class="req-detail">Planifier les séances</div></div>
-            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
-          </div>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <!-- STATS -->
@@ -4290,6 +4272,11 @@ function switchJspPanel(id){
 
 async function initJspScreen(){
   if(!user) return;
+  var adminBar = document.getElementById('jsp-admin-bar');
+  if(adminBar){
+    var canAdmin = user.super_admin || (user.acces&&user.acces.jsp_responsable);
+    adminBar.style.display = canAdmin ? 'block' : 'none';
+  }
   // Welcome
   var grade = user.grade ? (JSP_GRADES[user.grade]||user.grade) : (ROLE_LABELS[user.role]||user.role);
   var wname = document.getElementById('jsp-welcome-name');
