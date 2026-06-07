@@ -4521,7 +4521,7 @@ function updateDrawer(){
   var drawerBtnEpi = document.querySelector('[data-drawer-tab="sc-home"]');
 
   // JSP : visible si accès jsp OU super admin OU rôle jsp
-  var hasJsp = isSuperAdmin || isJsp || (user.acces && user.acces.jsp);
+  var hasJsp = isSuperAdmin || isAdmin || isJsp || (user.acces && user.acces.jsp);
 
   if(isJsp){
     // Rôle JSP : masquer EPI/Gardes/SDIS
