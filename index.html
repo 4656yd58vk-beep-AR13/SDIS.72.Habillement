@@ -1391,26 +1391,36 @@ async function doLogin(){
   document.getElementById('login-err').style.display='none';
   btn.disabled=true;
 
-  // Authentification via RPC login_utilisateur
-  const {data, error} = await db.rpc('login_utilisateur', {
-    p_matricule: mat,
-    p_password: pw
+  // 1. Récupérer le compte
+  const {data, error} = await db
+    .from('utilisateurs')
+    .select('*')
+    .eq('matricule', mat)
+    .single();
+
+  if(error || !data){
+    showErr('login-err','Matricule introuvable.');
+    btn.disabled=false;
+    return;
+  }
+
+  // 2. Vérifier le mot de passe avec verify_password (crypt côté Postgres)
+  const {data:pwOk, error:pwErr} = await db.rpc('verify_password', {
+    input_password: pw,
+    hashed_password: data.mot_de_passe
   });
 
-  console.log('RPC result:', data, 'error:', error);
-
-  if(error || !data || data.length === 0){
-    showErr('login-err','Matricule ou mot de passe incorrect.');
+  if(pwErr || !pwOk){
+    showErr('login-err','Mot de passe incorrect.');
     btn.disabled=false;
     return;
   }
 
   btn.disabled=false;
-  user = Array.isArray(data) ? data[0] : data;
+  user = data;
   localStorage.setItem('sdis_mat', mat);
   initApp();
 }
-
 
 
 async function doFirstLogin(){
