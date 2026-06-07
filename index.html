@@ -1391,14 +1391,12 @@ async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
   const pw  = document.getElementById('l-pw').value;
   const btn = document.getElementById('btn-login');
-  const errEl = document.getElementById('login-err');
-  errEl.style.display = 'none';
+  document.getElementById('login-err').style.display = 'none';
   if(!mat){ showErr('login-err','Matricule obligatoire.'); return; }
   if(!pw){  showErr('login-err','Mot de passe obligatoire.'); return; }
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader"></i>Connexion…';
 
-  // 1. Récupérer l'utilisateur
   var res = await db.from('utilisateurs').select('*').eq('matricule', mat).single();
   if(res.error || !res.data){
     showErr('login-err', 'Matricule introuvable.');
@@ -1406,20 +1404,17 @@ async function doLogin(){
     return;
   }
 
-  // 2. Vérifier le mot de passe
   var rpc = await db.rpc('verify_password', {
     input_password: pw,
     hashed_password: res.data.mot_de_passe
   });
 
-  // Afficher exactement ce que retourne la RPC pour diagnostiquer
   if(rpc.error || rpc.data !== true){
-    showErr('login-err', 'Erreur: data=' + JSON.stringify(rpc.data) + ' / err=' + (rpc.error ? rpc.error.message : 'null'));
+    showErr('login-err', 'Mot de passe incorrect.');
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
     return;
   }
 
-  // 3. Succès
   user = res.data;
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
   localStorage.setItem('sdis_mat', mat);
