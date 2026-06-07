@@ -212,18 +212,23 @@ textarea.form-ctrl{resize:none;line-height:1.5}
     <div class="auth-sub">Espace numérique des pompiers</div>
     <div class="auth-card">
       <div class="auth-card-title">Connexion</div>
-      <div class="auth-card-sub">Entrez votre matricule</div>
       <div class="error-box" id="login-err"></div>
       <div class="form-group">
         <label class="form-label">Matricule</label>
-        <input class="form-ctrl" id="l-mat" placeholder="Ex: 400557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px;letter-spacing:0.05em">
+        <input class="form-ctrl" id="l-mat" placeholder="Ex: 400557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px;letter-spacing:0.05em" inputmode="numeric">
       </div>
-      <div class="form-group" id="pw-grp" style="display:none">
+      <div class="form-group">
         <label class="form-label">Mot de passe</label>
-        <div style="position:relative"><input class="form-ctrl" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px"><button type="button" onclick="togglePw('l-pw',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div>
+        <div style="position:relative">
+          <input class="form-ctrl" id="l-pw" type="password" placeholder="Votre mot de passe" style="font-size:16px">
+          <button type="button" onclick="togglePw('l-pw',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button>
+        </div>
       </div>
-      <button class="btn-p" id="btn-login"><i class="ti ti-login"></i><span id="btn-login-txt">Continuer</span></button>
-
+      <button class="btn-p" id="btn-login" style="margin-top:4px"><i class="ti ti-login"></i>Se connecter</button>
+      <div style="height:10px"></div>
+      <button class="btn-s" id="btn-goto-first-login" style="font-size:13px;color:var(--text2);border-color:var(--border)">
+        <i class="ti ti-key"></i>Première connexion
+      </button>
     </div>
   </div>
 </div>
@@ -232,21 +237,38 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <div class="app" id="pg-newpw" style="display:none">
   <div class="auth-screen">
     <div class="auth-logo"><img id="logo-newpw" src="" alt="SDIS 72"></div>
-    <div class="auth-title">Bienvenue !</div>
+    <div class="auth-title">Première connexion</div>
     <div class="auth-sub">Créez votre mot de passe personnel</div>
     <div class="auth-card">
-      <div class="auth-card-title">Nouveau mot de passe</div>
-      <div class="auth-card-sub">Minimum 6 caractères</div>
       <div class="error-box" id="newpw-err"></div>
       <div class="form-group">
-        <label class="form-label">Mot de passe</label>
-        <div style="position:relative"><input class="form-ctrl" id="np-1" type="password" placeholder="Minimum 6 caractères" style="font-size:16px"><button type="button" onclick="togglePw('np-1',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div>
+        <label class="form-label">Matricule</label>
+        <input class="form-ctrl" id="fp-mat" placeholder="Ex: 400557" autocomplete="off" autocorrect="off" spellcheck="false" style="font-size:16px" inputmode="numeric">
       </div>
       <div class="form-group">
-        <label class="form-label">Confirmer</label>
-        <div style="position:relative"><input class="form-ctrl" id="np-2" type="password" placeholder="Répétez le mot de passe" style="font-size:16px"><button type="button" onclick="togglePw('np-2',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button></div>
+        <label class="form-label">Mot de passe provisoire</label>
+        <div style="position:relative">
+          <input class="form-ctrl" id="fp-tmp" type="password" placeholder="Matricule + 2026" style="font-size:16px">
+          <button type="button" onclick="togglePw('fp-tmp',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button>
+        </div>
       </div>
-      <button class="btn-p" id="btn-newpw"><i class="ti ti-check"></i>Enregistrer</button>
+      <div class="form-group">
+        <label class="form-label">Nouveau mot de passe</label>
+        <div style="position:relative">
+          <input class="form-ctrl" id="fp-new1" type="password" placeholder="Min. 6 caractères" style="font-size:16px">
+          <button type="button" onclick="togglePw('fp-new1',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <div style="position:relative">
+          <input class="form-ctrl" id="fp-new2" type="password" placeholder="Répéter le mot de passe" style="font-size:16px">
+          <button type="button" onclick="togglePw('fp-new2',this)" tabindex="-1" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);font-size:19px;line-height:1;padding:4px"><i class="ti ti-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn-p" id="btn-set-pw"><i class="ti ti-check"></i>Créer mon mot de passe</button>
+      <div style="height:10px"></div>
+      <button class="btn-s" id="btn-back-to-login" style="font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i>Retour</button>
     </div>
   </div>
 </div>
@@ -1362,68 +1384,52 @@ function hideErr(id){var el=document.getElementById(id);if(el)el.style.display='
 
 async function doLogin(){
   const mat = document.getElementById('l-mat').value.trim();
-  if(!mat){showErr('login-err','Entrez votre matricule.');return;}
+  const pw  = document.getElementById('l-pw').value;
+  const err = document.getElementById('login-err');
   const btn = document.getElementById('btn-login');
-  const txt = document.getElementById('btn-login-txt');
+  if(err) err.style.display='none';
+  if(!mat){ showErr('login-err','Matricule obligatoire.'); return; }
+  if(!pw){  showErr('login-err','Mot de passe obligatoire.'); return; }
 
-  if(loginStep===1){
-    btn.disabled=true; txt.textContent='Vérification…';
-    const {data,error} = await db.from('utilisateurs').select('*').eq('matricule',mat).single();
-    btn.disabled=false; txt.textContent='Continuer';
-    if(error||!data){showErr('login-err','Matricule introuvable.');return;}
-    loginUserData=data;
-    loginStep=2;
-    hideErr('login-err');
-    document.getElementById('pw-grp').style.display='block';
-    document.getElementById('l-pw').focus();
-    txt.textContent='Se connecter';
-    // Proposer de mémoriser le matricule
-    if(!document.getElementById('remember-row')){
-      var remRow = document.createElement('div');
-      remRow.id = 'remember-row';
-      remRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:var(--text2)';
-      var cb = document.createElement('input');
-      cb.type='checkbox'; cb.id='cb-remember';
-      cb.style.cssText='width:16px;height:16px;cursor:pointer';
-      var lbl = document.createElement('label');
-      lbl.setAttribute('for','cb-remember');
-      lbl.textContent='Mémoriser mon matricule';
-      lbl.style.cursor='pointer';
-      remRow.appendChild(cb); remRow.appendChild(lbl);
-      var btnEl = document.getElementById('btn-login');
-      btnEl.parentNode.insertBefore(remRow, btnEl);
-    }
-    // Pré-cocher si déjà mémorisé
-    var saved = localStorage.getItem('sdis_mat');
-    if(saved) document.getElementById('cb-remember').checked = true;
-    return;
-  }
+  btn.disabled=true;
+  const {data,error} = await db.from('utilisateurs').select('*').eq('matricule',mat).single();
+  if(error||!data){ showErr('login-err','Matricule introuvable.'); btn.disabled=false; return; }
 
-  const pw = document.getElementById('l-pw').value;
-  if(!pw){document.getElementById('l-pw').focus();return;}
-  btn.disabled=true; txt.textContent='Connexion…';
+  const {data:ok} = await db.rpc('verify_password',{input_password:pw, hashed_password:data.mot_de_passe});
+  if(!ok){ showErr('login-err','Mot de passe incorrect.'); btn.disabled=false; return; }
 
-  const d = loginUserData;
-  if(!d.mot_de_passe||d.premiere_connexion){
-    btn.disabled=false; txt.textContent='Se connecter';
-    if(pw!==defPw(d.matricule)){showErr('login-err','Mot de passe provisoire : matricule + 2026');return;}
-    user=d; showPage('pg-newpw'); return;
-  }
-  if(hash(pw)!==d.mot_de_passe){
-    btn.disabled=false; txt.textContent='Se connecter';
-    showErr('login-err','Mot de passe incorrect.');return;
-  }
-  user=d; hideErr('login-err'); btn.disabled=false;
-  // Sauvegarder ou supprimer le matricule selon la checkbox
-  var cbRemember = document.getElementById('cb-remember');
-  if(cbRemember && cbRemember.checked){
-    localStorage.setItem('sdis_mat', d.matricule);
-  } else {
-    localStorage.removeItem('sdis_mat');
-  }
-  showPage('pg-app');
+  btn.disabled=false;
+  user = data;
+  localStorage.setItem('sdis_mat', mat);
   initApp();
-  if(d.matricule==='400398') setTimeout(showHearts, 300);
+}
+
+async function doFirstLogin(){
+  const mat  = document.getElementById('fp-mat').value.trim();
+  const tmp  = document.getElementById('fp-tmp').value;
+  const new1 = document.getElementById('fp-new1').value;
+  const new2 = document.getElementById('fp-new2').value;
+  if(!mat||!tmp||!new1||!new2){ showErr('newpw-err','Tous les champs sont obligatoires.'); return; }
+  if(new1.length < 6){ showErr('newpw-err','Le mot de passe doit faire au moins 6 caractères.'); return; }
+  if(new1 !== new2){ showErr('newpw-err','Les mots de passe ne correspondent pas.'); return; }
+
+  const {data,error} = await db.from('utilisateurs').select('*').eq('matricule',mat).single();
+  if(error||!data){ showErr('newpw-err','Matricule introuvable.'); return; }
+
+  // Vérifier le mot de passe provisoire
+  const {data:ok} = await db.rpc('verify_password',{input_password:tmp, hashed_password:data.mot_de_passe});
+  if(!ok){ showErr('newpw-err','Mot de passe provisoire incorrect.'); return; }
+
+  // Hasher et sauvegarder le nouveau mdp
+  const {data:hashed} = await db.rpc('hash_password',{password:new1});
+  if(!hashed){ showErr('newpw-err','Erreur lors de la création.'); return; }
+
+  await db.from('utilisateurs').update({mot_de_passe:hashed, premiere_connexion:false}).eq('id',data.id);
+
+  // Connecter directement
+  user = {...data, mot_de_passe:hashed, premiere_connexion:false};
+  localStorage.setItem('sdis_mat', mat);
+  initApp();
 }
 
 async function saveNewPw(){
@@ -4757,8 +4763,31 @@ document.addEventListener('DOMContentLoaded', ()=>{
   setLogos(LOGO_SRC);
 
   // Login
+  // Login principal
   document.getElementById('btn-login').addEventListener('click', doLogin);
-  document.getElementById('l-mat').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('l-mat').addEventListener('keydown',function(e){
+    if(e.key==='Enter') document.getElementById('l-pw').focus();
+  });
+  document.getElementById('l-pw').addEventListener('keydown',function(e){
+    if(e.key==='Enter') doLogin();
+  });
+  // Première connexion
+  var btnGotoFirst = document.getElementById('btn-goto-first-login');
+  if(btnGotoFirst) btnGotoFirst.addEventListener('click', function(){
+    showPage('pg-newpw');
+    var saved = localStorage.getItem('sdis_mat');
+    var fpMat = document.getElementById('fp-mat');
+    if(fpMat && saved) fpMat.value = saved;
+    document.getElementById('newpw-err').style.display='none';
+  });
+  var btnSetPw = document.getElementById('btn-set-pw');
+  if(btnSetPw) btnSetPw.addEventListener('click', doFirstLogin);
+  var btnBackLogin = document.getElementById('btn-back-to-login');
+  if(btnBackLogin) btnBackLogin.addEventListener('click', function(){ showPage('pg-login'); });
+  ['fp-mat','fp-tmp','fp-new1','fp-new2'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') doFirstLogin(); });
+  });
 
 // Pré-remplir le matricule mémorisé
 var savedMat = localStorage.getItem('sdis_mat');
