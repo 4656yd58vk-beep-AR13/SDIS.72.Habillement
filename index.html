@@ -309,6 +309,12 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       </button>
     </div>
 
+    <!-- Comptes test (super admin) -->
+    <div id="drawer-test-section" style="display:none;border-top:1px solid var(--border);padding:6px 0">
+      <div class="drawer-section-label">🧪 Comptes test</div>
+      <div id="drawer-test-accounts"></div>
+    </div>
+
     <div id="drawer-footer">
       <button class="drawer-item" id="drawer-btn-logout" style="color:#DC2626">
         <i class="ti ti-logout" style="color:#DC2626"></i><span>Se déconnecter</span>
@@ -4684,6 +4690,99 @@ async function loadDroitsTable(search=''){
       }
     });
   });
+}
+
+
+// ── COMPTES TEST ──────────────────────────────────────────
+var testAccounts = [];
+
+async function loadTestAccounts(){
+  if(!user || !user.super_admin) return;
+  var {data} = await db.from('utilisateurs')
+    .select('id,matricule,role,caserne,acces')
+    .eq('is_test', true)
+    .order('matricule');
+  testAccounts = data||[];
+
+  var section = document.getElementById('drawer-test-section');
+  var container = document.getElementById('drawer-test-accounts');
+  if(!section||!container) return;
+
+  if(!testAccounts.length){
+    section.style.display='none';
+    return;
+  }
+
+  section.style.display='block';
+  container.innerHTML = testAccounts.map(function(t){
+    var roleLabel = ROLE_LABELS[t.role]||t.role;
+    var roleColor = {
+      sp:'var(--text2)',
+      responsable_caserne:'var(--amber)',
+      habillement:'var(--blue)',
+      admin:'var(--red)',
+      jsp:'#7C3AED'
+    }[t.role]||'var(--text2)';
+    return '<button class="drawer-item" data-testid="'+t.id+'" style="padding:10px 18px">'+
+      '<div style="width:32px;height:32px;background:'+roleColor+';border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.85">'+
+        '<i class="ti ti-test-pipe" style="color:#fff;font-size:14px"></i>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:13px;font-weight:600">'+t.matricule+'</div>'+
+        '<div style="font-size:11px;color:var(--text2)">'+roleLabel+'</div>'+
+      '</div>'+
+      '<i class="ti ti-login-2" style="color:var(--text2);font-size:14px"></i>'+
+    '</button>';
+  }).join('');
+
+  container.querySelectorAll('[data-testid]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      switchToTestAccount(btn.dataset.testid);
+    });
+  });
+}
+
+async function switchToTestAccount(uid){
+  var t = testAccounts.find(x=>x.id===uid);
+  if(!t) return;
+
+  // Simuler cet utilisateur (comme simulateUser mais direct)
+  window.simulatedUser = t;
+  simRole = t.role;
+
+  closeDrawer();
+
+  // Mettre à jour le header
+  var hSub = document.getElementById('h-sub');
+  if(hSub) hSub.textContent = '🧪 '+t.matricule+' · '+(ROLE_LABELS[t.role]||t.role);
+  var hBadge = document.getElementById('h-badge');
+  if(hBadge){
+    hBadge.textContent = (ROLE_BADGES[t.role]||t.role)+' ↩';
+    hBadge.style.display='';
+    hBadge.style.background='rgba(124,58,237,0.35)';
+  }
+
+  showView(t.role);
+  await loadAll();
+  if(t.role==='jsp'||t.role==='responsable_jsp'){
+    switchTab('sc-jsp');
+  } else {
+    switchTab('sc-home');
+  }
+  updateDrawer();
+  toast('Vue '+t.matricule+' activée · Cliquer le badge pour revenir');
+}
+
+function exitTestAccount(){
+  window.simulatedUser = null;
+  simRole = null;
+  var hBadge = document.getElementById('h-badge');
+  if(hBadge){ hBadge.style.display='none'; hBadge.style.background=''; }
+  showView(user.role);
+  loadAll();
+  switchTab('sc-home');
+  updateDrawer();
+  toast('Retour en vue Admin');
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
