@@ -1431,30 +1431,29 @@ async function doFirstLogin(){
   if(new1.length < 6){ showErr('newpw-err','Le mot de passe doit faire au moins 6 caractères.'); return; }
   if(new1 !== new2){ showErr('newpw-err','Les mots de passe ne correspondent pas.'); return; }
 
-  const {data,error} = await db.from('utilisateurs').select('*').eq('matricule',mat).single();
-  if(error||!data){ showErr('newpw-err','Matricule introuvable.'); return; }
+  // Récupérer l'utilisateur
+  var res = await db.from('utilisateurs').select('*').eq('matricule', mat).single();
+  if(res.error || !res.data){ showErr('newpw-err','Matricule introuvable.'); return; }
+  var data = res.data;
 
-  // Vérifier le mot de passe provisoire
-  const {data:ok, error:okErr} = await db.rpc('verify_password',{
-    input_password: tmp,
-    hashed_password: data.mot_de_passe
-  });
-  if(okErr || !ok){
-    const {data:directOk} = await db.from('utilisateurs')
-      .select('id').eq('matricule',mat).eq('mot_de_passe',tmp).maybeSingle();
-    if(!directOk){ showErr('newpw-err','Mot de passe provisoire incorrect.'); return; }
+  // Vérifier le mot de passe provisoire avec hash() local
+  if(hash(tmp) !== data.mot_de_passe){
+    showErr('newpw-err','Mot de passe provisoire incorrect.');
+    return;
   }
 
-  // Hasher et sauvegarder le nouveau mdp
-  const {data:hashed} = await db.rpc('hash_password',{password:new1});
-  if(!hashed){ showErr('newpw-err','Erreur lors de la création.'); return; }
+  // Sauvegarder le nouveau mot de passe hashé
+  var newHash = hash(new1);
+  var upd = await db.from('utilisateurs')
+    .update({ mot_de_passe: newHash, premiere_connexion: false })
+    .eq('id', data.id);
 
-  await db.from('utilisateurs').update({mot_de_passe:hashed, premiere_connexion:false}).eq('id',data.id);
+  if(upd.error){ showErr('newpw-err','Erreur lors de la sauvegarde.'); return; }
 
   // Connecter directement
-  user = {...data, mot_de_passe:hashed, premiere_connexion:false};
+  user = {...data, mot_de_passe: newHash, premiere_connexion: false};
   localStorage.setItem('sdis_mat', mat);
-  initApp();
+  await initApp();
 }
 
 
