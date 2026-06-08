@@ -1473,6 +1473,7 @@ function doLogout(){
 
 async function initApp(){
   simRole=null;
+  showPage('pg-app');
   const isAdmin = user.role==='admin';
   const role = isAdmin ? 'admin' : user.role;
   var badgeEl = document.getElementById('h-badge');
@@ -1484,10 +1485,10 @@ async function initApp(){
       badgeEl.textContent = ROLE_BADGES[role]||'SP';
     }
   }
-  document.getElementById('h-sub').textContent   = ROLE_SUBS[role]||'';
-  document.getElementById('p-mat').textContent   = 'Mat. '+user.matricule;
-  document.getElementById('p-role').textContent  = ROLE_LABELS[role]||role;
-  document.getElementById('p-caserne').textContent = user.caserne||'';
+  var hSub=document.getElementById('h-sub'); if(hSub) hSub.textContent=ROLE_SUBS[role]||'';
+  var pMat=document.getElementById('p-mat'); if(pMat) pMat.textContent='Mat. '+user.matricule;
+  var pRole=document.getElementById('p-role'); if(pRole) pRole.textContent=ROLE_LABELS[role]||role;
+  var pCas=document.getElementById('p-caserne'); if(pCas) pCas.textContent=user.caserne||'';
   showView(role);
   initSuperAdmin();
   updateProfileHeader();
@@ -1509,7 +1510,7 @@ async function initApp(){
   }
   // Membres visibles uniquement en vue admin et habillement (PAS en vue SP simulée)
   const showMembres = (user.role==='habillement') || (isAdmin && !simRole);
-  document.getElementById('sec-membres').style.display = showMembres?'block':'none';
+  var secMem=document.getElementById('sec-membres'); if(secMem) secMem.style.display=showMembres?'block':'none';
   // Afficher bouton scanner pour habillement et admin
   const btnSc = document.getElementById('btn-open-scanner');
   if(btnSc) btnSc.style.display = (isAdmin||user.role==='habillement')?'flex':'none';
