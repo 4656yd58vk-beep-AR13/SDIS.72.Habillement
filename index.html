@@ -200,6 +200,13 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 .drawer-item.hidden{display:none}
 .drawer-sep{height:1px;background:var(--border);margin:6px 16px}
 #drawer-footer{padding:8px 0 max(env(safe-area-inset-bottom),12px);border-top:1px solid var(--border);flex-shrink:0}
+
+.toggle-switch { position:relative; display:inline-block; width:44px; height:24px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:var(--border); border-radius:24px; transition:.3s; }
+.toggle-slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.3s; }
+input:checked + .toggle-slider { background:var(--red); }
+input:checked + .toggle-slider:before { transform:translateX(20px); }
 </style>
 </head>
 <body>
@@ -4624,66 +4631,200 @@ function switchParamTab(id){
 // ── TABLEAU DES DROITS ────────────────────────────────────
 var droitsData = [];
 async function loadDroitsTable(search=''){
-  var el = document.getElementById('l-droits-table'); if(!el) return;
-  el.innerHTML='<div class="empty"><i class="ti ti-loader"></i><p>Chargement...</p></div>';
+  var el = document.getElementById('l-droits-table');
+  if(!el) return;
+  el.innerHTML = '<div class="empty"><i class="ti ti-loader"></i><p>Chargement...</p></div>';
 
-  var query = db.from('utilisateurs').select('id,matricule,prenom,nom,grade,caserne,role,acces,super_admin').order('matricule');
-  var {data} = await query;
-  droitsData = data||[];
+  db.from('utilisateurs')
+    .select('id,matricule,prenom,nom,grade,caserne,role,acces,super_admin,amicale_role')
+    .order('matricule')
+    .then(function(res){
+      droitsData = res.data || [];
 
-  var filtered = search ?
-    droitsData.filter(u=>(u.matricule||'').includes(search)||(u.nom||'').toLowerCase().includes(search.toLowerCase())||(u.prenom||'').toLowerCase().includes(search.toLowerCase())) :
-    droitsData;
+      var filtered = search
+        ? droitsData.filter(function(u){
+            return (u.matricule||'').includes(search)
+              || (u.nom||'').toLowerCase().includes(search.toLowerCase())
+              || (u.prenom||'').toLowerCase().includes(search.toLowerCase());
+          })
+        : droitsData;
 
-  if(!filtered.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></div>'; return; }
-
-  var COLS = ['epi','gardes','aps','amicale','jsp','sdis','amicale_bureau','jsp_responsable','habillement','admin','super_admin'];
-
-  el.innerHTML = filtered.map(function(u){
-    var acces = u.acces || {};
-    var name = [u.grade,u.prenom,u.nom].filter(Boolean).join(' ') || 'Mat. '+u.matricule;
-    var isSelf = u.id === user.id;
-
-    return '<div class="card" style="padding:14px;margin-bottom:10px">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
-        '<div>'+
-          '<div style="font-size:14px;font-weight:600">'+name+'</div>'+
-          '<div style="font-size:11px;color:var(--text2)">Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'')+(isSelf?' · <span style="color:var(--red)">Vous</span>':'')+'</div>'+
-        '</div>'+
-      '</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
-      COLS.map(function(key){
-        var cfg = ACCES_LABELS[key]||{lbl:key,ico:'',desc:''};
-        var checked = acces[key] ? 'checked' : '';
-        var disabled = (isSelf && key==='super_admin') ? 'disabled' : '';
-        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg2);border-radius:8px;cursor:'+(disabled?'not-allowed':'pointer')+';opacity:'+(disabled?'0.5':'1')+'">'+
-          '<input type="checkbox" '+checked+' '+disabled+' data-uid="'+u.id+'" data-key="'+key+'" class="droit-cb" style="width:16px;height:16px;accent-color:var(--red);cursor:'+(disabled?'not-allowed':'pointer')+'">'+
-          '<span style="font-size:12px;line-height:1.3">'+cfg.ico+' '+cfg.lbl+'</span>'+
-        '</label>';
-      }).join('')+
-      '</div></div>';
-  }).join('');
-
-  // Events checkboxes - sauvegarde immédiate
-  el.querySelectorAll('.droit-cb').forEach(function(cb){
-    cb.addEventListener('change', async function(){
-      var uid = cb.dataset.uid;
-      var key = cb.dataset.key;
-      var val = cb.checked;
-      var u = droitsData.find(x=>x.id===uid); if(!u) return;
-      var acces = Object.assign({}, u.acces||{});
-      acces[key] = val;
-      u.acces = acces;
-      var res = await db.from('utilisateurs').update({acces:acces}).eq('id',uid);
-      if(res.error){ toast('Erreur: '+res.error.message); cb.checked=!val; return; }
-      // Feedback visuel
-      var label = cb.closest('label');
-      if(label){
-        label.style.background = val ? 'rgba(var(--red-rgb,192,57,43),0.1)' : 'var(--bg2)';
-        setTimeout(function(){ label.style.background='var(--bg2)'; }, 800);
+      if(!filtered.length){
+        el.innerHTML = '<div class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></div>';
+        return;
       }
+
+      el.innerHTML = filtered.map(function(u){
+        var acces = u.acces || {};
+        var name = [u.grade,u.prenom,u.nom].filter(Boolean).join(' ') || 'Mat. '+u.matricule;
+        var isSelf = u.id === user.id;
+
+        var modules = [
+          {
+            key: 'epi', icon: 'ti-shirt', label: 'EPI', color: '#C0392B',
+            desc: 'Gestion des équipements de protection',
+            subopts: [
+              {key:'role_epi', label:'Rôle EPI', type:'select', opts:[
+                {v:'sp', l:'Sapeur-Pompier'},
+                {v:'responsable_caserne', l:'Responsable caserne'},
+                {v:'habillement', l:'Habillement SDIS'}
+              ], current: u.role}
+            ]
+          },
+          {
+            key: 'gardes', icon: 'ti-calendar', label: 'Gardes', color: '#2980B9',
+            desc: 'Échanges et suivi des gardes'
+          },
+          {
+            key: 'aps', icon: 'ti-run', label: 'APS', color: '#27AE60',
+            desc: 'Activités physiques et sportives'
+          },
+          {
+            key: 'amicale', icon: 'ti-users', label: 'Amicale', color: '#8E44AD',
+            desc: 'Vie associative et événements',
+            subopts: [
+              {key:'amicale_bureau', label:'Membre du bureau', type:'checkbox'}
+            ]
+          },
+          {
+            key: 'jsp', icon: 'ti-shield-half', label: 'JSP', color: '#D35400',
+            desc: 'Jeunes Sapeurs-Pompiers',
+            subopts: [
+              {key:'jsp_responsable', label:'Responsable JSP', type:'checkbox'}
+            ]
+          },
+          {
+            key: 'sdis', icon: 'ti-building', label: 'Portail SDIS', color: '#16A085',
+            desc: 'Accès au portail SDIS 72'
+          },
+          {
+            key: 'admin', icon: 'ti-settings', label: 'Administration', color: '#7F8C8D',
+            desc: 'Accès aux paramètres admin'
+          }
+        ];
+
+        var rows = modules.map(function(mod){
+          var checked = acces[mod.key] ? 'checked' : '';
+          var uid = u.id;
+
+          var subopts_html = '';
+          if(mod.subopts && acces[mod.key]){
+            subopts_html = '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' +
+              mod.subopts.map(function(sub){
+                if(sub.type === 'select'){
+                  var opts = sub.opts.map(function(o){
+                    return '<option value="'+o.v+'"'+(sub.current===o.v?' selected':'')+'>'+o.l+'</option>';
+                  }).join('');
+                  return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+                    '<span style="font-size:12px;color:var(--text2)">'+sub.label+'</span>' +
+                    '<select class="droit-select" data-uid="'+uid+'" data-key="role" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text1)">'+opts+'</select>' +
+                  '</div>';
+                } else {
+                  var schecked = acces[sub.key] ? 'checked' : '';
+                  return '<label style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
+                    '<input type="checkbox" '+schecked+' class="droit-cb" data-uid="'+uid+'" data-key="'+sub.key+'" style="width:15px;height:15px;accent-color:var(--red)">' +
+                    '<span style="font-size:12px;color:var(--text2)">'+sub.label+'</span>' +
+                  '</label>';
+                }
+              }).join('') +
+            '</div>';
+          }
+
+          return '<div style="padding:10px 12px;background:var(--bg2);border-radius:10px;margin-bottom:6px">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between">' +
+              '<div style="display:flex;align-items:center;gap:10px">' +
+                '<div style="width:32px;height:32px;border-radius:8px;background:'+mod.color+';display:flex;align-items:center;justify-content:center">' +
+                  '<i class="ti '+mod.icon+'" style="color:#fff;font-size:16px"></i>' +
+                '</div>' +
+                '<div>' +
+                  '<div style="font-size:13px;font-weight:600">'+mod.label+'</div>' +
+                  '<div style="font-size:11px;color:var(--text2)">'+mod.desc+'</div>' +
+                '</div>' +
+              '</div>' +
+              '<label class="toggle-switch" style="flex-shrink:0">' +
+                '<input type="checkbox" '+checked+' class="droit-cb" data-uid="'+uid+'" data-key="'+mod.key+'" '+(isSelf&&mod.key==='super_admin'?'disabled':'')+' style="accent-color:var(--red)">' +
+                '<span class="toggle-slider"></span>' +
+              '</label>' +
+            '</div>' +
+            subopts_html +
+          '</div>';
+        }).join('');
+
+        // Super admin toggle séparé
+        var saChecked = u.super_admin ? 'checked' : '';
+        var saRow = '<div style="padding:10px 12px;background:rgba(192,57,43,0.08);border-radius:10px;margin-bottom:6px;border:1px solid rgba(192,57,43,0.2)">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between">' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<div style="width:32px;height:32px;border-radius:8px;background:#C0392B;display:flex;align-items:center;justify-content:center">' +
+                '<i class="ti ti-crown" style="color:#fff;font-size:16px"></i>' +
+              '</div>' +
+              '<div>' +
+                '<div style="font-size:13px;font-weight:600">Super Admin</div>' +
+                '<div style="font-size:11px;color:var(--text2)">Accès total à l’application</div>' +
+              '</div>' +
+            '</div>' +
+            '<label class="toggle-switch" style="flex-shrink:0">' +
+              '<input type="checkbox" '+saChecked+' class="droit-sa" data-uid="'+uid+'" '+(isSelf?'disabled':'')+' style="accent-color:var(--red)">' +
+              '<span class="toggle-slider"></span>' +
+            '</label>' +
+          '</div>' +
+        '</div>';
+
+        return '<div class="card" style="padding:14px;margin-bottom:12px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+            '<div>' +
+              '<div style="font-size:15px;font-weight:700">'+name+'</div>' +
+              '<div style="font-size:11px;color:var(--text2)">Mat. '+u.matricule+(u.caserne?' · '+u.caserne:'')+(isSelf?' · <span style="color:var(--red)">Vous</span>':'')+'</div>' +
+            '</div>' +
+          '</div>' +
+          rows + saRow +
+        '</div>';
+      }).join('');
+
+      // Events checkboxes modules
+      el.querySelectorAll('.droit-cb').forEach(function(cb){
+        cb.addEventListener('change', async function(){
+          var uid = cb.dataset.uid;
+          var key = cb.dataset.key;
+          var val = cb.checked;
+          var u = droitsData.find(function(x){ return x.id===uid; });
+          if(!u) return;
+          var acces = Object.assign({}, u.acces||{});
+          acces[key] = val;
+          u.acces = acces;
+          var res = await db.from('utilisateurs').update({acces:acces}).eq('id',uid);
+          if(res.error){ toast('Erreur: '+res.error.message); cb.checked=!val; return; }
+          toast('Droits mis à jour');
+          // Recharger pour afficher/masquer les sous-options
+          loadDroitsTable(document.getElementById('droits-search')?.value||'');
+        });
+      });
+
+      // Events super_admin
+      el.querySelectorAll('.droit-sa').forEach(function(cb){
+        cb.addEventListener('change', async function(){
+          var uid = cb.dataset.uid;
+          var val = cb.checked;
+          var res = await db.from('utilisateurs').update({super_admin:val}).eq('id',uid);
+          if(res.error){ toast('Erreur: '+res.error.message); cb.checked=!val; return; }
+          toast('Super admin mis à jour');
+        });
+      });
+
+      // Events select rôle EPI
+      el.querySelectorAll('.droit-select').forEach(function(sel){
+        sel.addEventListener('change', async function(){
+          var uid = sel.dataset.uid;
+          var key = sel.dataset.key;
+          var val = sel.value;
+          var res = await db.from('utilisateurs').update({[key]:val}).eq('id',uid);
+          if(res.error){ toast('Erreur: '+res.error.message); return; }
+          var u = droitsData.find(function(x){ return x.id===uid; });
+          if(u) u.role = val;
+          toast('Rôle mis à jour');
+        });
+      });
     });
-  });
 }
 
 
