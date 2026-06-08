@@ -355,18 +355,19 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
 
 
   <div class="header">
-    <button id="btn-drawer-open" style="background:rgba(0,0,0,0.25);border:none;cursor:pointer;color:#fff;padding:9px 11px;display:flex;align-items:center;border-radius:10px;-webkit-tap-highlight-color:transparent;flex-shrink:0">
-      <i class="ti ti-menu-2" style="font-size:22px;line-height:1"></i>
+    <!-- Logo = bouton hamburger -->
+    <button id="btn-drawer-open" style="background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;flex-shrink:0;display:flex;align-items:center">
+      <img id="logo-app" src="" style="width:44px;height:44px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,0.15);padding:2px">
     </button>
-    <div class="header-info" style="margin-left:10px">
+    <!-- Titre module -->
+    <div class="header-info" style="margin-left:10px;flex:1;min-width:0">
       <div class="header-title" id="h-module-title">CSP LFB</div>
       <div class="header-sub" id="h-sub" style="cursor:default">—</div>
     </div>
+    <!-- Droite : badge rôle + switcher -->
     <div class="header-right">
-      <div class="header-badge" id="h-badge">—</div>
-      <button id="btn-superadmin" onclick="openModal('m-superadmin')" style="display:none;background:rgba(255,215,0,0.3);border:none;color:#fff;border-radius:20px;cursor:pointer;padding:5px 10px;font-size:11px;font-weight:600;font-family:inherit"><i class="ti ti-key" style="font-size:13px"></i> SA</button>
-      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;padding:5px 10px;gap:5px;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap" title="Changer de vue"><i class="ti ti-switch-horizontal" style="font-size:13px"></i>Changer de vue</button>
-      <button id="btn-logout" style="background:transparent;border:none;color:#fff;cursor:pointer;padding:4px;display:flex;align-items:center"><i class="ti ti-logout" style="font-size:18px"></i></button>
+      <div class="header-badge" id="h-badge" style="display:none">—</div>
+      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;padding:5px 10px;gap:5px;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap"><i class="ti ti-switch-horizontal" style="font-size:13px"></i>Changer de vue</button>
     </div>
   </div>
 
@@ -2975,7 +2976,7 @@ function subscribeRT(){
 async function initSuperAdmin(){
   if(!user || !user.super_admin) return;
   // Afficher bouton SA
-  var btnSA = document.getElementById('btn-superadmin');
+  var btnSA = null; // supprimé du header
   if(btnSA) btnSA.style.display = 'inline-flex';
 }
 
