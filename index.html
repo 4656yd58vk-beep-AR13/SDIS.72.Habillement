@@ -4924,6 +4924,14 @@ function exitTestAccount(){
 
 document.addEventListener('DOMContentLoaded', ()=>{
   showPage('pg-login');
+
+  // Drawer events - attachés une seule fois au chargement
+  var btnOpen = document.getElementById('btn-drawer-open');
+  if(btnOpen) btnOpen.addEventListener('click', openDrawer);
+  var btnClose = document.getElementById('btn-drawer-close');
+  if(btnClose) btnClose.addEventListener('click', closeDrawer);
+  var overlay = document.getElementById('drawer-overlay');
+  if(overlay) overlay.addEventListener('click', closeDrawer);
   // Initialiser les logos depuis la constante unique
   setLogos(LOGO_SRC);
 
@@ -5119,11 +5127,7 @@ if(savedMat){
     });
   });
 
-    // Drawer events
-  var btnOpen = document.getElementById('btn-drawer-open');
-  if(btnOpen) btnOpen.addEventListener('click', openDrawer);
-  var btnClose = document.getElementById('btn-drawer-close');
-  if(btnClose) btnClose.addEventListener('click', closeDrawer);
+    // Drawer events (déplacé - géré dans DOMContentLoaded)
   var overlay = document.getElementById('drawer-overlay');
   if(overlay) overlay.addEventListener('click', closeDrawer);
 
