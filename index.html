@@ -366,8 +366,7 @@ input:checked + .toggle-slider:before { transform:translateX(20px); }
     </div>
     <!-- Droite : badge rôle + switcher -->
     <div class="header-right">
-      <div class="header-badge" id="h-badge" style="display:none">—</div>
-      <button id="btn-switcher" style="display:none;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;padding:5px 10px;gap:5px;font-size:11px;font-weight:600;font-family:inherit;white-space:nowrap"><i class="ti ti-switch-horizontal" style="font-size:13px"></i>Changer de vue</button>
+
     </div>
   </div>
 
@@ -1533,8 +1532,7 @@ async function initApp(){
   if(tabStats) tabStats.style.display = (isAdmin||user.role==='habillement') ? 'flex' : 'none';
 
   // Afficher bouton switch dans header si admin
-  const switcher = document.getElementById('btn-switcher');
-  if(switcher){ switcher.style.display = user.role==='admin' ? 'inline-flex' : 'none'; }
+  // btn-switcher supprimé du header
 }
 
 function showView(role){
