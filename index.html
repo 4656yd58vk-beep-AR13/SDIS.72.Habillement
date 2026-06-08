@@ -233,7 +233,6 @@ textarea.form-ctrl{resize:none;line-height:1.5}
   </div>
 </div>
 
-<!-- NOUVEAU MOT DE PASSE -->
 <div class="app" id="pg-newpw" style="display:none">
   <div class="auth-screen">
     <div class="auth-logo"><img id="logo-newpw" src="" alt="SDIS 72"></div>
@@ -271,6 +270,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
       <button class="btn-s" id="btn-back-to-login" style="font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i>Retour</button>
     </div>
   </div>
+</div>
 </div>
 
 <!-- APPLI -->
@@ -1305,12 +1305,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 <script>
 const SUPA_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs';
-let db;
-try {
-  db = supabase.createClient(SUPA_URL, SUPA_KEY);
-} catch(e) {
-  console.error('Supabase init error:', e);
-}
+const db = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 const ADMIN_MAT = '400557';
 
