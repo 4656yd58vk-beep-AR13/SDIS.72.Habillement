@@ -2874,10 +2874,10 @@ function openGardeDetail(id){
     btn2.addEventListener('click',()=>updateGardeStatut(id,'annulee')); actions.appendChild(btn2);
   }
   if((role==='responsable_caserne'||user.role==='admin')&&g.statut==='proposee'){
-    var btnV=document.createElement('button'); btnV.className='btn-p'; btnV.innerHTML="<i class='ti ti-check'></i>Valider l'échange";
+    var btnV=document.createElement('button'); btnV.className='btn-p'; btnV.innerHTML="<i class='ti ti-check'></i>Valider l\'échange";
     btnV.addEventListener('click',()=>updateGardeStatut(id,'validee')); actions.appendChild(btnV);
     var btnR=document.createElement('button'); btnR.className='btn-s'; btnR.style.color='#DC2626'; btnR.style.borderColor='#DC2626';
-    btnR.innerHTML="<i class='ti ti-x'></i>Refuser l'échange";
+    btnR.innerHTML="<i class='ti ti-x'></i>Refuser l\'échange";
     btnR.addEventListener('click',()=>updateGardeStatut(id,'refusee')); actions.appendChild(btnR);
   }
   openModal('m-detail-garde');
@@ -3698,12 +3698,12 @@ async function saveAppelJsp(){
     }
   });
 
-  if(!upserts.length){ toast('Aucune présence saisie'); if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<i class="ti ti-device-floppy"></i>Enregistrer l'appel';} return; }
+  if(!upserts.length){ toast('Aucune présence saisie'); if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<i class="ti ti-device-floppy"></i>Enregistrer l\'appel';} return; }
 
   var {error} = await db.from('jsp_presences')
     .upsert(upserts, {onConflict:'seance_id,utilisateur_id'});
 
-  if(btnSave){ btnSave.disabled=false; btnSave.innerHTML='<i class="ti ti-device-floppy"></i>Enregistrer l'appel'; }
+  if(btnSave){ btnSave.disabled=false; btnSave.innerHTML='<i class="ti ti-device-floppy"></i>Enregistrer l\'appel'; }
   if(error){ toast('Erreur : '+error.message); return; }
 
   closeModal('m-appel-jsp');
@@ -4314,7 +4314,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div id="appel-list" style="flex:1;overflow-y:auto;padding:0 16px"></div>
     <div style="padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0">
       <button class="btn-p" id="btn-save-appel" onclick="saveAppelJsp()">
-        <i class="ti ti-device-floppy"></i>Enregistrer l'appel
+        <i class="ti ti-device-floppy"></i>Enregistrer l\'appel
       </button>
     </div>
   </div>
