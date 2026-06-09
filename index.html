@@ -370,6 +370,21 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
     </div>
   </div>
 
+  <!-- ══════════ DASHBOARD ACCUEIL ══════════ -->
+  <div class="screen active" id="sc-dashboard">
+    <div class="dash-hero" id="dash-hero">
+      <div class="dash-hero-grade" id="dash-grade">—</div>
+      <div class="dash-hero-name" id="dash-name">Bienvenue</div>
+      <div style="font-size:12px;opacity:0.7" id="dash-caserne">CSP La Ferté-Bernard</div>
+      <div class="dash-hero-stats" id="dash-stats"></div>
+    </div>
+    <div class="dash-grid" id="dash-grid"></div>
+    <div class="section" style="padding-top:0">
+      <div class="section-title">Activité récente</div>
+      <div id="dash-recents"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
+    </div>
+  </div>
+
   <!-- SOUS-NAV EPI -->
   <div id="epi-subnav" style="display:none;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
     <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
@@ -2028,8 +2043,6 @@ async function initApp(){
   await loadAll();
   subscribeRT();
   initToggles();
-
-  // CORRECTION: aller sur le dashboard par défaut
   switchTab('sc-dashboard');
   checkStBarbe();
 }
