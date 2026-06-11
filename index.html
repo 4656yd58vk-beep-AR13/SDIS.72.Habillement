@@ -211,7 +211,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 /* DRAWER */
 #drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.25s}
 #drawer-overlay.open{opacity:1;pointer-events:all}
-#drawer{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg);z-index:501;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.15);}
+#drawer{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg);z-index:501;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:4px 0 24px rgba(0,0,0,0.15);}
 #drawer.open{transform:translateX(0)}
 #drawer-head{background:var(--red);padding:max(env(safe-area-inset-top),44px) 16px 16px;flex-shrink:0}
 #drawer-user{display:flex;align-items:center;gap:12px}
