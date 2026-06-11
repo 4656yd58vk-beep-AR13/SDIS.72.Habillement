@@ -11,7 +11,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>CSP LFB</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+// ── BASCULE COMPTE PERSO (super admin → SP 400557) ───────
+async function togglePersonalAccount(){
+  var isSimulating = !!(simRole || (window.simulatedUser && window.simulatedUser.id !== user.id));
+  if(isSimulating){
+    // Retour en mode admin
+    window.simulatedUser = null;
+    simRole = null;
+    var hBadge = document.getElementById('h-badge');
+    if(hBadge){ hBadge.style.display='none'; hBadge.style.background=''; }
+    var hSub = document.getElementById('h-sub');
+    if(hSub) hSub.textContent = ROLE_SUBS[user.role]||'';
+    showView(user.role);
+    updateDrawer();
+    await loadAll();
+    switchTab('sc-dashboard');
+    toast('Retour en vue Admin');
+  } else {
+    // Basculer vers le compte SP 400557
+    var {data:spUser} = await db.from('utilisateurs')
+      .select('id,matricule,role,caserne,prenom,nom,grade,acces')
+      .eq('matricule','400557').single();
+    if(!spUser){ toast('Compte 400557 introuvable'); return; }
+    window.simulatedUser = spUser;
+    simRole = spUser.role;
+    var hBadge = document.getElementById('h-badge');
+    if(hBadge){
+      hBadge.textContent = 'SP ↩';
+      hBadge.style.display = '';
+      hBadge.style.background = 'rgba(5,150,105,0.35)';
+    }
+    var hSub = document.getElementById('h-sub');
+    if(hSub) hSub.textContent = 'Vue perso — Mat. 400557';
+    showView(spUser.role);
+    updateDrawer();
+    await loadAll();
+    switchTab('sc-dashboard');
+    toast('Vue Mat. 400557 activée 👤');
+  }
+  // Rafraîchir le bouton dans params
+  initParams();
+}
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -169,7 +211,7 @@ textarea.form-ctrl{resize:none;line-height:1.5}
 /* DRAWER */
 #drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;opacity:0;pointer-events:none;transition:opacity 0.25s}
 #drawer-overlay.open{opacity:1;pointer-events:all}
-#drawer{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg);z-index:501;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;overflow:hidden;box-shadow:4px 0 24px rgba(0,0,0,0.15);}
+#drawer{position:fixed;top:0;left:0;width:280px;height:100vh;background:var(--bg);z-index:501;transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.15);}
 #drawer.open{transform:translateX(0)}
 #drawer-head{background:var(--red);padding:max(env(safe-area-inset-top),44px) 16px 16px;flex-shrink:0}
 #drawer-user{display:flex;align-items:center;gap:12px}
@@ -302,7 +344,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
       </div>
     </div>
 
-    <div id="drawer-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden">
+    <div id="drawer-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;-webkit-overflow-scrolling:touch">
     <div id="drawer-body">
       <div class="drawer-section-label">Modules</div>
       <!-- NOUVEAU: Accueil/Dashboard -->
@@ -4350,6 +4392,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var btnLogout2=document.getElementById('btn-logout2');
   if(btnLogout2) btnLogout2.addEventListener('click', doLogout);
+
+  var btnSwitchPersonal=document.getElementById('btn-switch-personal');
+  if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', togglePersonalAccount);
 
   var btnSwitchPersonal=document.getElementById('btn-switch-personal');
   if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', switchToPersonal);
