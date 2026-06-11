@@ -2761,7 +2761,7 @@ async function loadAll(){
     demandes = raw;
   }
   equipements = e.data||[];
-  membres     = m.data||[];
+  if(m){ membres = m.data||[]; membresLoaded = true; }
 
   if(user && activeRole()==='admin'){
     const selC = document.getElementById('select-caserne');
@@ -3045,6 +3045,7 @@ function openStockModal(eqId){
 function adjStock(delta){ curEqStock=Math.max(0,curEqStock+delta); var sv=document.getElementById('stock-val'); if(sv) sv.textContent=curEqStock; }
 
 async function saveStock(){
+  if(activeRole()!=='habillement'&&activeRole()!=='admin'&&!user.super_admin){ toast('Accès refusé'); return; }
   if(activeRole()!=='habillement'&&activeRole()!=='admin'&&!user.super_admin){toast('Action non autorisée');return;}
   const seuil=parseInt(document.getElementById('stock-seuil').value)||10;
   const{error}=await db.from('equipements').update({stock:curEqStock,seuil_alerte:seuil}).eq('id',curEqId);
@@ -3194,7 +3195,7 @@ function openGardeDetail(id){
     btn2.innerHTML="<i class='ti ti-x'></i>Annuler ma demande";
     btn2.addEventListener('click',()=>updateGardeStatut(id,'annulee')); actions.appendChild(btn2);
   }
-  if((role==='responsable_caserne'||user.role==='admin')&&g.statut==='proposee'){
+  if((role==='responsable_caserne'||role==='admin')&&g.statut==='proposee'){
     var btnV=document.createElement('button'); btnV.className='btn-p'; btnV.innerHTML="<i class='ti ti-check'></i>Valider l\'échange";
     btnV.addEventListener('click',()=>updateGardeStatut(id,'validee')); actions.appendChild(btnV);
     var btnR=document.createElement('button'); btnR.className='btn-s'; btnR.style.color='#DC2626'; btnR.style.borderColor='#DC2626';
@@ -3378,8 +3379,10 @@ function switchAmiTab(tabId){
 }
 
 async function loadAmiActus(){
+  try{
   var {data}=await db.from('amicale_actus').select('*,auteur:auteur_id(matricule,prenom,nom)').order('created_at',{ascending:false});
   amiActus=data||[];
+  } catch(e){ console.error('loadAmiActus:',e); return; }
   var el=document.getElementById('l-actus'); if(!el) return;
   if(!amiActus.length){ el.innerHTML='<div class="empty"><i class="ti ti-news"></i><p>Aucune actualité</p></div>'; return; }
   el.innerHTML=amiActus.map(function(a){
@@ -3394,8 +3397,10 @@ async function loadAmiActus(){
 }
 
 async function loadAmiEvents(){
+  try{
   var {data}=await db.from('amicale_evenements').select('*,inscriptions:amicale_inscriptions(utilisateur_id)').order('date_event',{ascending:true});
   amiEvents=data||[];
+  } catch(e){ console.error('loadAmiEvents:',e); return; }
   var el=document.getElementById('l-events'); if(!el) return;
   if(!amiEvents.length){ el.innerHTML='<div class="empty"><i class="ti ti-calendar"></i><p>Aucun événement</p></div>'; return; }
   var today=new Date().toISOString().split('T')[0];
@@ -3454,8 +3459,10 @@ async function desinscrireEvent(id){
 }
 
 async function loadAmiGroupes(){
+  try{
   var {data}=await db.from('amicale_groupes').select('*,membres:amicale_groupe_membres(utilisateur_id)').order('nom');
   amiGroupes=data||[];
+  } catch(e){ console.error('loadAmiGroupes:',e); return; }
   var el=document.getElementById('l-groupes'); if(!el) return;
   if(!amiGroupes.length){ el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun groupe</p></div>'; return; }
   var currentId=activeUserId();
@@ -3667,10 +3674,30 @@ async function loadJspStats(){
   }
 }
 
-async function loadJspCours(){
+async function loadJspCours(adminView){
   var {data}=await db.from('jsp_cours').select('*').order('categorie,titre');
   jspCoursData=data||[];
-  renderJspCours();
+  if(adminView) renderAdminJspCours(data||[]);
+  else renderJspCours();
+}
+
+function renderAdminJspCours(data){
+  allJspCours = data||[];
+  var el=document.getElementById('l-jspa-cours'); if(!el) return;
+  if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
+  el.innerHTML='<div class="card" style="padding:0 14px">'+allJspCours.map(function(c){
+    var cat=JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
+    return '<div class="req-row"><div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
+      '<div class="req-info"><div class="req-name">'+c.titre+'</div><div class="req-detail">'+cat.lbl+'</div></div>'+
+      '<button data-delcours="'+c.id+'" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:16px;padding:0"><i class="ti ti-trash"></i></button></div>';
+  }).join('')+'</div>';
+  el.querySelectorAll('[data-delcours]').forEach(btn=>btn.addEventListener('click',()=>deleteJspCours(btn.dataset.delcours)));
+  var sel=document.getElementById('njs-cours');
+  if(sel) sel.innerHTML='<option value="">— Aucun —</option>'+allJspCours.map(c=>'<option value="'+c.id+'">'+c.titre+'</option>').join('');
+}
+
+async function loadAllJspCours(){
+  return loadJspCours(true);
 }
 function renderJspCours(){
   var list=jspCoursFilter==='all'?jspCoursData:jspCoursData.filter(c=>c.categorie===jspCoursFilter);
@@ -3835,6 +3862,7 @@ async function openJspDetailAdmin(id){
 }
 
 async function resetJspPw(id, matricule){
+  if(!isRespJsp()&&!user.super_admin){ toast('Accès refusé'); return; }
   if(!confirm('Réinitialiser le mot de passe de '+matricule+' à "'+matricule+'2026" ?')) return;
   try{
     var newHash = hash(matricule+'2026');
@@ -3868,9 +3896,9 @@ async function createJsp(){
   loadAllJsps();
 }
 
-async function loadAllJspCours(){
-  var {data}=await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
-  allJspCours=data||[];
+
+function renderAdminJspCours(data){
+  allJspCours = data||[];
   var el=document.getElementById('l-jspa-cours'); if(!el) return;
   if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
   el.innerHTML='<div class="card" style="padding:0 14px">'+allJspCours.map(function(c){
@@ -3882,6 +3910,14 @@ async function loadAllJspCours(){
   el.querySelectorAll('[data-delcours]').forEach(btn=>btn.addEventListener('click',()=>deleteJspCours(btn.dataset.delcours)));
   var sel=document.getElementById('njs-cours');
   if(sel) sel.innerHTML='<option value="">— Aucun —</option>'+allJspCours.map(c=>'<option value="'+c.id+'">'+c.titre+'</option>').join('');
+}
+
+async function loadAllJspCours(){
+  var {data}=await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
+  allJspCours=data||[];
+  var el=document.getElementById('l-jspa-cours'); if(!el) return;
+  if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
+  renderAdminJspCours(allJspCours);
 }
 
 async function createJspCours(){
@@ -4430,9 +4466,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var btnLogout2=document.getElementById('btn-logout2');
   if(btnLogout2) btnLogout2.addEventListener('click', doLogout);
-
-  var btnSwitchPersonal=document.getElementById('btn-switch-personal');
-  if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', togglePersonalAccount);
 
   var btnSwitchPersonal=document.getElementById('btn-switch-personal');
   if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', switchToPersonal);
