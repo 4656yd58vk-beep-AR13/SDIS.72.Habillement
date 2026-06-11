@@ -2835,7 +2835,7 @@ function renderGardes(){
   var gstValid=document.getElementById('gst-valid'); if(gstValid) gstValid.textContent=valid;
   var filtered=gardeFilter==='all'?gardes:gardes.filter(g=>g.statut===gardeFilter);
   var el=document.getElementById('l-gardes'); if(!el) return;
-  if(!filtered.length){ el.innerHTML="<div class='empty'><i class='ti ti-calendar-event'></i><p>Aucune demande d'échange</p></div>"; return; }
+  if(!filtered.length){ el.innerHTML="<div class='empty'><i class='ti ti-calendar-event'></i><p>Aucune demande d\'échange</p></div>"; return; }
   el.innerHTML=filtered.map(function(g){
     var sc=GARDE_STATUT_CFG[g.statut]||{lbl:g.statut,cls:'bp',emoji:'📋'};
     var typeLbl=GARDE_TYPE_LBL[g.type_garde]||g.type_garde;
