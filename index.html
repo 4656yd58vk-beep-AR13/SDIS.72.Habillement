@@ -2221,9 +2221,16 @@ async function doLogin(){
     return;
   }
   user = res.data;
-  btn.disabled = false; btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
   localStorage.setItem('sdis_mat', mat);
-  await initApp();
+  try {
+    await initApp();
+  } catch(e) {
+    console.error('initApp error:', e);
+    showErr('login-err', 'Erreur de chargement : ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-login"></i>Se connecter';
+  }
 }
 
 async function doFirstLogin(){
@@ -2249,7 +2256,12 @@ async function doFirstLogin(){
   if(upd.error){ showErr('newpw-err','Erreur lors de la sauvegarde.'); return; }
   user = {...data, mot_de_passe: newHash, premiere_connexion: false};
   localStorage.setItem('sdis_mat', mat);
-  await initApp();
+  try {
+    await initApp();
+  } catch(e) {
+    console.error('initApp error:', e);
+    showErr('newpw-err', 'Erreur de chargement : ' + e.message);
+  }
 }
 
 function doLogout(){
