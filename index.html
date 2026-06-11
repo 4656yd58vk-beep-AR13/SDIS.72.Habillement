@@ -344,7 +344,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
       </div>
     </div>
 
-    <div id="drawer-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden;min-height:0;-webkit-overflow-scrolling:touch">
+    <div id="drawer-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden">
     <div id="drawer-body">
       <div class="drawer-section-label">Modules</div>
       <!-- NOUVEAU: Accueil/Dashboard -->
@@ -2651,7 +2651,7 @@ async function renderDashboard(){
   }
 
   // JSP si accès
-  var hasJsp = user.super_admin || user.role==='admin' || isJsp || (user.acces&&user.acces.jsp);
+  var hasJsp = user.super_admin || activeRole()==='admin' || isJsp || (user.acces&&user.acces.jsp);
   if(hasJsp){
     modules.push({
       icon:'🛡️', label:'JSP', sub:'Jeunes Sapeurs-Pompiers',
@@ -2739,12 +2739,17 @@ async function loadAll(){
   if(role==='sp'){
     qDemandes = db.from('demandes').select('*,equipements(nom,reference)').eq('utilisateur_id',activeUserId()).order('created_at',{ascending:false});
   } else {
-    qDemandes = db.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false});
+    qDemandes = db.from('demandes').select('*,equipements(nom,reference),utilisateurs(matricule,caserne,role)').order('created_at',{ascending:false}).limit(100);
   }
+  // Membres : charger seulement si pas encore en cache
+  var membresPromise = membres.length > 0
+    ? Promise.resolve({data: membres, error: null})
+    : db.from('utilisateurs').select('*').order('matricule');
+
   const [d,e,m] = await Promise.all([
     qDemandes,
     db.from('equipements').select('*').order('nom'),
-    db.from('utilisateurs').select('*').order('matricule')
+    membresPromise
   ]);
   const raw = d.data||[];
   if(role==='sp'){
@@ -2758,7 +2763,7 @@ async function loadAll(){
   equipements = e.data||[];
   membres     = m.data||[];
 
-  if(user && user.role==='admin'){
+  if(user && activeRole()==='admin'){
     const selC = document.getElementById('select-caserne');
     if(selC){
       const casernes = [...new Set(membres.map(m=>m.caserne).filter(Boolean))].sort();
@@ -2771,7 +2776,7 @@ async function loadAll(){
   const sel=document.getElementById('f-eq');
   if(sel) sel.innerHTML='<option value="">Sélectionner…</option>'+equipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
 
-  renderHome(); renderHistory(); renderCatalog(''); renderProfile();
+  renderHome(); renderHistory(); renderCatalog(''); loadMembresAdmin();
 }
 
 function rowHtml(d, onclick){
@@ -2902,9 +2907,6 @@ function renderCatalog(q){
   el.querySelectorAll('[data-alerteq]').forEach(btn=>{ btn.addEventListener('click',()=>toast('Alerte stock activée 🔔')); });
 }
 
-function renderProfile(){
-  loadMembresAdmin();
-}
 
 function openNewRequest(eqId){
   if(eqId) setTimeout(()=>{ var s=document.getElementById('f-eq'); if(s) s.value=eqId; },30);
@@ -3043,6 +3045,7 @@ function openStockModal(eqId){
 function adjStock(delta){ curEqStock=Math.max(0,curEqStock+delta); var sv=document.getElementById('stock-val'); if(sv) sv.textContent=curEqStock; }
 
 async function saveStock(){
+  if(activeRole()!=='habillement'&&activeRole()!=='admin'&&!user.super_admin){toast('Action non autorisée');return;}
   const seuil=parseInt(document.getElementById('stock-seuil').value)||10;
   const{error}=await db.from('equipements').update({stock:curEqStock,seuil_alerte:seuil}).eq('id',curEqId);
   closeModal('m-stock');
@@ -3066,6 +3069,7 @@ async function saveMembre(){
   btn.disabled=false;
   if(error){showErr('membre-err','Erreur : '+error.message);return;}
   closeModal('m-membre');
+  membres = []; // Invalider cache
   toast(`Membre ${mat} ajouté — mdp provisoire : ${mat}2026`);
   await loadAll();
 }
@@ -3105,10 +3109,20 @@ const GARDE_STATUT_CFG = {
 async function loadGardes(){
   if(!user) return;
   try{
-  var res = await db.from('gardes')
+  var role = activeRole();
+  var query = db.from('gardes')
     .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
     .order('date_garde',{ascending:true});
-  gardes = res.data || [];
+  // Responsable caserne : voir uniquement les gardes de sa caserne
+  var res = await query;
+  var allGardes = res.data || [];
+  if(role === 'responsable_caserne' && user.caserne){
+    gardes = allGardes.filter(function(g){
+      return g.demandeur && g.demandeur.caserne === user.caserne;
+    });
+  } else {
+    gardes = allGardes;
+  }
   renderGardes();
   // CORRECTION: appeler updateGardeBadge
   updateGardeBadge();
@@ -3312,9 +3326,9 @@ async function openApsDetail(id){
   openModal('m-detail-aps');
 }
 
-async function inscrireAps(id){ var res=await db.from('inscriptions_aps').insert({seance_id:id,utilisateur_id:activeUserId()}); if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-aps'); toast('Inscription confirmée ✓'); await loadAps(); }
-async function desinscrireAps(id){ await db.from('inscriptions_aps').delete().eq('seance_id',id).eq('utilisateur_id',activeUserId()); closeModal('m-detail-aps'); toast('Désinscription effectuée'); await loadAps(); }
-async function annulerAps(id){ var res=await db.from('seances_aps').update({statut:'annulee'}).eq('id',id); if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-aps'); toast('Séance annulée'); await loadAps(); }
+async function inscrireAps(id){ try{ var res=await db.from('inscriptions_aps').insert({seance_id:id,utilisateur_id:activeUserId()}); if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-aps'); toast('Inscription confirmée ✓'); await loadAps(); }catch(e){toast('Erreur réseau');} }
+async function desinscrireAps(id){ try{ await db.from('inscriptions_aps').delete().eq('seance_id',id).eq('utilisateur_id',activeUserId()); closeModal('m-detail-aps'); toast('Désinscription effectuée'); await loadAps(); }catch(e){toast('Erreur réseau');} }
+async function annulerAps(id){ try{ var res=await db.from('seances_aps').update({statut:'annulee'}).eq('id',id); if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-aps'); toast('Séance annulée'); await loadAps(); }catch(e){toast('Erreur réseau');} }
 
 async function submitAps(){
   var titre=document.getElementById('aps-titre').value.trim();
@@ -3426,12 +3440,17 @@ function openEventDetail(id){
 }
 
 async function inscrireEvent(id){
-  var res=await db.from('amicale_inscriptions').insert({evenement_id:id,utilisateur_id:activeUserId()});
-  if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-event'); toast('Inscription confirmée ✓'); loadAmiEvents();
+  try{
+    var res=await db.from('amicale_inscriptions').insert({evenement_id:id,utilisateur_id:activeUserId()});
+    if(res.error){toast('Erreur : '+res.error.message);return;}
+    closeModal('m-detail-event'); toast('Inscription confirmée ✓'); loadAmiEvents();
+  }catch(e){toast('Erreur réseau');}
 }
 async function desinscrireEvent(id){
-  await db.from('amicale_inscriptions').delete().eq('evenement_id',id).eq('utilisateur_id',activeUserId());
-  closeModal('m-detail-event'); toast('Désinscription effectuée'); loadAmiEvents();
+  try{
+    await db.from('amicale_inscriptions').delete().eq('evenement_id',id).eq('utilisateur_id',activeUserId());
+    closeModal('m-detail-event'); toast('Désinscription effectuée'); loadAmiEvents();
+  }catch(e){toast('Erreur réseau');}
 }
 
 async function loadAmiGroupes(){
@@ -3492,17 +3511,21 @@ function renderGroupeMessages(msgs, currentId){
 async function sendGroupeMessage(groupeId){
   var input=document.getElementById('gc-msg-input'); if(!input) return;
   var contenu=input.value.trim(); if(!contenu) return;
-  var res=await db.from('amicale_messages').insert({groupe_id:groupeId,auteur_id:activeUserId(),contenu});
-  if(res.error){toast('Erreur : '+res.error.message);return;}
-  input.value='';
+  try{
+    var res=await db.from('amicale_messages').insert({groupe_id:groupeId,auteur_id:activeUserId(),contenu});
+    if(res.error){toast('Erreur : '+res.error.message);return;}
+    input.value='';
+  }catch(e){toast('Erreur réseau');}
 }
 
 async function rejoindreGroupe(groupeId){
-  var res=await db.from('amicale_groupe_membres').insert({groupe_id:groupeId,utilisateur_id:activeUserId()});
-  if(res.error){toast('Erreur : '+res.error.message);return;}
-  toast('Bienvenue dans le groupe ! 👋');
-  closeModal('m-groupe-chat');
-  await loadAmiGroupes();
+  try{
+    var res=await db.from('amicale_groupe_membres').insert({groupe_id:groupeId,utilisateur_id:activeUserId()});
+    if(res.error){toast('Erreur : '+res.error.message);return;}
+    toast('Bienvenue dans le groupe ! 👋');
+    closeModal('m-groupe-chat');
+    await loadAmiGroupes();
+  }catch(e){toast('Erreur réseau');}
 }
 
 async function loadAmiMembres(){
@@ -3813,14 +3836,17 @@ async function openJspDetailAdmin(id){
 
 async function resetJspPw(id, matricule){
   if(!confirm('Réinitialiser le mot de passe de '+matricule+' à "'+matricule+'2026" ?')) return;
-  // CORRECTION: hash() JS local
-  var newHash = hash(matricule+'2026');
-  await db.from('utilisateurs').update({mot_de_passe:newHash,premiere_connexion:true}).eq('id',id);
-  toast('Mot de passe réinitialisé ✓');
-  closeModal('m-jsp-detail-admin');
+  try{
+    var newHash = hash(matricule+'2026');
+    var {error}=await db.from('utilisateurs').update({mot_de_passe:newHash,premiere_connexion:true}).eq('id',id);
+    if(error){toast('Erreur : '+error.message);return;}
+    toast('Mot de passe réinitialisé ✓');
+    closeModal('m-jsp-detail-admin');
+  }catch(e){toast('Erreur réseau');}
 }
 
 async function createJsp(){
+  if(!user.super_admin&&activeRole()!=='responsable_jsp'&&activeRole()!=='admin'){toast('Action non autorisée');return;}
   var prenom=document.getElementById('njsp-prenom').value.trim();
   var nom=document.getElementById('njsp-nom').value.trim();
   var mat=document.getElementById('njsp-mat').value.trim();
@@ -3872,7 +3898,7 @@ async function createJspCours(){
   if(user.role==='jsp'||user.role==='responsable_jsp') loadJspCours();
 }
 
-async function deleteJspCours(id){ if(!confirm('Supprimer ce cours ?')) return; await db.from('jsp_cours').delete().eq('id',id); toast('Cours supprimé'); loadAllJspCours(); }
+async function deleteJspCours(id){ if(!confirm('Supprimer ce cours ?')) return; try{ await db.from('jsp_cours').delete().eq('id',id); toast('Cours supprimé'); loadAllJspCours(); }catch(e){toast('Erreur réseau');} }
 
 async function loadAllJspSeances(){
   var {data}=await db.from('jsp_seances').select('*,cours:cours_id(titre)').order('date_seance',{ascending:false});
@@ -4022,7 +4048,7 @@ async function saveAppelJsp(){
   appelSeanceId = null;
 }
 
-async function deleteJspSeance(id){ if(!confirm('Supprimer cette séance ?')) return; await db.from('jsp_seances').delete().eq('id',id); toast('Séance supprimée'); loadAllJspSeances(); }
+async function deleteJspSeance(id){ if(!confirm('Supprimer cette séance ?')) return; try{ await db.from('jsp_seances').delete().eq('id',id); toast('Séance supprimée'); loadAllJspSeances(); }catch(e){toast('Erreur réseau');} }
 
 async function loadAllJspDocs(){
   var {data}=await db.from('jsp_documents').select('*').order('created_at',{ascending:false});
@@ -4058,7 +4084,7 @@ async function createJspDoc(){
   if(user.role==='jsp'||user.role==='responsable_jsp') loadJspDocs();
 }
 
-async function deleteJspDoc(id){ if(!confirm('Supprimer ce document ?')) return; await db.from('jsp_documents').delete().eq('id',id); toast('Document supprimé'); loadAllJspDocs(); }
+async function deleteJspDoc(id){ if(!confirm('Supprimer ce document ?')) return; try{ await db.from('jsp_documents').delete().eq('id',id); toast('Document supprimé'); loadAllJspDocs(); }catch(e){toast('Erreur réseau');} }
 // ══════════════════════════════════════════════════════════
 // PROFIL
 // ══════════════════════════════════════════════════════════
