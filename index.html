@@ -824,6 +824,14 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
         <div style="height:14px"></div>
         <div class="section-title">Session</div>
         <div class="card" style="padding:0 14px">
+          <div class="req-row" style="cursor:pointer" id="btn-switch-personal" style="display:none">
+            <div style="font-size:24px;width:40px;text-align:center">👤</div>
+            <div class="req-info">
+              <div class="req-name" id="btn-switch-personal-label">Basculer vers mon compte SP</div>
+              <div class="req-detail" id="btn-switch-personal-sub">Vue personnelle — Mat. 400557</div>
+            </div>
+            <i class="ti ti-switch-horizontal" style="color:var(--text2)"></i>
+          </div>
           <div class="req-row" style="cursor:pointer" id="btn-logout2">
             <div style="font-size:24px;width:40px;text-align:center">🚪</div>
             <div class="req-info"><div class="req-name" style="color:#DC2626">Se déconnecter</div><div class="req-detail">Revenir à l'écran de connexion</div></div>
@@ -1619,6 +1627,71 @@ const EQ_EMOJIS = {Veste:'🧥',Pantalon:'👖',Casque:'⛑️',Bottes:'🥾',Ga
 function eqIcon(nom=''){const f=EQ_ICONS.find(e=>nom.includes(e.k));return f||{cls:'ic0',i:'ti-package'};}
 function eqEmoji(nom=''){const k=Object.keys(EQ_EMOJIS).find(k=>nom.includes(k));return k?EQ_EMOJIS[k]:'📦';}
 function fmt(d){return new Date(d).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});}
+
+// ── SWITCH COMPTE PERSONNEL ──────────────────────────────
+var PERSONAL_MAT = '400557';
+var personalUserData = null; // cache du compte SP personnel
+
+async function loadPersonalUser(){
+  if(personalUserData) return personalUserData;
+  var {data} = await db.from('utilisateurs')
+    .select('id,matricule,role,caserne,prenom,nom,grade,acces')
+    .eq('matricule', PERSONAL_MAT).maybeSingle();
+  personalUserData = data;
+  return data;
+}
+
+async function switchToPersonal(){
+  var personal = await loadPersonalUser();
+  if(!personal){ toast('Compte personnel introuvable'); return; }
+
+  if(window.simulatedUser && window.simulatedUser.matricule === PERSONAL_MAT){
+    // Déjà sur le compte perso → revenir admin
+    window.simulatedUser = null;
+    simRole = null;
+    var hBadge = document.getElementById('h-badge');
+    if(hBadge){ hBadge.style.display='none'; }
+    var hSub = document.getElementById('h-sub');
+    if(hSub) hSub.textContent = 'Administration CSP LFB';
+    showView(user.role);
+    updateDrawer();
+    updateSwitchPersonalBtn();
+    await loadAll();
+    switchTab('sc-dashboard');
+    toast('Vue Admin restaurée');
+  } else {
+    // Basculer vers le compte perso
+    window.simulatedUser = personal;
+    simRole = personal.role;
+    var hBadge = document.getElementById('h-badge');
+    if(hBadge){ hBadge.textContent = 'SP ↩'; hBadge.style.display=''; hBadge.style.background='rgba(37,99,235,0.4)'; }
+    var hSub = document.getElementById('h-sub');
+    if(hSub) hSub.textContent = 'Vue perso · Mat. ' + PERSONAL_MAT;
+    showView(personal.role);
+    updateDrawer();
+    updateSwitchPersonalBtn();
+    await loadAll();
+    switchTab('sc-dashboard');
+    toast('Vue personnelle activée 👤');
+  }
+}
+
+function updateSwitchPersonalBtn(){
+  var btn = document.getElementById('btn-switch-personal');
+  var label = document.getElementById('btn-switch-personal-label');
+  var sub = document.getElementById('btn-switch-personal-sub');
+  if(!btn) return;
+
+  // Visible uniquement si super_admin
+  if(!user || !user.super_admin){ btn.style.display='none'; return; }
+  btn.style.display='';
+
+  var isOnPersonal = window.simulatedUser && window.simulatedUser.matricule === PERSONAL_MAT;
+  if(label) label.textContent = isOnPersonal ? 'Revenir en vue Admin' : 'Basculer vers mon compte SP';
+  if(sub) sub.textContent = isOnPersonal ? 'Retour à la vue Administration' : 'Vue personnelle · Mat. ' + PERSONAL_MAT;
+  btn.style.color = isOnPersonal ? 'var(--red)' : '';
+}
+
 function hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h.toString(36);}
 function defPw(mat){return mat+'2026';}
 
@@ -2186,6 +2259,7 @@ async function initApp(){
   switchTab('sc-dashboard');
   checkStBarbe();
   checkPushStatus();
+  updateSwitchPersonalBtn();
 }
 
 function showView(role){
@@ -4059,9 +4133,11 @@ async function loadDotations(){
 // ══════════════════════════════════════════════════════════
 function initParams(){
   if(!user) return;
+  updateSwitchPersonalBtn();
   var isSA = user.super_admin;
   var isAdmin = user.role==='admin' || isSA;
   checkPushStatus();
+  updateSwitchPersonalBtn();
   var tabDroits = document.getElementById('param-tab-droits');
   var tabUsers = document.getElementById('param-tab-users');
   if(tabDroits) tabDroits.style.display = isSA ? '' : 'none';
@@ -4274,6 +4350,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
   var btnLogout2=document.getElementById('btn-logout2');
   if(btnLogout2) btnLogout2.addEventListener('click', doLogout);
+
+  var btnSwitchPersonal=document.getElementById('btn-switch-personal');
+  if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', switchToPersonal);
 
   // ── DRAWER ────────────────────────────────────────────
   var btnDrawerOpen=document.getElementById('btn-drawer-open');
