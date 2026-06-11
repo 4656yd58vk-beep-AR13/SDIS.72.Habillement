@@ -795,6 +795,12 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
             <div class="req-info"><div class="req-name">Installer l'application</div><div class="req-detail">Ajouter à l'écran d'accueil</div></div>
             <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
           </div>
+          <div class="req-row" style="cursor:pointer" id="btn-push-row">
+            <div style="font-size:24px;width:40px;text-align:center">🔔</div>
+            <div class="req-info">
+              <button id="btn-push-toggle" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit;width:100%;text-align:left">🔕 Activer les notifications push</button>
+            </div>
+          </div>
         </div>
         <div style="height:14px"></div>
         <div class="section-title">Super Admin</div>
@@ -2022,6 +2028,7 @@ async function initApp(){
 
   await loadAll();
   subscribeRT();
+  initPushNotifications();
   initToggles();
   switchTab('sc-dashboard');
   checkStBarbe();
@@ -2702,6 +2709,12 @@ async function respValidate(approve){
   closeModal('m-resp');
   if(error){toast('Erreur : '+error.message);return;}
   toast(approve?'Validée et transmise ✓':'Demande refusée');
+  // Notifier le SP
+  var dem = demandes.find(x=>x.id===curDemandeId);
+  if(dem){
+    if(approve) sendPushTo(dem.utilisateur_id,'✅ Demande validée','Votre demande a été validée par le responsable','epi-valide');
+    else sendPushTo(dem.utilisateur_id,'❌ Demande refusée','Votre demande a été refusée','epi-refuse');
+  }
   await loadAll();
 }
 
@@ -2709,6 +2722,9 @@ async function expedier(id){
   const{error}=await db.from('demandes').update({statut:'expedie',updated_at:new Date().toISOString()}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Expédition confirmée ✓');
+  // Notifier le SP
+  var dem = demandes.find(x=>x.id===id);
+  if(dem) sendPushTo(dem.utilisateur_id,'📦 Équipement prêt','Votre équipement est prêt à être retiré à la caserne','epi-pret');
   await loadAll();
 }
 
@@ -3878,6 +3894,7 @@ function initParams(){
   if(!user) return;
   var isSA = user.super_admin;
   var isAdmin = user.role==='admin' || isSA;
+  checkPushStatus();
   var tabDroits = document.getElementById('param-tab-droits');
   var tabUsers = document.getElementById('param-tab-users');
   if(tabDroits) tabDroits.style.display = isSA ? '' : 'none';
@@ -4024,6 +4041,113 @@ async function simulateUser(){
   switchTab('sc-dashboard');
   toast('Vue Mat. '+data.matricule+' activée');
 }
+
+// ══════════════════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ══════════════════════════════════════════════════════════
+const VAPID_PUBLIC_KEY = 'BNKNhrQSDwb9kBotsDMLZk3qPu4g-6UtfQooRCWVgEFgYkfufndylFt-6mv4omKyFt5CDhBvimtzfrhO4LezVCc';
+var pushRegistration = null;
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for(var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function initPushNotifications() {
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    pushRegistration = await navigator.serviceWorker.register('/sw.js');
+    console.log('SW enregistré ✓');
+  } catch(e) { console.log('SW non supporté:', e); }
+}
+
+async function subscribePush() {
+  if(!pushRegistration) { toast('Notifications non supportées'); return; }
+  try {
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted') { toast('Permission refusée'); return; }
+
+    const sub = await pushRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    // Sauvegarder dans Supabase
+    const {error} = await db.from('push_subscriptions').upsert({
+      utilisateur_id: user.id,
+      subscription: sub.toJSON(),
+      user_agent: navigator.userAgent.slice(0,200)
+    }, {onConflict:'utilisateur_id,subscription->endpoint'});
+
+    if(error) { toast('Erreur activation: ' + error.message); return; }
+    toast('Notifications activées 🔔');
+    updatePushButton(true);
+  } catch(e) { toast('Erreur: ' + e.message); }
+}
+
+async function unsubscribePush() {
+  if(!pushRegistration) return;
+  try {
+    const sub = await pushRegistration.pushManager.getSubscription();
+    if(sub) {
+      await sub.unsubscribe();
+      await db.from('push_subscriptions')
+        .delete().eq('utilisateur_id', user.id);
+    }
+    toast('Notifications désactivées');
+    updatePushButton(false);
+  } catch(e) { toast('Erreur: ' + e.message); }
+}
+
+async function checkPushStatus() {
+  if(!('PushManager' in window)) return;
+  var btnPush = document.getElementById('btn-push-toggle');
+  if(!btnPush) return;
+  if(Notification.permission === 'denied') {
+    btnPush.textContent = '🔕 Bloquées (réglages navigateur)';
+    btnPush.disabled = true;
+    return;
+  }
+  if(pushRegistration) {
+    const sub = await pushRegistration.pushManager.getSubscription();
+    updatePushButton(!!sub);
+  }
+}
+
+function updatePushButton(active) {
+  var btn = document.getElementById('btn-push-toggle');
+  if(!btn) return;
+  if(active) {
+    btn.textContent = '🔔 Notifications activées — Désactiver';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    btn.onclick = unsubscribePush;
+  } else {
+    btn.textContent = '🔕 Activer les notifications push';
+    btn.style.color = 'var(--text)';
+    btn.style.borderColor = 'var(--border)';
+    btn.onclick = subscribePush;
+  }
+}
+
+// Envoyer une notification à un utilisateur (appelé après changement de statut)
+async function sendPushTo(utilisateur_id, title, body, tag) {
+  try {
+    await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPA_KEY
+      },
+      body: JSON.stringify({utilisateur_id, title, body, tag})
+    });
+  } catch(e) { /* silencieux */ }
+}
+
 // ══════════════════════════════════════════════════════════
 // INIT — DOMContentLoaded
 // ══════════════════════════════════════════════════════════
