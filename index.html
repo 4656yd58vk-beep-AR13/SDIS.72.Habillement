@@ -16,7 +16,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 :root{--red:#C0392B;--red-dark:#922B21;--green:#059669;--green-light:#D1FAE5;--amber:#D97706;--amber-light:#FEF3C7;--blue:#2563EB;--blue-light:#DBEAFE;--purple:#7C3AED;--purple-light:#EDE9FE;--border:#E5E7EB;--text:#111827;--text2:#6B7280;--bg:#fff;--bg2:#F9FAFB;--radius:12px;--radius-sm:8px}
-.app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.08);overflow:hidden}
+.app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.08)}
 .auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;background:linear-gradient(160deg,var(--red) 0%,var(--red-dark) 100%)}
 .auth-logo{width:90px;height:70px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;overflow:hidden;padding:8px 12px}
 .auth-logo img{height:54px;width:auto;object-fit:contain}
@@ -34,7 +34,7 @@ html,body{height:100%;background:#f0f0eb;font-family:-apple-system,BlinkMacSyste
 .header-sub{color:rgba(255,255,255,0.8);font-size:11px;margin-top:1px}
 .header-right{display:flex;align-items:center;gap:8px}
 .header-badge{background:rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
-.screen{flex:1;overflow-y:auto;padding-bottom:80px;display:none;-webkit-overflow-scrolling:touch;scroll-behavior:auto}
+.screen{flex:1;padding-bottom:80px;display:none}
 .screen.active{display:block}
 .section{padding:16px}
 .section-title{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:10px}
@@ -326,6 +326,9 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
       </button>
       <button class="drawer-item" data-drawer-tab="sc-sdis" id="drawer-tab-sdis">
         <i class="ti ti-building"></i><span>Portail SDIS</span>
+      </button>
+      <button class="drawer-item" data-drawer-tab="sc-stats" id="drawer-tab-stats" style="display:none">
+        <i class="ti ti-chart-bar"></i><span>Statistiques</span>
       </button>
       <div class="drawer-sep"></div>
       <div class="drawer-section-label">Compte</div>
@@ -798,8 +801,10 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
           <div class="req-row" style="cursor:pointer" id="btn-push-row">
             <div style="font-size:24px;width:40px;text-align:center">🔔</div>
             <div class="req-info">
-              <button id="btn-push-toggle" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit;width:100%;text-align:left">🔕 Activer les notifications push</button>
+              <div class="req-name">Notifications push</div>
+              <div class="req-detail" id="push-status">Vérification…</div>
             </div>
+            <button id="btn-push-toggle" class="btn-s" style="width:auto;padding:8px 14px;font-size:12px">Activer</button>
           </div>
         </div>
         <div style="height:14px"></div>
@@ -1562,6 +1567,23 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
     </div>
   </div>
 </div>
+
+<!-- MODALE APPEL JSP -->
+<div class="modal-overlay" id="m-appel-jsp" style="align-items:flex-start">
+  <div class="modal" style="height:92vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0">
+    <div class="modal-handle"></div>
+    <div style="padding:0 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="font-size:17px;font-weight:700;color:var(--text)" id="appel-titre">Appel</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">Marquez les présents et absents</div>
+    </div>
+    <div id="appel-list" style="flex:1;overflow-y:auto;padding:0 16px"></div>
+    <div style="padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0">
+      <button class="btn-p" id="btn-save-appel">
+        <i class="ti ti-device-floppy"></i>Enregistrer l'appel
+      </button>
+    </div>
+  </div>
+</div>
 <script>
 const SUPA_URL = 'https://qbvzdaagagwyszuoftkf.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFidnpkYWFnYWd3eXN6dW9mdGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzE1MjgsImV4cCI6MjA5NDcwNzUyOH0._gTk0V2GcVcrBjq7_me194_kk7s5YONcMrKteVmwvVs';
@@ -1917,6 +1939,137 @@ function setLogos(src){
     var el=document.getElementById(id); if(el) el.src=src;
   });
 }
+
+// ══════════════════════════════════════════════════════════
+// PUSH NOTIFICATIONS
+// ══════════════════════════════════════════════════════════
+const VAPID_PUBLIC_KEY = '6YE3csm1A8cAmbf6PDOZVRguBOa2weueBNCbpXlYNqL6eUjn1YkfNE9wiDkuVpy-JLwakvgcN-TTuhkQE09vTA';
+
+async function registerPush(){
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+    toast('Notifications non supportées sur ce navigateur');
+    return false;
+  }
+  try {
+    // Enregistrer le service worker
+    var reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    // Demander la permission
+    var perm = await Notification.requestPermission();
+    if(perm !== 'granted'){
+      toast('Notifications refusées');
+      return false;
+    }
+
+    // S'abonner
+    var sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    // Sauvegarder dans Supabase
+    var subJson = sub.toJSON();
+    var {error} = await db.from('push_subscriptions').upsert({
+      utilisateur_id: user.id,
+      endpoint: subJson.endpoint,
+      p256dh: subJson.keys.p256dh,
+      auth: subJson.keys.auth,
+      user_agent: navigator.userAgent.slice(0,100)
+    }, { onConflict: 'utilisateur_id,endpoint' });
+
+    if(error) throw error;
+
+    // Écouter les clics notif depuis le SW
+    navigator.serviceWorker.addEventListener('message', function(e){
+      if(e.data && e.data.type === 'NOTIF_CLICK' && e.data.url){
+        // Naviguer vers le bon onglet
+        var urlParts = e.data.url.split('#');
+        var tab = urlParts[1] || 'sc-dashboard';
+        switchTab(tab);
+      }
+    });
+
+    toast('Notifications activées ✓');
+    updatePushBtn(true);
+    return true;
+  } catch(err){
+    console.error('Push error:', err);
+    toast('Erreur notifications : ' + err.message);
+    return false;
+  }
+}
+
+async function unregisterPush(){
+  try {
+    var reg = await navigator.serviceWorker.getRegistration('/sw.js');
+    if(reg){
+      var sub = await reg.pushManager.getSubscription();
+      if(sub){
+        await sub.unsubscribe();
+        await db.from('push_subscriptions')
+          .delete().eq('utilisateur_id', user.id).eq('endpoint', sub.endpoint);
+      }
+    }
+    toast('Notifications désactivées');
+    updatePushBtn(false);
+  } catch(err){
+    toast('Erreur : ' + err.message);
+  }
+}
+
+
+function updatePushBtn(active){
+  var btn = document.getElementById('btn-push-toggle');
+  var status = document.getElementById('push-status');
+  if(btn){
+    btn.textContent = active ? 'Désactiver les notifications' : 'Activer les notifications';
+    btn.style.background = active ? '' : 'var(--green)';
+    btn.style.color = active ? '' : '#fff';
+    btn.style.borderColor = active ? '' : 'var(--green)';
+    btn.onclick = active ? unregisterPush : registerPush;
+  }
+  if(status){
+    status.textContent = active ? '🔔 Activées' : '🔕 Désactivées';
+    status.style.color = active ? 'var(--green)' : 'var(--text2)';
+  }
+}
+
+function urlBase64ToUint8Array(base64String){
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  var rawData = window.atob(base64);
+  var output = new Uint8Array(rawData.length);
+  for(var i=0; i<rawData.length; i++) output[i] = rawData.charCodeAt(i);
+  return output;
+}
+
+// Envoyer une notif push à un utilisateur (côté admin/habillement)
+async function sendPushToUser(userId, title, body, tab){
+  try {
+    // Récupérer les subscriptions de l'utilisateur
+    var {data:subs} = await db.from('push_subscriptions')
+      .select('*').eq('utilisateur_id', userId);
+    if(!subs || !subs.length) return; // pas abonné
+
+    for(var sub of subs){
+      await fetch('/api/send-push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-key': 'csp-lfb-internal-2026'
+        },
+        body: JSON.stringify({
+          subscription: { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          title, body,
+          url: '/#' + (tab||'sc-dashboard'),
+          tag: tab || 'csp-lfb'
+        })
+      });
+    }
+  } catch(e){ console.error('sendPush error:', e); }
+}
+
 function showPage(id){
   ['pg-login','pg-newpw','pg-app'].forEach(p=>{
     var el=document.getElementById(p);
@@ -2032,6 +2185,7 @@ async function initApp(){
   initToggles();
   switchTab('sc-dashboard');
   checkStBarbe();
+  checkPushStatus();
 }
 
 function showView(role){
@@ -2106,11 +2260,11 @@ function updateDrawer(){
   if(tabSdis) tabSdis.style.display = hasSdis ? '' : 'none';
   if(tabJsp) tabJsp.style.display = hasJsp ? '' : 'none';
 
-  // Section admin — plus de bouton "Changer de vue"
-  var sepAdmin = document.getElementById('drawer-sep-admin');
-  var lblAdmin = document.getElementById('drawer-label-admin');
-  if(sepAdmin) sepAdmin.style.display = 'none';
-  if(lblAdmin) lblAdmin.style.display = 'none';
+  // Stats visible admin/habillement uniquement
+  var drawerStats = document.getElementById('drawer-tab-stats');
+  if(drawerStats) drawerStats.style.display = (user.role==='admin'||user.role==='habillement') ? '' : 'none';
+  // Section admin — plus de bouton "Changer de vue" 
+  // Section admin masquée (éléments supprimés du drawer)
 }
 
 function setActiveDrawerTab(tabId){
@@ -2216,11 +2370,9 @@ function switchEpiTab(tabId){
 }
 
 function scrollTop(){
-  // Scroll en haut : l'écran actif ET window
-  window.scrollTo(0,0);
-  document.querySelectorAll('.screen.active').forEach(function(s){ s.scrollTop=0; });
-  var app = document.getElementById('pg-app');
-  if(app) app.scrollTop=0;
+  window.scrollTo({top:0,behavior:'instant'});
+  document.documentElement.scrollTop=0;
+  document.body.scrollTop=0;
 }
 
 function switchTab(tabId){
@@ -2257,6 +2409,7 @@ function switchTab(tabId){
   if(tabId==='sc-aps'){ loadAps(); }
   if(tabId==='sc-amicale'){ initAmicaleUI(); switchAmiTab('ami-actus'); }
   if(tabId==='sc-jsp'){ initJspScreen(); }
+  if(tabId==='sc-stats'){ renderStats(); }
 }
 
 // ── ADMIN SWITCH DE VUE ───────────────────────────────────
@@ -2382,6 +2535,12 @@ async function renderDashboard(){
     modules.push({
       icon:'🔗', label:'Portail SDIS', sub:'Artemis · SISBRA',
       badge:null, tab:'sc-sdis'
+    });
+  }
+  if(role==='admin'||role==='habillement'){
+    modules.push({
+      icon:'📊', label:'Statistiques', sub:'Demandes & exports',
+      badge:null, tab:'sc-stats'
     });
   }
 
@@ -2736,9 +2895,11 @@ async function confirmerReception(id){
 }
 
 async function marquerRemis(id){
+  const d=demandes.find(x=>x.id===id);
   const{error}=await db.from('demandes').update({statut:'remis',updated_at:new Date().toISOString()}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Équipement marqué comme remis ✓');
+  if(d){ var eq=d.equipements||{}; sendPushToUser(d.utilisateur_id,'EPI remis ✓','Votre '+(eq.nom||'équipement')+' vous a été remis. Confirmez la réception.','sc-home'); }
   await loadAll();
 }
 
@@ -2815,6 +2976,7 @@ const GARDE_STATUT_CFG = {
 
 async function loadGardes(){
   if(!user) return;
+  try{
   var res = await db.from('gardes')
     .select('*,demandeur:demandeur_id(matricule,caserne),remplacant:remplacant_id(matricule)')
     .order('date_garde',{ascending:true});
@@ -2822,6 +2984,7 @@ async function loadGardes(){
   renderGardes();
   // CORRECTION: appeler updateGardeBadge
   updateGardeBadge();
+  } catch(e){ console.error('loadGardes:',e); }
 }
 
 // CORRECTION: updateGardeBadge() maintenant appelée
@@ -2900,9 +3063,11 @@ function openGardeDetail(id){
 }
 
 async function proposerReprise(id){
+  try{
   var res=await db.from('gardes').update({remplacant_id:activeUserId(),statut:'proposee',updated_at:new Date().toISOString()}).eq('id',id);
   if(res.error){toast('Erreur : '+res.error.message);return;}
   closeModal('m-detail-garde'); toast('Proposition envoyée ✓'); await loadGardes();
+  } catch(e){ toast('Erreur réseau'); }
 }
 
 async function updateGardeStatut(id,statut){
@@ -2955,11 +3120,13 @@ function openNewAps(){
 
 async function loadAps(){
   if(!user) return;
+  try{
   var res=await db.from('seances_aps')
     .select('*,createur:createur_id(matricule,caserne),inscriptions_aps(id,utilisateur_id)')
     .eq('statut','ouverte').order('date_seance',{ascending:true});
   seances=res.data||[];
   renderAps();
+  } catch(e){ console.error('loadAps:',e); }
 }
 
 const APS_TYPES={course:'🏃 Course',musculation:'💪 Muscu',collectif:'⚽ Collectif',natation:'🏊 Natation',cross:'🌲 Cross',velo:'🚴 Vélo',autre:'➕ Autre'};
@@ -4045,7 +4212,6 @@ async function simulateUser(){
 // ══════════════════════════════════════════════════════════
 // PUSH NOTIFICATIONS
 // ══════════════════════════════════════════════════════════
-const VAPID_PUBLIC_KEY = 'BNKNhrQSDwb9kBotsDMLZk3qPu4g-6UtfQooRCWVgEFgYkfufndylFt-6mv4omKyFt5CDhBvimtzfrhO4LezVCc';
 var pushRegistration = null;
 
 function urlBase64ToUint8Array(base64String) {
@@ -4057,51 +4223,8 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-async function initPushNotifications() {
-  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  try {
-    pushRegistration = await navigator.serviceWorker.register('/sw.js');
-    console.log('SW enregistré ✓');
-  } catch(e) { console.log('SW non supporté:', e); }
-}
 
-async function subscribePush() {
-  if(!pushRegistration) { toast('Notifications non supportées'); return; }
-  try {
-    const permission = await Notification.requestPermission();
-    if(permission !== 'granted') { toast('Permission refusée'); return; }
 
-    const sub = await pushRegistration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
-
-    // Sauvegarder dans Supabase
-    const {error} = await db.from('push_subscriptions').upsert({
-      utilisateur_id: user.id,
-      subscription: sub.toJSON(),
-      user_agent: navigator.userAgent.slice(0,200)
-    }, {onConflict:'utilisateur_id,subscription->endpoint'});
-
-    if(error) { toast('Erreur activation: ' + error.message); return; }
-    toast('Notifications activées 🔔');
-    updatePushButton(true);
-  } catch(e) { toast('Erreur: ' + e.message); }
-}
-
-async function unsubscribePush() {
-  if(!pushRegistration) return;
-  try {
-    const sub = await pushRegistration.pushManager.getSubscription();
-    if(sub) {
-      await sub.unsubscribe();
-      await db.from('push_subscriptions')
-        .delete().eq('utilisateur_id', user.id);
-    }
-    toast('Notifications désactivées');
-    updatePushButton(false);
-  } catch(e) { toast('Erreur: ' + e.message); }
-}
 
 async function checkPushStatus() {
   if(!('PushManager' in window)) return;
@@ -4118,35 +4241,8 @@ async function checkPushStatus() {
   }
 }
 
-function updatePushButton(active) {
-  var btn = document.getElementById('btn-push-toggle');
-  if(!btn) return;
-  if(active) {
-    btn.textContent = '🔔 Notifications activées — Désactiver';
-    btn.style.color = 'var(--green)';
-    btn.style.borderColor = 'var(--green)';
-    btn.onclick = unsubscribePush;
-  } else {
-    btn.textContent = '🔕 Activer les notifications push';
-    btn.style.color = 'var(--text)';
-    btn.style.borderColor = 'var(--border)';
-    btn.onclick = subscribePush;
-  }
-}
 
 // Envoyer une notification à un utilisateur (appelé après changement de statut)
-async function sendPushTo(utilisateur_id, title, body, tag) {
-  try {
-    await fetch('/api/send-notification', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPA_KEY
-      },
-      body: JSON.stringify({utilisateur_id, title, body, tag})
-    });
-  } catch(e) { /* silencieux */ }
-}
 
 // ══════════════════════════════════════════════════════════
 // INIT — DOMContentLoaded
@@ -4426,22 +4522,5 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 </script>
-
-<!-- MODALE APPEL JSP -->
-<div class="modal-overlay" id="m-appel-jsp" style="align-items:flex-start">
-  <div class="modal" style="height:92vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0">
-    <div class="modal-handle"></div>
-    <div style="padding:0 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
-      <div style="font-size:17px;font-weight:700;color:var(--text)" id="appel-titre">Appel</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:2px">Marquez les présents et absents</div>
-    </div>
-    <div id="appel-list" style="flex:1;overflow-y:auto;padding:0 16px"></div>
-    <div style="padding:14px 16px;border-top:1px solid var(--border);flex-shrink:0">
-      <button class="btn-p" id="btn-save-appel" onclick="saveAppelJsp()">
-        <i class="ti ti-device-floppy"></i>Enregistrer l\'appel
-      </button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
