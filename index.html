@@ -385,7 +385,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
 
     <!-- Comptes test (super admin uniquement) -->
     <div id="drawer-test-section" style="display:none;border-top:1px solid var(--border);padding:6px 0">
-      <div class="drawer-section-label">🧪 Comptes test</div>
+      <div class="drawer-section-label">🧪 Test</div>
       <div id="drawer-test-accounts"></div>
     </div>
 
@@ -2410,65 +2410,94 @@ var testAccounts = [];
 
 async function loadTestAccounts(){
   if(!user || !user.super_admin) return;
+  // Charger le premier compte is_test uniquement
   var {data} = await db.from('utilisateurs')
-    .select('id,matricule,role,caserne,acces')
+    .select('id,matricule,role,caserne,prenom,nom,grade,acces,notif_email,notif_sms')
     .eq('is_test', true)
-    .order('matricule');
-  testAccounts = data||[];
+    .order('matricule')
+    .limit(1)
+    .maybeSingle();
 
   var section = document.getElementById('drawer-test-section');
   var container = document.getElementById('drawer-test-accounts');
   if(!section||!container) return;
 
-  if(!testAccounts.length){ section.style.display='none'; return; }
+  if(!data){ section.style.display='none'; return; }
 
+  var t = data;
   section.style.display='block';
-  container.innerHTML = testAccounts.map(function(t){
-    var roleColor = {sp:'var(--text2)',responsable_caserne:'var(--amber)',habillement:'var(--blue)',admin:'var(--red)',jsp:'#7C3AED'}[t.role]||'var(--text2)';
-    return '<button class="drawer-item" data-testid="'+t.id+'" style="padding:10px 18px">'+
-      '<div style="width:32px;height:32px;background:'+roleColor+';border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.85">'+
-        '<i class="ti ti-test-pipe" style="color:#fff;font-size:14px"></i>'+
+  var roleLbl = ROLE_LABELS[t.role]||t.role;
+  var roleColor = {sp:'var(--green)',responsable_caserne:'var(--amber)',habillement:'var(--blue)',admin:'var(--red)',jsp:'#7C3AED'}[t.role]||'var(--text2)';
+  var name = [t.prenom,t.nom].filter(Boolean).join(' ')||t.matricule;
+
+  container.innerHTML =
+    '<button class="drawer-item" id="btn-test-account" style="padding:12px 18px">'+
+      '<div style="width:36px;height:36px;background:'+roleColor+';border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+
+        '<i class="ti ti-test-pipe" style="color:#fff;font-size:16px"></i>'+
       '</div>'+
       '<div style="flex:1;min-width:0">'+
-        '<div style="font-size:13px;font-weight:600">'+t.matricule+'</div>'+
-        '<div style="font-size:11px;color:var(--text2)">'+(ROLE_LABELS[t.role]||t.role)+'</div>'+
+        '<div style="font-size:14px;font-weight:700">Compte test</div>'+
+        '<div style="font-size:11px;color:var(--text2)">'+name+' · '+roleLbl+'</div>'+
       '</div>'+
-      '<i class="ti ti-login-2" style="color:var(--text2);font-size:14px"></i>'+
+      '<i class="ti ti-player-play" style="color:'+roleColor+';font-size:16px"></i>'+
     '</button>';
-  }).join('');
 
-  container.querySelectorAll('[data-testid]').forEach(function(btn){
-    btn.addEventListener('click', function(){ switchToTestAccount(btn.dataset.testid); });
+  document.getElementById('btn-test-account').addEventListener('click', function(){
+    switchToTestAccount(t);
   });
 }
 
-async function switchToTestAccount(uid){
-  var t = testAccounts.find(x=>x.id===uid);
+async function switchToTestAccount(t){
   if(!t) return;
   window.simulatedUser = t;
   simRole = t.role;
   closeDrawer();
+
+  // Header
   var hSub = document.getElementById('h-sub');
-  if(hSub) hSub.textContent = '🧪 '+t.matricule+' · '+(ROLE_LABELS[t.role]||t.role);
+  if(hSub) hSub.textContent = (ROLE_LABELS[t.role]||t.role)+(t.caserne?' · '+t.caserne:'');
   var hBadge = document.getElementById('h-badge');
-  if(hBadge){ hBadge.textContent=(ROLE_BADGES[t.role]||t.role)+' ↩'; hBadge.style.display=''; hBadge.style.background='rgba(124,58,237,0.35)'; }
+  if(hBadge){ hBadge.textContent='TEST'; hBadge.style.display=''; hBadge.style.background='rgba(124,58,237,0.5)'; }
+
+  // Bouton retour flottant
+  showReturnBtn();
+
   showView(t.role);
   updateDrawer();
   await loadAll();
   switchTab('sc-dashboard');
-  toast('Vue '+t.matricule+' activée');
+  toast('Navigation test activée — '+(ROLE_LABELS[t.role]||t.role));
+}
+
+function showReturnBtn(){
+  var existing = document.getElementById('btn-return-admin');
+  if(existing) return;
+  var btn = document.createElement('button');
+  btn.id = 'btn-return-admin';
+  btn.innerHTML = '<i class="ti ti-arrow-back-up" style="font-size:18px"></i><span style="font-size:12px;font-weight:700">Admin</span>';
+  btn.style.cssText = 'position:fixed;bottom:32px;right:16px;z-index:300;background:var(--red);color:#fff;border:none;border-radius:30px;padding:10px 18px;display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 4px 16px rgba(192,57,43,0.45);font-family:inherit;-webkit-tap-highlight-color:transparent;';
+  btn.addEventListener('click', exitTestAccount);
+  document.body.appendChild(btn);
+}
+
+function hideReturnBtn(){
+  var btn = document.getElementById('btn-return-admin');
+  if(btn) btn.remove();
 }
 
 function exitTestAccount(){
   window.simulatedUser = null;
   simRole = null;
+  hideReturnBtn();
   var hBadge = document.getElementById('h-badge');
   if(hBadge){ hBadge.style.display='none'; hBadge.style.background=''; }
+  var hSub = document.getElementById('h-sub');
+  if(hSub) hSub.textContent = ROLE_SUBS[user.role]||'';
   showView(user.role);
   updateDrawer();
   loadAll();
   switchTab('sc-dashboard');
-  toast('Retour en vue Admin');
+  toast('Retour en vue Admin ✓');
 }
 // ══════════════════════════════════════════════════════════
 // NAVIGATION / TABS
