@@ -862,6 +862,11 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
             <div class="req-info"><div class="req-name">Simuler un utilisateur</div><div class="req-detail">Voir l'app comme un autre</div></div>
             <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
           </div>
+          <div class="req-row" style="cursor:pointer" id="param-btn-test-config">
+            <div style="font-size:24px;width:40px;text-align:center">🧪</div>
+            <div class="req-info"><div class="req-name">Configurer le compte test</div><div id="param-test-config-sub" class="req-detail">Chargement…</div></div>
+            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
+          </div>
         </div>
         <div style="height:14px"></div>
         <div class="section-title">Session</div>
@@ -4288,14 +4293,28 @@ function switchParamTab(id){
   if(id==='param-users') loadMembresAdmin();
 }
 
-function loadMembresAdmin(){
+async function loadMembresAdmin(){
   var el=document.getElementById('l-membres-admin');
   if(!el)return;
-  el.innerHTML=membres.length?membres.map(m=>`
-    <div class="mem-row">
-      <div style="flex:1"><div style="font-size:14px;font-weight:600">Mat. ${m.matricule}</div><div style="font-size:12px;color:var(--text2)">${m.caserne||'—'}</div></div>
-      <span class="role-pill ${m.role}">${ROLE_LABELS[m.role]||m.role}</span>
-    </div>`).join(''):'<div class="empty"><i class="ti ti-users"></i><p>Aucun membre</p></div>';
+  el.innerHTML='<div class="loader"><i class="ti ti-loader"></i>Chargement…</div>';
+  var {data} = await db.from('utilisateurs')
+    .select('id,matricule,prenom,nom,role,caserne,grade,is_test')
+    .order('matricule');
+  var list = (data||[]).filter(m=>!m.is_test);
+  if(!list.length){
+    el.innerHTML='<div class="empty"><i class="ti ti-users"></i><p>Aucun membre enregistré</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(function(m){
+    var name = [m.grade,m.prenom,m.nom].filter(Boolean).join(' ')||'Mat. '+m.matricule;
+    return '<div class="mem-row">'+
+      '<div style="flex:1">'+
+        '<div style="font-size:14px;font-weight:600">'+name+'</div>'+
+        '<div style="font-size:12px;color:var(--text2)">'+m.matricule+(m.caserne?' · '+m.caserne:'')+'</div>'+
+      '</div>'+
+      '<span class="role-pill '+m.role+'">'+(ROLE_LABELS[m.role]||m.role)+'</span>'+
+    '</div>';
+  }).join('');
 }
 
 var droitsData = [];
@@ -4712,6 +4731,17 @@ document.addEventListener('DOMContentLoaded', function(){
   // Photo demande
   initPhotoZone();
 
+  // Config compte test
+  var btnTestConfig = document.getElementById('param-btn-test-config');
+  if(btnTestConfig) btnTestConfig.addEventListener('click', openTestConfig);
+  var btnSaveTestConfig = document.getElementById('btn-save-test-config');
+  if(btnSaveTestConfig) btnSaveTestConfig.addEventListener('click', saveTestConfig);
+
+  // Role btns dans la modale config test
+  document.querySelectorAll('.tc-role-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){ renderTcRoleBtns(btn.dataset.role); });
+  });
+
   var btnSaveAppel = document.getElementById('btn-save-appel');
   if(btnSaveAppel) btnSaveAppel.addEventListener('click', saveAppelJsp);
 
@@ -4724,6 +4754,167 @@ document.addEventListener('DOMContentLoaded', function(){
     if(lMat) lMat.value=savedMat;
   }
 });
+
+// ══════════════════════════════════════════════════════════
+// CONFIGURATION COMPTE TEST
+// ══════════════════════════════════════════════════════════
+var testConfigUser = null;
+var testConfigRole = 'sp';
+
+const TC_MODULES = [
+  {key:'epi',     icon:'🛡️', label:'EPI'},
+  {key:'gardes',  icon:'📅', label:'Gardes'},
+  {key:'aps',     icon:'🏃', label:'APS'},
+  {key:'amicale', icon:'❤️', label:'Amicale'},
+  {key:'jsp',     icon:'🛡️', label:'JSP'},
+  {key:'sdis',    icon:'🔗', label:'Portail SDIS'},
+];
+
+async function openTestConfig(){
+  // Charger le compte test
+  var {data, error} = await db.from('utilisateurs')
+    .select('*').eq('matricule','999001').maybeSingle();
+
+  var errEl = document.getElementById('test-config-err');
+  if(errEl) errEl.style.display='none';
+
+  if(!data){
+    // Compte inexistant — on part de zéro
+    testConfigUser = null;
+    testConfigRole = 'sp';
+    if(errEl){
+      errEl.textContent = 'Compte 999001 inexistant — il sera créé à la sauvegarde.';
+      errEl.style.display='block';
+      errEl.style.background='var(--blue-light)';
+      errEl.style.color='var(--blue)';
+    }
+  } else {
+    testConfigUser = data;
+    testConfigRole = data.role || 'sp';
+  }
+
+  // Remplir les champs
+  var d = testConfigUser || {};
+  var fields = {
+    'tc-prenom': d.prenom||'',
+    'tc-nom':    d.nom||'',
+    'tc-caserne':d.caserne||'CSP La Ferté-Bernard',
+    'tc-pw':     '',
+  };
+  Object.entries(fields).forEach(function(entry){
+    var el = document.getElementById(entry[0]);
+    if(el) el.value = entry[1];
+  });
+  var gradeEl = document.getElementById('tc-grade');
+  if(gradeEl) gradeEl.value = d.grade||'Sapeur';
+
+  // Rôle
+  renderTcRoleBtns(testConfigRole);
+
+  // Accès modules
+  renderTcAccesGrid(d.acces||{epi:true,gardes:true,aps:true,amicale:true,jsp:false,sdis:true});
+
+  // Sous-titre dans params
+  updateTestConfigSub(d);
+
+  openModal('m-test-config');
+}
+
+function renderTcRoleBtns(selectedRole){
+  document.querySelectorAll('.tc-role-btn').forEach(function(btn){
+    var isActive = btn.dataset.role === selectedRole;
+    btn.style.borderColor = isActive ? 'var(--red)' : 'var(--border)';
+    btn.style.background  = isActive ? '#FFF5F5' : '#fff';
+    btn.style.color       = isActive ? 'var(--red)' : 'var(--text)';
+  });
+  testConfigRole = selectedRole;
+}
+
+function renderTcAccesGrid(acces){
+  var grid = document.getElementById('tc-acces-grid');
+  if(!grid) return;
+  grid.innerHTML = TC_MODULES.map(function(m){
+    var checked = acces[m.key] !== false;
+    return '<div style="display:flex;align-items:center;justify-content:space-between">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<span style="font-size:18px">'+m.icon+'</span>'+
+        '<span style="font-size:14px;font-weight:600">'+m.label+'</span>'+
+      '</div>'+
+      '<label class="toggle-switch">'+
+        '<input type="checkbox" class="tc-acces-cb" data-key="'+m.key+'"'+(checked?' checked':'')+'>'+
+        '<span class="toggle-slider"></span>'+
+      '</label>'+
+    '</div>';
+  }).join('');
+}
+
+function updateTestConfigSub(data){
+  var sub = document.getElementById('param-test-config-sub');
+  if(!sub) return;
+  if(!data){ sub.textContent = 'Compte non créé'; return; }
+  var name = [data.prenom, data.nom].filter(Boolean).join(' ')||'Mat. 999001';
+  sub.textContent = name+' · '+(ROLE_LABELS[data.role]||data.role);
+}
+
+async function saveTestConfig(){
+  var btn = document.getElementById('btn-save-test-config');
+  if(btn){ btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Enregistrement…'; }
+
+  var prenom  = document.getElementById('tc-prenom').value.trim()||'Jean';
+  var nom     = document.getElementById('tc-nom').value.trim()||'Test';
+  var grade   = document.getElementById('tc-grade').value||'Sapeur';
+  var caserne = document.getElementById('tc-caserne').value.trim()||'CSP La Ferté-Bernard';
+  var pw      = document.getElementById('tc-pw').value;
+
+  // Lire les accès
+  var acces = {};
+  document.querySelectorAll('.tc-acces-cb').forEach(function(cb){
+    acces[cb.dataset.key] = cb.checked;
+  });
+
+  var updateData = {
+    prenom, nom, grade, caserne,
+    role: testConfigRole,
+    acces: acces,
+    is_test: true,
+    premiere_connexion: false,
+    notif_email: false,
+    notif_sms: false,
+  };
+
+  if(pw && pw.length >= 4){
+    updateData.mot_de_passe = hash(pw);
+  }
+
+  var error;
+  if(testConfigUser){
+    // Mettre à jour
+    var res = await db.from('utilisateurs').update(updateData).eq('matricule','999001');
+    error = res.error;
+  } else {
+    // Créer
+    updateData.matricule = '999001';
+    if(!updateData.mot_de_passe) updateData.mot_de_passe = hash('Test2026!');
+    var res = await db.from('utilisateurs').insert(updateData);
+    error = res.error;
+  }
+
+  if(btn){ btn.disabled=false; btn.innerHTML='<i class="ti ti-device-floppy"></i>Enregistrer'; }
+
+  if(error){
+    var errEl = document.getElementById('test-config-err');
+    if(errEl){ errEl.textContent='Erreur : '+error.message; errEl.style.display='block'; errEl.style.background='#FEE2E2'; errEl.style.color='#991B1B'; }
+    return;
+  }
+
+  closeModal('m-test-config');
+  toast('Compte test mis à jour ✓');
+
+  // Recharger pour le drawer
+  membresLoaded = false;
+  await loadTestAccounts();
+  initParams();
+}
 </script>
 </body>
 </html>
