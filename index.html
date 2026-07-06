@@ -857,11 +857,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
             <div class="req-info"><div class="req-name">Tester St Barbe</div><div class="req-detail">Animation 4 décembre</div></div>
             <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
           </div>
-          <div class="req-row" style="cursor:pointer" id="param-btn-simulate">
-            <div style="font-size:24px;width:40px;text-align:center">👁️</div>
-            <div class="req-info"><div class="req-name">Simuler un utilisateur</div><div class="req-detail">Voir l'app comme un autre</div></div>
-            <i class="ti ti-chevron-right" style="color:var(--text2)"></i>
-          </div>
+
           <div class="req-row" style="cursor:pointer" id="param-btn-test-config">
             <div style="font-size:24px;width:40px;text-align:center">🧪</div>
             <div class="req-info"><div class="req-name">Configurer le compte test</div><div id="param-test-config-sub" class="req-detail">Chargement…</div></div>
@@ -871,14 +867,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
         <div style="height:14px"></div>
         <div class="section-title">Session</div>
         <div class="card" style="padding:0 14px">
-          <div class="req-row" style="cursor:pointer" id="btn-switch-personal" style="display:none">
-            <div style="font-size:24px;width:40px;text-align:center">👤</div>
-            <div class="req-info">
-              <div class="req-name" id="btn-switch-personal-label">Basculer vers mon compte SP</div>
-              <div class="req-detail" id="btn-switch-personal-sub">Vue personnelle — Mat. 400557</div>
-            </div>
-            <i class="ti ti-switch-horizontal" style="color:var(--text2)"></i>
-          </div>
+
           <div class="req-row" style="cursor:pointer" id="btn-logout2">
             <div style="font-size:24px;width:40px;text-align:center">🚪</div>
             <div class="req-info"><div class="req-name" style="color:#DC2626">Se déconnecter</div><div class="req-detail">Revenir à l'écran de connexion</div></div>
@@ -1305,22 +1294,6 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
   </div>
 </div>
 
-<!-- MODAL SUPER ADMIN -->
-<div class="modal-overlay" id="m-superadmin">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-inner">
-      <div class="modal-title">Simuler un utilisateur</div>
-      <div class="modal-sub">Voyez l'app comme n'importe quel membre</div>
-      <div class="form-group">
-        <label class="form-label">Matricule à simuler</label>
-        <input class="form-ctrl" id="sa-matricule" placeholder="Ex : 103918" inputmode="numeric">
-      </div>
-      <button class="btn-p" id="btn-sa-search"><i class="ti ti-search"></i>Simuler</button>
-      <div id="sa-result" style="font-size:13px;color:var(--text2);margin-top:10px"></div>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL PWA -->
 <div class="modal-overlay" id="m-pwa">
@@ -4517,8 +4490,6 @@ document.addEventListener('DOMContentLoaded', function(){
   var btnLogout2=document.getElementById('btn-logout2');
   if(btnLogout2) btnLogout2.addEventListener('click', doLogout);
 
-  var btnSwitchPersonal=document.getElementById('btn-switch-personal');
-  if(btnSwitchPersonal) btnSwitchPersonal.addEventListener('click', switchToPersonal);
 
   // ── DRAWER ────────────────────────────────────────────
   var btnDrawerOpen=document.getElementById('btn-drawer-open');
@@ -4663,8 +4634,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 
-  var btnSASearch=document.getElementById('btn-sa-search');
-  if(btnSASearch) btnSASearch.addEventListener('click', simulateUser);
 
   var btnClearSig=document.getElementById('btn-clear-sig');
   if(btnClearSig) btnClearSig.addEventListener('click', clearSig);
@@ -4707,8 +4676,6 @@ document.addEventListener('DOMContentLoaded', function(){
   if(btnSBClose) btnSBClose.addEventListener('click', closeStBarbe);
 
   // Simulate user (params)
-  var btnSimulate=document.getElementById('param-btn-simulate');
-  if(btnSimulate) btnSimulate.addEventListener('click', ()=>openModal('m-superadmin'));
 
   // Ajouter membre admin
   var btnAddAdmin=document.getElementById('btn-add-admin');
@@ -4875,9 +4842,10 @@ function renderTcAccesGrid(acces){
 function updateTestConfigSub(data){
   var sub = document.getElementById('param-test-config-sub');
   if(!sub) return;
-  if(!data){ sub.textContent = 'Compte non créé'; return; }
-  var name = [data.prenom, data.nom].filter(Boolean).join(' ')||'Mat. 999001';
-  sub.textContent = name+' · '+(ROLE_LABELS[data.role]||data.role);
+  if(!data){ sub.textContent = 'Non configuré — cliquez pour créer'; return; }
+  var name = [data.grade, data.prenom, data.nom].filter(Boolean).join(' ')||'Compte test';
+  var roleLbl = data.role ? (ROLE_LABELS[data.role]||data.role) : 'Rôle non défini';
+  sub.textContent = name + ' · ' + roleLbl;
 }
 
 async function saveTestConfig(){
