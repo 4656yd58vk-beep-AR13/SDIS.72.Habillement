@@ -4771,6 +4771,7 @@ const TC_MODULES = [
 ];
 
 async function openTestConfig(){
+  if(!user||!user.super_admin){ toast('Accès refusé'); return; }
   // Charger le compte test
   var {data, error} = await db.from('utilisateurs')
     .select('*').eq('matricule','999001').maybeSingle();
@@ -4857,6 +4858,7 @@ function updateTestConfigSub(data){
 }
 
 async function saveTestConfig(){
+  if(!user||!user.super_admin){ toast('Accès refusé'); return; }
   var btn = document.getElementById('btn-save-test-config');
   if(btn){ btn.disabled=true; btn.innerHTML='<i class="ti ti-loader"></i>Enregistrement…'; }
 
