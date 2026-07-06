@@ -2943,6 +2943,7 @@ function openNewRequest(eqId){
 }
 
 async function submitRequest(){
+  try{
   const eqId=document.getElementById('f-eq').value;
   const motif=document.getElementById('f-motif').value;
   if(!eqId||!motif){toast('Remplissez les champs obligatoires');return;}
@@ -2971,6 +2972,7 @@ async function submitRequest(){
   if(removeBtn) removeBtn.style.display='none';
   toast('Demande envoyée ✓');
   await loadAll();
+  } catch(e){ toast('Erreur : '+e.message); var btn2=document.getElementById('btn-submit'); if(btn2){btn2.disabled=false;btn2.innerHTML='<i class="ti ti-send"></i>Envoyer la demande';} }
 }
 
 function openDetail(id){
@@ -3243,12 +3245,14 @@ async function proposerReprise(id){
 }
 
 async function updateGardeStatut(id,statut){
+  try{
   var res=await db.from('gardes').update({statut:statut,updated_at:new Date().toISOString()}).eq('id',id);
   if(res.error){toast('Erreur : '+res.error.message);return;}
   closeModal('m-detail-garde');
   var msgs={validee:'Échange validé ✓',refusee:'Échange refusé',annulee:'Demande annulée'};
   toast(msgs[statut]||'Mise à jour effectuée');
   await loadGardes();
+  } catch(e){ toast('Erreur réseau'); }
 }
 
 function openNewGarde(){
@@ -3259,6 +3263,7 @@ function openNewGarde(){
 }
 
 async function submitGarde(){
+  try{
   var elDate=document.getElementById('g-date');
   var elType=document.getElementById('g-type');
   if(!elDate||!elType){toast('Formulaire indisponible');return;}
@@ -3274,6 +3279,7 @@ async function submitGarde(){
   });
   if(res.error){toast('Erreur : '+res.error.message);return;}
   closeModal('m-new-garde'); toast('Demande publiée ✓'); await loadGardes();
+  } catch(e){ toast('Erreur : '+e.message); }
 }
 // ══════════════════════════════════════════════════════════
 // MODULE APS
@@ -3361,6 +3367,7 @@ async function desinscrireAps(id){ try{ await db.from('inscriptions_aps').delete
 async function annulerAps(id){ try{ var res=await db.from('seances_aps').update({statut:'annulee'}).eq('id',id); if(res.error){toast('Erreur : '+res.error.message);return;} closeModal('m-detail-aps'); toast('Séance annulée'); await loadAps(); }catch(e){toast('Erreur réseau');} }
 
 async function submitAps(){
+  try{
   var titre=document.getElementById('aps-titre').value.trim();
   var date=document.getElementById('aps-date').value;
   var type=document.getElementById('aps-type').value;
@@ -3378,6 +3385,7 @@ async function submitAps(){
   });
   if(res.error){toast('Erreur : '+res.error.message);return;}
   closeModal('m-new-aps'); toast('Séance publiée ✓'); await loadAps();
+  } catch(e){ toast('Erreur : '+e.message); }
 }
 // ══════════════════════════════════════════════════════════
 // MODULE AMICALE
@@ -3926,28 +3934,7 @@ async function createJsp(){
 }
 
 
-function renderAdminJspCours(data){
-  allJspCours = data||[];
-  var el=document.getElementById('l-jspa-cours'); if(!el) return;
-  if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
-  el.innerHTML='<div class="card" style="padding:0 14px">'+allJspCours.map(function(c){
-    var cat=JSP_CAT[c.categorie]||{ico:'📋',lbl:c.categorie};
-    return '<div class="req-row"><div style="font-size:24px;width:40px;text-align:center;flex-shrink:0">'+cat.ico+'</div>'+
-      '<div class="req-info"><div class="req-name">'+c.titre+'</div><div class="req-detail">'+cat.lbl+'</div></div>'+
-      '<button data-delcours="'+c.id+'" style="background:none;border:none;cursor:pointer;color:#DC2626;font-size:16px;padding:0"><i class="ti ti-trash"></i></button></div>';
-  }).join('')+'</div>';
-  el.querySelectorAll('[data-delcours]').forEach(btn=>btn.addEventListener('click',()=>deleteJspCours(btn.dataset.delcours)));
-  var sel=document.getElementById('njs-cours');
-  if(sel) sel.innerHTML='<option value="">— Aucun —</option>'+allJspCours.map(c=>'<option value="'+c.id+'">'+c.titre+'</option>').join('');
-}
 
-async function loadAllJspCours(){
-  var {data}=await db.from('jsp_cours').select('*').order('created_at',{ascending:false});
-  allJspCours=data||[];
-  var el=document.getElementById('l-jspa-cours'); if(!el) return;
-  if(!allJspCours.length){ el.innerHTML='<div class="empty"><i class="ti ti-book"></i><p>Aucun cours</p></div>'; return; }
-  renderAdminJspCours(allJspCours);
-}
 
 async function createJspCours(){
   var titre=document.getElementById('njc-titre').value.trim(); if(!titre){toast('Titre obligatoire');return;}
@@ -4435,14 +4422,6 @@ async function simulateUser(){
 // ══════════════════════════════════════════════════════════
 var pushRegistration = null;
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for(var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-  return outputArray;
-}
 
 
 
