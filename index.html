@@ -412,7 +412,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
   </div>
 
   <!-- ══════════ DASHBOARD ACCUEIL ══════════ -->
-  <div class="screen active" id="sc-dashboard">
+  <div class="screen" id="sc-dashboard">
     <div class="dash-hero" id="dash-hero">
       <div class="dash-hero-grade" id="dash-grade">—</div>
       <div class="dash-hero-name" id="dash-name">Bienvenue</div>
@@ -2252,7 +2252,8 @@ async function initApp(){
   var hBadge = document.getElementById('h-badge');
   if(hBadge) hBadge.style.display='none';
   var hSub=document.getElementById('h-sub');
-  if(hSub) hSub.textContent=ROLE_SUBS[role]||'';
+  var roleSub = ROLE_SUBS[role]||'';
+  if(hSub) hSub.textContent = roleSub;
 
   updateProfileHeader();
   // CORRECTION: appeler updateDrawer() au démarrage
@@ -2600,11 +2601,17 @@ async function renderDashboard(){
   if(!user) return;
   const role = activeRole();
   const isJsp = role==='jsp'||role==='responsable_jsp';
+  // Sécurité : réinitialiser dash-recents si pas encore fait
+  var recentElInit = document.getElementById('dash-recents');
+  if(recentElInit && recentElInit.innerHTML.includes('Chargement')){
+    recentElInit.innerHTML = '';
+  }
+  try {
 
   // Hero
   var simU = window.simulatedUser || user;
   var grade = simU.grade||'';
-  var name = [simU.prenom, simU.nom].filter(Boolean).join(' ') || 'Mat. '+simU.matricule;
+  var name = [simU.prenom, simU.nom].filter(Boolean).join(' ') || (simU.grade ? simU.grade+' '+simU.matricule : 'Mat. '+simU.matricule);
   var dashGrade = document.getElementById('dash-grade');
   var dashName = document.getElementById('dash-name');
   var dashCas = document.getElementById('dash-caserne');
@@ -2799,6 +2806,7 @@ async function loadAll(){
   if(sel) sel.innerHTML='<option value="">Sélectionner…</option>'+equipements.map(e=>`<option value="${e.id}">${e.nom}</option>`).join('');
 
   renderHome(); renderHistory(); renderCatalog(''); loadMembresAdmin();
+  } catch(e){ console.error("renderDashboard:", e); var el=document.getElementById("dash-recents"); if(el) el.innerHTML='<div style="text-align:center;padding:24px"><div style="font-size:40px">🚒</div><div style="font-size:15px;font-weight:700;margin-top:12px">Bienvenue sur CSP LFB</div></div>'; }
 }
 
 function rowHtml(d, onclick){
