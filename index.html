@@ -3434,7 +3434,7 @@ async function loadAmiActus(){
 
 async function loadAmiEvents(){
   try{
-  var {data}=await db.from('amicale_evenements').select('*,inscriptions:amicale_inscriptions(utilisateur_id)').order('date_event',{ascending:true});
+  var {data}=await db.from('amicale_evenements').select('*,inscriptions:amicale_inscriptions(utilisateur_id)').order('date_evenement',{ascending:true});
   amiEvents=data||[];
   } catch(e){ console.error('loadAmiEvents:',e); return; }
   var el=document.getElementById('l-events'); if(!el) return;
@@ -3442,10 +3442,10 @@ async function loadAmiEvents(){
   var today=new Date().toISOString().split('T')[0];
   var currentId=activeUserId();
   el.innerHTML=amiEvents.map(function(e){
-    var isPast=e.date_event&&e.date_event<today;
+    var isPast=e.date_evenement&&e.date_evenement<today;
     var inscrits=e.inscriptions?e.inscriptions.length:0;
     var inscrit=e.inscriptions&&e.inscriptions.some(i=>i.utilisateur_id===currentId);
-    var dateStr=e.date_event?new Date(e.date_event).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'—';
+    var dateStr=e.date_evenement?new Date(e.date_evenement).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'—';
     return '<div class="req-row" data-evtid="'+e.id+'" style="cursor:pointer;opacity:'+(isPast?'0.6':'1')+'">'+
       '<div style="font-size:26px;width:44px;text-align:center;flex-shrink:0">🎉</div>'+
       '<div class="req-info"><div class="req-name">'+e.titre+'</div>'+
@@ -3458,7 +3458,7 @@ async function loadAmiEvents(){
 
 function openEventDetail(id){
   var e=amiEvents.find(x=>x.id===id); if(!e) return;
-  var dateStr=e.date_event?new Date(e.date_event).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
+  var dateStr=e.date_evenement?new Date(e.date_evenement).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'—';
   var inscrits=e.inscriptions?e.inscriptions.length:0;
   var inscrit=e.inscriptions&&e.inscriptions.some(i=>i.utilisateur_id===activeUserId());
   var complet=e.places_max&&inscrits>=e.places_max;
@@ -3555,7 +3555,7 @@ async function sendGroupeMessage(groupeId){
   var input=document.getElementById('gc-msg-input'); if(!input) return;
   var contenu=input.value.trim(); if(!contenu) return;
   try{
-    var res=await db.from('amicale_messages').insert({groupe_id:groupeId,auteur_id:activeUserId(),contenu});
+    var res=await db.from('amicale_messages').insert({groupe_id:groupeId,createur_id:activeUserId(),contenu});
     if(res.error){toast('Erreur : '+res.error.message);return;}
     input.value='';
   }catch(e){toast('Erreur réseau');}
@@ -3591,7 +3591,7 @@ async function submitActu(){
   var titre=document.getElementById('na-titre').value.trim();
   var contenu=document.getElementById('na-contenu').value.trim();
   if(!titre||!contenu){toast('Titre et contenu obligatoires');return;}
-  var res=await db.from('amicale_actus').insert({titre,contenu,auteur_id:activeUserId()});
+  var res=await db.from('amicale_actus').insert({titre,contenu,createur_id:activeUserId()});
   if(res.error){toast('Erreur : '+res.error.message);return;}
   closeModal('m-new-actu'); toast('Actualité publiée ✓'); loadAmiActus();
 }
@@ -3601,7 +3601,7 @@ async function submitEvent(){
   var date=document.getElementById('ne-date').value;
   if(!titre||!date){toast('Titre et date obligatoires');return;}
   var res=await db.from('amicale_evenements').insert({
-    titre,date_event:date,auteur_id:activeUserId(),
+    titre,date_evenement:date,createur_id:activeUserId(),
     lieu:document.getElementById('ne-lieu').value.trim()||null,
     description:document.getElementById('ne-desc').value.trim()||null,
     places_max:parseInt(document.getElementById('ne-places').value)||null,
