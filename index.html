@@ -827,8 +827,7 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
     <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px">
       <div style="display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none">
         <button class="chip active" data-paramtab="param-general">⚙️ Général</button>
-        <button class="chip" data-paramtab="param-droits" id="param-tab-droits" style="display:none">🔐 Droits</button>
-        <button class="chip" data-paramtab="param-users" id="param-tab-users" style="display:none">👥 Utilisateurs</button>
+        <button class="chip" data-paramtab="param-droits" id="param-tab-droits" style="display:none">👥 Membres & droits</button>
       </div>
     </div>
     <div id="param-general" class="param-panel">
@@ -877,25 +876,18 @@ input:checked + .toggle-slider:before{transform:translateX(20px);}
     </div>
     <div id="param-droits" class="param-panel" style="display:none">
       <div class="section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div class="section-title" style="margin-bottom:0">Compétences & accès</div>
-          <input class="form-ctrl" type="text" id="droits-search" placeholder="🔍 Rechercher..." style="width:140px;font-size:12px;padding:6px 10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="section-title" style="margin-bottom:0">Membres & droits</div>
+          <input class="form-ctrl" type="text" id="droits-search" placeholder="🔍 Rechercher..." style="width:130px;font-size:12px;padding:6px 10px">
         </div>
         <div id="l-droits-table">
-          <div class="empty"><i class="ti ti-lock"></i><p>Chargement...</p></div>
+          <div class="empty"><i class="ti ti-loader"></i><p>Chargement...</p></div>
         </div>
+        <div style="height:12px"></div>
+        <button class="btn-g" id="btn-add-membre-droits"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
       </div>
     </div>
-    <div id="param-users" class="param-panel" style="display:none">
-      <div class="section">
-        <div class="section-title">Membres enregistrés</div>
-        <div id="l-membres-admin"><div class="loader"><i class="ti ti-loader"></i>Chargement…</div></div>
-        <div id="sec-membres">
-          <div style="height:10px"></div>
-          <button class="btn-g" id="btn-add-membre"><i class="ti ti-user-plus"></i>Ajouter un membre</button>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <!-- STATS -->
@@ -4271,9 +4263,7 @@ function initParams(){
   checkPushStatus();
   updateSwitchPersonalBtn();
   var tabDroits = document.getElementById('param-tab-droits');
-  var tabUsers = document.getElementById('param-tab-users');
-  if(tabDroits) tabDroits.style.display = isSA ? '' : 'none';
-  if(tabUsers) tabUsers.style.display = isAdmin ? '' : 'none';
+  if(tabDroits) tabDroits.style.display = isAdmin ? '' : 'none';
   var saSec = document.getElementById('param-sa-section');
   if(saSec) saSec.style.display = isSA ? '' : 'none';
   if(isAdmin) loadMembresAdmin();
@@ -4285,7 +4275,6 @@ function switchParamTab(id){
   var el=document.getElementById(id); if(el) el.style.display='block';
   var btn=document.querySelector('[data-paramtab="'+id+'"]'); if(btn) btn.classList.add('active');
   if(id==='param-droits') loadDroitsTable();
-  if(id==='param-users') loadMembresAdmin();
 }
 
 async function loadMembresAdmin(){
@@ -4680,8 +4669,8 @@ document.addEventListener('DOMContentLoaded', function(){
   // Ajouter membre admin
   var btnAddAdmin=document.getElementById('btn-add-admin');
   if(btnAddAdmin) btnAddAdmin.addEventListener('click', ()=>openModal('m-membre'));
-  var btnAddMembre=document.getElementById('btn-add-membre');
-  if(btnAddMembre) btnAddMembre.addEventListener('click', ()=>openModal('m-membre'));
+  var btnAddMembreDroits=document.getElementById('btn-add-membre-droits');
+  if(btnAddMembreDroits) btnAddMembreDroits.addEventListener('click', ()=>openModal('m-membre'));
 
   // JSP admin
   document.querySelectorAll('[data-jspadmin]').forEach(function(btn){
